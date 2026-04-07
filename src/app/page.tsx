@@ -49,17 +49,15 @@ function Hero() {
   return (
     <section className="pt-28 pb-20 sm:pt-40 sm:pb-28 px-6 max-w-5xl mx-auto">
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight max-w-3xl fade-up">
-        You talk.
+        Your notes and your AI,
         <br />
-        A knowledge graph
-        <br />
-        grows around you.
+        finally connected.
       </h1>
 
       <p className="mt-8 text-lg text-muted max-w-xl leading-relaxed fade-up delay-1">
-        Grove turns your conversations into a living, connected knowledge base.
-        No filing. No organizing. Just talk to your AI &mdash; from any device &mdash;
-        and the graph builds itself.
+        You take notes. You journal. You save ideas. Then you talk to your AI
+        and it knows none of it. Grove connects them &mdash; your AI reads your
+        notes, writes back, and the knowledge grows together.
       </p>
 
       <div className="mt-10 flex flex-wrap gap-4 fade-up delay-2">
