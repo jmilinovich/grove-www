@@ -150,19 +150,18 @@ function WhatItFeelsLike() {
           <p className="text-xs text-muted mb-3">On your phone, mid-conversation</p>
           <div className="border-l border-surface-border pl-5 space-y-4">
             <p className="text-foreground">
-              &quot;What was that framework I was developing about how taste
-              propagates through networks?&quot;
+              &quot;What was that idea I was developing about how design preferences
+              spread through networks?&quot;
             </p>
             <div className="text-sm text-muted space-y-1">
               <p>
                 <span className="text-accent text-xs">found</span>{" "}
-                Taste Graph &mdash; a concept you&apos;ve been developing since
-                Pinterest in 2016. It models how aesthetic preferences propagate
-                through social networks. Connected to{" "}
+                Preference Propagation &mdash; a concept you&apos;ve been developing
+                since 2018. It connects to{" "}
                 <span className="text-foreground">
-                  Bo Zhao, Jure Leskovec, The Parametric Convergence
+                  graph theory, social dynamics, recommendation systems
                 </span>
-                , and 12 other notes.
+                , and 12 other notes in your vault.
               </p>
             </div>
           </div>
@@ -173,20 +172,19 @@ function WhatItFeelsLike() {
           <p className="text-xs text-muted mb-3">Later, on your laptop</p>
           <div className="border-l border-surface-border pl-5 space-y-4">
             <p className="text-foreground">
-              &quot;I&apos;m thinking about leaving. What does the financial picture
-              look like?&quot;
+              &quot;I&apos;m working through a big career decision.
+              What context do I have on this?&quot;
             </p>
             <div className="text-sm text-muted space-y-1">
               <p>
-                Your Financial Plan has the equity model, the vesting
-                schedule, and the tax strategy. But it also connects to{" "}
-                <span className="text-foreground">Fear of Mediocrity</span>,{" "}
-                <span className="text-foreground">Father Wound</span>, and three
-                journal entries about what &quot;wholly mine&quot; means to you.
+                Your vault has a financial plan, three journal entries
+                about what matters to you, a note on risk tolerance, and
+                a concept note about what &quot;meaningful work&quot; means &mdash;
+                all linked together.
               </p>
               <p className="text-muted/70 text-xs mt-2">
-                Claude holds all of it at once &mdash; the spreadsheet and the
-                emotional weight &mdash; because the graph connects them.
+                Claude holds the full picture &mdash; the numbers and the
+                values &mdash; because the graph connects them.
               </p>
             </div>
           </div>
@@ -199,12 +197,13 @@ function WhatItFeelsLike() {
           </p>
           <div className="border-l border-surface-border pl-5 space-y-4">
             <p className="text-foreground">
-              &quot;Plant this idea about context engineering.&quot;
+              &quot;This idea about context engineering is
+              important. Save it.&quot;
             </p>
             <div className="text-sm text-muted space-y-1">
               <p>
                 <span className="text-accent text-xs">planted</span>{" "}
-                Resources/Concepts/Context Engineering.md &mdash; validated,
+                Concepts/Context Engineering.md &mdash; validated,
                 committed, indexed. Next conversation, any device, it&apos;s there.
                 The knowledge compounds.
               </p>
@@ -231,24 +230,24 @@ function TheGraph() {
 
       <div className="bg-surface border border-surface-border p-6 sm:p-8 max-w-2xl">
         <pre className="text-xs sm:text-sm text-muted leading-relaxed code-block overflow-x-auto">
-{`Taste Graph
-├── [[Pinterest]]                  69 connections
-├── [[Bo Zhao]]
-├── [[Jure Leskovec]]
-├── [[The Parametric Convergence]] 48 connections
-│   ├── [[Machine-Readable Design Systems]]
-│   ├── [[AI Brand Systems]]
-│   └── [[Design Tokens]]
-├── [[Aesthetic]]                  84 connections
-│   └── [[Y Combinator]]
-└── [[Self-Improving Design Intelligence]]
-    └── [[Canva AI]]              59 connections`}
+{`Distributed Systems
+├── [[Event Sourcing]]             42 connections
+├── [[CQRS]]
+├── [[Martin Fowler]]
+├── [[Resilience Patterns]]        31 connections
+│   ├── [[Circuit Breakers]]
+│   ├── [[Bulkhead Isolation]]
+│   └── [[Backpressure]]
+├── [[Previous Startup]]           67 connections
+│   └── [[Post-Mortem: The Outage]]
+└── [[Current Architecture]]
+    └── [[Migration Plan]]         18 connections`}
         </pre>
       </div>
 
       <p className="text-sm text-muted mt-6 max-w-xl">
-        One concept, linked to collaborators, companies, and ideas
-        spanning a decade. Walk the connections and reconstruct how
+        One concept, linked to people, projects, and ideas
+        spanning years. Walk the connections and reconstruct how
         the thinking evolved. That&apos;s what your AI has access to.
       </p>
     </section>
