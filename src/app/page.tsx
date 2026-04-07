@@ -1,21 +1,18 @@
 const GITHUB_URL = "https://github.com/jmilinovich/grove";
 const WAITLIST_URL = "#waitlist";
 
-/* ─── Page ─── */
-
 export default function Home() {
   return (
     <div className="flex flex-col items-center">
       <Nav />
       <main className="w-full">
         <Hero />
-        <Pulse />
-        <TheShift />
-        <WhatItFeelsLike />
+        <TheLoop />
         <TheGraph />
-        <HowItGrows />
-        <Deploy />
         <Groves />
+        <Discovery />
+        <Deploy />
+        <TheKarpathyMoment />
         <BottomCTA />
       </main>
       <Footer />
@@ -50,16 +47,19 @@ function Nav() {
 
 function Hero() {
   return (
-    <section className="pt-28 pb-8 sm:pt-40 sm:pb-12 px-6 max-w-5xl mx-auto">
+    <section className="pt-28 pb-20 sm:pt-40 sm:pb-28 px-6 max-w-5xl mx-auto">
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight max-w-3xl fade-up">
-        Your AI should know
+        You talk.
         <br />
-        who you are.
+        A knowledge graph
+        <br />
+        grows around you.
       </h1>
 
       <p className="mt-8 text-lg text-muted max-w-xl leading-relaxed fade-up delay-1">
-        Not just on your laptop. On your phone. On the web. In every conversation,
-        with every client. Your knowledge, always there.
+        Grove turns your conversations into a living, connected knowledge base.
+        No filing. No organizing. Just talk to your AI &mdash; from any device &mdash;
+        and the graph builds itself.
       </p>
 
       <div className="mt-10 flex flex-wrap gap-4 fade-up delay-2">
@@ -80,137 +80,90 @@ function Hero() {
   );
 }
 
-/* ─── Pulse — the vault is alive ─── */
+/* ─── The Loop ─── */
 
-function Pulse() {
-  return (
-    <div className="px-6 max-w-5xl mx-auto pt-12 pb-20 fade-up delay-3">
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted font-mono">
-        <span>
-          <span className="text-accent">111</span> seeds
-        </span>
-        <span>
-          <span className="text-foreground">300</span> sprouts
-        </span>
-        <span>
-          <span className="text-foreground">360</span> growing
-        </span>
-        <span className="text-muted/60">
-          1,284 notes &middot; 4,528 connections
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ─── The Shift ─── */
-
-function TheShift() {
-  return (
-    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <div className="max-w-2xl space-y-6 text-muted leading-relaxed">
-        <p className="text-foreground text-xl sm:text-2xl leading-snug font-medium">
-          You open Claude on your phone and it has
-          no idea who you are.
-        </p>
-
-        <p>
-          You&apos;ve spent years building a knowledge system. Concepts connected to
-          people connected to decisions connected to journal entries. A graph
-          of everything you think about.
-        </p>
-
-        <p>
-          Then you switch devices and it&apos;s gone. Every connection, every
-          context &mdash; evaporated. You&apos;re explaining yourself from scratch
-          to an AI that knew you five minutes ago.
-        </p>
-
-        <p className="text-foreground">
-          Grove is the bridge. Connect your vault once.
-          Your AI remembers &mdash; from every surface, in every conversation.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-/* ─── What It Feels Like ─── */
-
-function WhatItFeelsLike() {
+function TheLoop() {
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-12">
-        What it feels like
+        How it works
       </p>
 
-      <div className="space-y-12 max-w-2xl">
-        {/* Conversation 1 */}
+      <div className="max-w-2xl space-y-16">
+        {/* Step 1: Talk */}
         <div>
-          <p className="text-xs text-muted mb-3">On your phone, mid-conversation</p>
-          <div className="border-l border-surface-border pl-5 space-y-4">
-            <p className="text-foreground">
-              &quot;What was that idea I was developing about how design preferences
-              spread through networks?&quot;
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-accent text-xs font-bold">01</span>
+            <span className="text-lg font-medium">You talk to your AI</span>
+          </div>
+          <div className="border-l border-surface-border pl-5 space-y-3">
+            <p className="text-sm text-muted">
+              Voice memo on your phone. A quick thought in Claude. A long
+              conversation in Cursor. It doesn&apos;t matter where.
             </p>
-            <div className="text-sm text-muted space-y-1">
-              <p>
-                <span className="text-accent text-xs">found</span>{" "}
-                Preference Propagation &mdash; a concept you&apos;ve been developing
-                since 2018. It connects to{" "}
-                <span className="text-foreground">
-                  graph theory, social dynamics, recommendation systems
-                </span>
-                , and 12 other notes in your vault.
+            <div className="bg-surface border border-surface-border p-4 text-sm">
+              <p className="text-foreground">
+                &quot;I just realized the pattern &mdash; every design system is
+                really a parametric space. The tokens are dimensions, the
+                constraints are the manifold...&quot;
               </p>
             </div>
           </div>
         </div>
 
-        {/* Conversation 2 */}
+        {/* Step 2: Harvest */}
         <div>
-          <p className="text-xs text-muted mb-3">Later, on your laptop</p>
-          <div className="border-l border-surface-border pl-5 space-y-4">
-            <p className="text-foreground">
-              &quot;I&apos;m working through a big career decision.
-              What context do I have on this?&quot;
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-accent text-xs font-bold">02</span>
+            <span className="text-lg font-medium">Grove harvests the knowledge</span>
+          </div>
+          <div className="border-l border-surface-border pl-5 space-y-3">
+            <p className="text-sm text-muted">
+              Concepts extracted. People identified. Ideas linked to existing
+              notes. Everything validated, committed to git, and indexed &mdash;
+              automatically.
             </p>
-            <div className="text-sm text-muted space-y-1">
+            <div className="bg-surface border border-surface-border p-4 text-xs text-muted font-mono space-y-1">
               <p>
-                Your vault has a financial plan, three journal entries
-                about what matters to you, a note on risk tolerance, and
-                a concept note about what &quot;meaningful work&quot; means &mdash;
-                all linked together.
+                <span className="text-accent">+</span> Concepts/Parametric Design Spaces.md{" "}
+                <span className="text-muted/50">&larr; new concept</span>
               </p>
-              <p className="text-muted/70 text-xs mt-2">
-                Claude holds the full picture &mdash; the numbers and the
-                values &mdash; because the graph connects them.
+              <p>
+                <span className="text-accent">~</span> Concepts/Design Systems.md{" "}
+                <span className="text-muted/50">&larr; linked</span>
+              </p>
+              <p>
+                <span className="text-accent">~</span> Concepts/Design Tokens.md{" "}
+                <span className="text-muted/50">&larr; linked</span>
+              </p>
+              <p>
+                <span className="text-muted/40">git commit: grove (claude-ai): harvest from conversation</span>
               </p>
             </div>
           </div>
         </div>
 
-        {/* Conversation 3 */}
+        {/* Step 3: Remember */}
         <div>
-          <p className="text-xs text-muted mb-3">
-            From any surface, any time
-          </p>
-          <div className="border-l border-surface-border pl-5 space-y-4">
-            <p className="text-foreground">
-              &quot;This idea about context engineering is
-              important. Save it.&quot;
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-accent text-xs font-bold">03</span>
+            <span className="text-lg font-medium">Every surface remembers</span>
+          </div>
+          <div className="border-l border-surface-border pl-5 space-y-3">
+            <p className="text-sm text-muted">
+              Next conversation &mdash; phone, laptop, web, any MCP client &mdash;
+              your AI already knows. The concept exists. The connections are wired.
+              You never repeat yourself.
             </p>
-            <div className="text-sm text-muted space-y-1">
-              <p>
-                <span className="text-accent text-xs">planted</span>{" "}
-                Concepts/Context Engineering.md &mdash; validated,
-                committed, indexed. Next conversation, any device, it&apos;s there.
-                The knowledge compounds.
-              </p>
-            </div>
           </div>
         </div>
       </div>
+
+      <p className="mt-16 text-sm text-muted max-w-xl">
+        The more you talk, the richer the graph gets. Not because you&apos;re
+        maintaining it &mdash; because you&apos;re living your life and the
+        knowledge accumulates behind you.
+      </p>
     </section>
   );
 }
@@ -221,76 +174,98 @@ function TheGraph() {
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
-        Not files. A graph.
+        What grows
       </p>
-      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-12">
-        Your notes aren&apos;t a folder of documents.
-        They&apos;re a web of everything you know.
+      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
+        Not a folder of notes. A graph of everything you know &mdash;
+        people, concepts, projects, decisions &mdash; all connected.
       </p>
 
-      <div className="bg-surface border border-surface-border p-6 sm:p-8 max-w-2xl">
+      <div className="bg-surface border border-surface-border p-6 sm:p-8 max-w-2xl mb-6">
         <pre className="text-xs sm:text-sm text-muted leading-relaxed code-block overflow-x-auto">
-{`Distributed Systems
-├── [[Event Sourcing]]             42 connections
-├── [[CQRS]]
-├── [[Martin Fowler]]
-├── [[Resilience Patterns]]        31 connections
-│   ├── [[Circuit Breakers]]
-│   ├── [[Bulkhead Isolation]]
-│   └── [[Backpressure]]
-├── [[Previous Startup]]           67 connections
-│   └── [[Post-Mortem: The Outage]]
-└── [[Current Architecture]]
-    └── [[Migration Plan]]         18 connections`}
+{`Your vault
+├── 847 concepts
+│   ├── Design Systems ──── 42 connections
+│   ├── Risk Tolerance ──── linked to Financial Plan
+│   ├── Resilience ───────── links therapy notes to architecture notes
+│   └── ...
+├── 156 people
+│   └── each linked to concepts, projects, conversations
+├── 94 journal entries
+│   └── harvested daily → entities extracted → graph grows
+└── 4,528 connections
+    └── the part that makes it alive`}
         </pre>
       </div>
 
-      <p className="text-sm text-muted mt-6 max-w-xl">
-        One concept, linked to people, projects, and ideas
-        spanning years. Walk the connections and reconstruct how
-        the thinking evolved. That&apos;s what your AI has access to.
+      <p className="text-sm text-muted max-w-xl">
+        A concept about resilience links your systems architecture notes to your
+        personal growth notes &mdash; because they&apos;re the same idea applied
+        in different domains. The graph sees what folders can&apos;t.
       </p>
     </section>
   );
 }
 
-/* ─── How It Grows ─── */
+/* ─── Groves ─── */
 
-function HowItGrows() {
+function Groves() {
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
-        A grove, not a database
+      <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
+        Coming soon
       </p>
-      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-12">
-        Knowledge isn&apos;t stored. It&apos;s cultivated.
+      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
+        Share a grove &mdash; a shaped window into your knowledge.
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-surface-border max-w-xl">
-        {[
-          { stage: "forage", desc: "Capture from the wild" },
-          { stage: "plant", desc: "Create structured notes" },
-          { stage: "harvest", desc: "Extract entities, wire links" },
-          { stage: "tend", desc: "Prune, repair, maintain" },
-          { stage: "grow", desc: "Ideas deepen over time" },
-          { stage: "wander", desc: "Discover surprising connections" },
-        ].map((s) => (
-          <div key={s.stage} className="bg-surface p-5">
-            <p className="text-accent text-sm font-bold">{s.stage}</p>
-            <p className="text-xs text-muted mt-1">{s.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-12 max-w-xl text-sm text-muted leading-relaxed space-y-3">
+      <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
         <p>
-          Every write is a git commit. Every note has frontmatter that&apos;s validated
-          before it touches your vault. Agents can&apos;t corrupt what you&apos;ve built.
+          A grove is a topic-scoped, permission-controlled slice of your graph.
+          Share your AI research with a colleague. Your recipes with a friend.
+          Your architecture decisions with your team.
         </p>
         <p>
-          Search runs in under 30ms &mdash; BM25 keyword matching fused with
-          vector embeddings, all self-hosted. Your data never leaves your
-          infrastructure.
+          They connect their Claude to your grove. An LLM judge filters every
+          response server-side &mdash; they see exactly what you choose to share,
+          nothing more. Your journal stays yours. Your health notes stay private.
+          The boundaries are enforced by the server, not by trust.
+        </p>
+        <p className="text-foreground">
+          Your knowledge becomes a resource other people&apos;s AIs can draw from.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Discovery ─── */
+
+function Discovery() {
+  return (
+    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+      <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
+        Coming soon
+      </p>
+      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
+        The graph grows while you sleep.
+      </p>
+
+      <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
+        <p>
+          A background loop watches for new notes, changed notes, saved bookmarks.
+          For each one: extract concepts, check if they exist, create if not,
+          wire the links, surface surprising connections.
+        </p>
+        <p>
+          You wake up and the garden has tended itself. New concepts
+          were planted overnight. Orphan notes found their neighbors. A bookmark
+          you saved last week got linked to an idea from three years ago.
+        </p>
+        <p>
+          Every autonomous action is a git commit. Every run has a blast radius
+          limit. Rollback to any point. The vault is sacred &mdash; discovery
+          is a careful gardener, not an unsupervised lawnmower.
         </p>
       </div>
     </section>
@@ -303,89 +278,103 @@ function Deploy() {
   return (
     <section id="deploy" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
-        Choose your path
-      </p>
-      <p className="text-xl max-w-lg mb-12">
-        Same API. Same tools. Same privacy. Your vault, your choice.
+        Your vault, your choice
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
-        {/* Hosted */}
-        <div className="deploy-card border border-accent/40 bg-accent-dim/10 p-6 flex flex-col gap-4">
-          <div>
-            <p className="text-xs text-accent font-bold uppercase tracking-wider mb-1">
-              Hosted
-            </p>
-            <p className="text-sm text-muted">
-              Connect your GitHub repo. We handle the rest.
-            </p>
-          </div>
+        <div className="deploy-card border border-accent/40 bg-accent-dim/10 p-6 flex flex-col gap-3">
+          <p className="text-xs text-accent font-bold uppercase tracking-wider">
+            Hosted
+          </p>
+          <p className="text-sm text-muted flex-1">
+            Connect your GitHub repo. Get an MCP endpoint. We handle search,
+            embeddings, and infrastructure.
+          </p>
           <a
             href={WAITLIST_URL}
-            className="mt-auto text-sm text-accent hover:text-green-300 transition-colors font-medium"
+            className="text-sm text-accent hover:text-green-300 transition-colors font-medium"
           >
             Get early access &rarr;
           </a>
         </div>
 
-        {/* Self-hosted */}
-        <div className="deploy-card border border-surface-border p-6 flex flex-col gap-4">
-          <div>
-            <p className="text-xs text-foreground font-bold uppercase tracking-wider mb-1">
-              Self-hosted
-            </p>
-            <p className="text-sm text-muted">
-              Your server, your data. MIT licensed, runs on any VPS.
-            </p>
-          </div>
+        <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
+          <p className="text-xs text-foreground font-bold uppercase tracking-wider">
+            Self-hosted
+          </p>
+          <p className="text-sm text-muted flex-1">
+            Your server, your data. MIT licensed. Self-hosted embeddings &mdash;
+            nothing leaves your infrastructure.
+          </p>
           <a
             href={GITHUB_URL}
-            className="mt-auto text-sm text-muted hover:text-foreground transition-colors"
+            className="text-sm text-muted hover:text-foreground transition-colors"
           >
             View on GitHub &rarr;
           </a>
         </div>
 
-        {/* Enterprise */}
-        <div className="deploy-card border border-surface-border p-6 flex flex-col gap-4">
-          <div>
-            <p className="text-xs text-foreground font-bold uppercase tracking-wider mb-1">
-              Enterprise
-            </p>
-            <p className="text-sm text-muted">
-              On-prem or private cloud. SSO, SLA, dedicated support.
-            </p>
-          </div>
+        <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
+          <p className="text-xs text-foreground font-bold uppercase tracking-wider">
+            Enterprise
+          </p>
+          <p className="text-sm text-muted flex-1">
+            On-prem or private cloud. SSO, SLA, dedicated support.
+          </p>
           <a
             href="mailto:hello@grove.md"
-            className="mt-auto text-sm text-muted hover:text-foreground transition-colors"
+            className="text-sm text-muted hover:text-foreground transition-colors"
           >
             Contact us &rarr;
           </a>
         </div>
       </div>
+
+      <p className="text-xs text-muted mt-6 max-w-xl">
+        Same API, same MCP protocol, same privacy guarantees across all deployment modes.
+        Works with Claude, ChatGPT, Cursor, and any MCP-compatible client.
+      </p>
     </section>
   );
 }
 
-/* ─── Groves ─── */
+/* ─── The Karpathy Moment ─── */
 
-function Groves() {
+function TheKarpathyMoment() {
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <div className="max-w-xl">
-        <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
-          Coming soon
-        </p>
-        <p className="text-xl font-medium mb-4">
-          Share a grove.
-        </p>
-        <p className="text-sm text-muted leading-relaxed">
-          A grove is a scoped window into your knowledge. Share your AI research
-          with a colleague. Your recipes with a friend. Topic-controlled,
-          permission-gated, filtered server-side. They connect their Claude to your
-          grove and get exactly what you choose to share &mdash; nothing more.
-        </p>
+      <div className="max-w-2xl">
+        <blockquote className="border-l-2 border-muted pl-5 text-muted leading-relaxed">
+          <p className="text-lg">
+            &quot;I think there is room here for an incredible new product
+            instead of a hacky collection of scripts.&quot;
+          </p>
+          <footer className="mt-3 text-sm">
+            &mdash; Andrej Karpathy, April 2026
+          </footer>
+        </blockquote>
+
+        <div className="mt-8 text-sm text-muted leading-relaxed space-y-3">
+          <p>
+            Karpathy described a workflow where LLMs compile raw documents into
+            structured wikis. That works for research collections.
+          </p>
+          <p>
+            But most people don&apos;t start with a pile of papers. They start with
+            years of notes, journal entries, and ideas scattered across conversations.
+            They need something that meets them where they are &mdash; not a compiler,
+            but a living system that grows with them.
+          </p>
+          <p className="text-foreground">
+            24 Obsidian MCP servers tried to bridge this gap. All local-only.
+            All read-only. All treat your vault as flat files.
+          </p>
+          <p>
+            Grove is remote, bidirectional, and graph-aware. It doesn&apos;t just
+            search your notes &mdash; it understands how they connect, writes back
+            with validation, and works from every device you own.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -401,10 +390,10 @@ function BottomCTA() {
     >
       <div className="max-w-xl">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Stop starting from zero.
+          Stop explaining yourself from scratch.
         </h2>
         <p className="mt-3 text-muted">
-          Your AI should know who you are. Give it a grove.
+          You talk. The graph grows. Every conversation makes the next one better.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-4">
@@ -423,7 +412,7 @@ function BottomCTA() {
         </div>
 
         <p className="mt-6 text-xs text-muted">
-          Open source &middot; MIT licensed &middot; Works with Claude, ChatGPT, Cursor, any MCP client
+          Open source &middot; MIT licensed &middot; Privacy-first &middot; Git-native
         </p>
       </div>
     </section>
