@@ -7,12 +7,13 @@ export default function Home() {
       <Nav />
       <main className="w-full">
         <Hero />
-        <TheLoop />
-        <TheGraph />
+        <TheProblem />
+        <HowItWorks />
+        <WhatGrows />
         <Groves />
         <Discovery />
         <Deploy />
-        <TheKarpathyMoment />
+        <WhyNow />
         <BottomCTA />
       </main>
       <Footer />
@@ -78,9 +79,41 @@ function Hero() {
   );
 }
 
-/* ─── The Loop ─── */
+/* ─── The Problem ─── */
 
-function TheLoop() {
+function TheProblem() {
+  return (
+    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+      <div className="max-w-2xl space-y-6">
+        <p className="text-muted text-xs tracking-[0.2em] uppercase mb-2">The problem</p>
+
+        <p className="text-xl sm:text-2xl leading-snug font-medium">
+          Your notes live in one world. Your AI lives in another.
+        </p>
+
+        <p className="text-muted leading-relaxed">
+          You have an Obsidian vault, a folder of markdown, years of journal entries.
+          Ideas, people, projects &mdash; all written down, some of it connected.
+          That&apos;s one world.
+        </p>
+
+        <p className="text-muted leading-relaxed">
+          Then you open Claude on your phone. Or ChatGPT on the web. Or Cursor
+          in your editor. It has no idea what you&apos;ve been thinking about. Every
+          conversation starts from zero. That&apos;s the other world.
+        </p>
+
+        <p className="text-foreground leading-relaxed">
+          They should be the same world.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── How It Works ─── */
+
+function HowItWorks() {
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-12">
@@ -88,119 +121,137 @@ function TheLoop() {
       </p>
 
       <div className="max-w-2xl space-y-16">
-        {/* Step 1: Talk */}
+        {/* Connect */}
         <div>
           <div className="flex items-center gap-3 mb-4">
             <span className="text-accent text-xs font-bold">01</span>
-            <span className="text-lg font-medium">You talk to your AI</span>
+            <span className="text-lg font-medium">Connect your vault</span>
           </div>
-          <div className="border-l border-surface-border pl-5 space-y-3">
-            <p className="text-sm text-muted">
-              Voice memo on your phone. A quick thought in Claude. A long
-              conversation in Cursor. It doesn&apos;t matter where.
+          <div className="border-l border-surface-border pl-5">
+            <p className="text-sm text-muted leading-relaxed">
+              Point Grove at your Obsidian vault, markdown folder, or git repo.
+              It indexes everything &mdash; your notes, your frontmatter, your
+              wikilinks &mdash; and gives you an MCP endpoint. Add that URL to
+              Claude, ChatGPT, Cursor, or any MCP client.
             </p>
-            <div className="bg-surface border border-surface-border p-4 text-sm">
-              <p className="text-foreground">
-                &quot;I just realized the pattern &mdash; every design system is
-                really a parametric space. The tokens are dimensions, the
-                constraints are the manifold...&quot;
-              </p>
-            </div>
           </div>
         </div>
 
-        {/* Step 2: Harvest */}
+        {/* Read */}
         <div>
           <div className="flex items-center gap-3 mb-4">
             <span className="text-accent text-xs font-bold">02</span>
-            <span className="text-lg font-medium">Grove harvests the knowledge</span>
+            <span className="text-lg font-medium">Your AI reads your notes</span>
           </div>
-          <div className="border-l border-surface-border pl-5 space-y-3">
-            <p className="text-sm text-muted">
-              Concepts extracted. People identified. Ideas linked to existing
-              notes. Everything validated, committed to git, and indexed &mdash;
-              automatically.
+          <div className="border-l border-surface-border pl-5 space-y-4">
+            <p className="text-sm text-muted leading-relaxed">
+              Ask a question and your AI searches your vault &mdash; keyword
+              and semantic search fused together in under 30ms. It finds
+              the right notes, follows the links between them, and answers
+              with your own context.
             </p>
-            <div className="bg-surface border border-surface-border p-4 text-xs text-muted font-mono space-y-1">
-              <p>
-                <span className="text-accent">+</span> Concepts/Parametric Design Spaces.md{" "}
-                <span className="text-muted/50">&larr; new concept</span>
+            <div className="bg-surface border border-surface-border p-4 text-sm">
+              <p className="text-foreground">
+                &quot;What do I know about design systems?&quot;
               </p>
-              <p>
-                <span className="text-accent">~</span> Concepts/Design Systems.md{" "}
-                <span className="text-muted/50">&larr; linked</span>
-              </p>
-              <p>
-                <span className="text-accent">~</span> Concepts/Design Tokens.md{" "}
-                <span className="text-muted/50">&larr; linked</span>
-              </p>
-              <p>
-                <span className="text-muted/40">git commit: grove (claude-ai): harvest from conversation</span>
+              <p className="text-muted mt-2 text-xs">
+                <span className="text-accent">found</span>{" "}
+                3 concept notes, 2 journal entries, linked to 14 other
+                ideas in your vault &mdash; 23ms
               </p>
             </div>
           </div>
         </div>
 
-        {/* Step 3: Remember */}
+        {/* Write back */}
         <div>
           <div className="flex items-center gap-3 mb-4">
             <span className="text-accent text-xs font-bold">03</span>
-            <span className="text-lg font-medium">Every surface remembers</span>
+            <span className="text-lg font-medium">Your AI writes back</span>
           </div>
-          <div className="border-l border-surface-border pl-5 space-y-3">
-            <p className="text-sm text-muted">
-              Next conversation &mdash; phone, laptop, web, any MCP client &mdash;
-              your AI already knows. The concept exists. The connections are wired.
-              You never repeat yourself.
+          <div className="border-l border-surface-border pl-5 space-y-4">
+            <p className="text-sm text-muted leading-relaxed">
+              When you discover something new in a conversation, your AI can
+              save it directly to your vault. New concepts, updated notes,
+              extracted entities. Every write is validated against your vault&apos;s
+              structure and committed to git.
+            </p>
+            <div className="bg-surface border border-surface-border p-4 text-xs text-muted font-mono space-y-1">
+              <p>
+                <span className="text-accent">+</span> Concepts/Context Engineering.md
+              </p>
+              <p>
+                <span className="text-accent">~</span> Concepts/Design Systems.md{" "}
+                <span className="text-muted/50">&larr; new link added</span>
+              </p>
+              <p className="text-muted/40">
+                git commit: grove (claude-ai): create Context Engineering
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Compound */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-accent text-xs font-bold">04</span>
+            <span className="text-lg font-medium">Knowledge compounds</span>
+          </div>
+          <div className="border-l border-surface-border pl-5">
+            <p className="text-sm text-muted leading-relaxed">
+              Next conversation &mdash; any device, any client &mdash; your AI
+              already knows. The note exists. The links are wired. You never
+              explain the same thing twice. The more you use it, the more
+              it knows.
             </p>
           </div>
         </div>
       </div>
-
-      <p className="mt-16 text-sm text-muted max-w-xl">
-        The more you talk, the richer the graph gets. Not because you&apos;re
-        maintaining it &mdash; because you&apos;re living your life and the
-        knowledge accumulates behind you.
-      </p>
     </section>
   );
 }
 
-/* ─── The Graph ─── */
+/* ─── What Grows ─── */
 
-function TheGraph() {
+function WhatGrows() {
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
         What grows
       </p>
       <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
-        Not a folder of notes. A graph of everything you know &mdash;
-        people, concepts, projects, decisions &mdash; all connected.
+        Not a folder of files. A graph of connected ideas.
       </p>
 
       <div className="bg-surface border border-surface-border p-6 sm:p-8 max-w-2xl mb-6">
         <pre className="text-xs sm:text-sm text-muted leading-relaxed code-block overflow-x-auto">
 {`Your vault
-├── 847 concepts
-│   ├── Design Systems ──── 42 connections
-│   ├── Risk Tolerance ──── linked to Financial Plan
-│   ├── Resilience ───────── links therapy notes to architecture notes
-│   └── ...
-├── 156 people
+├── concepts
+│   ├── Design Systems ──── linked to 42 other notes
+│   ├── Risk Tolerance ──── linked to Financial Plan, journal entries
+│   └── Resilience ───────── bridges architecture and personal notes
+├── people
 │   └── each linked to concepts, projects, conversations
-├── 94 journal entries
-│   └── harvested daily → entities extracted → graph grows
-└── 4,528 connections
-    └── the part that makes it alive`}
-        </pre>
+├── journal entries
+│   └── entities extracted, wikilinks wired automatically
+└── 4,500+ connections
+    └── the graph sees what folders can't`}</pre>
       </div>
 
-      <p className="text-sm text-muted max-w-xl">
-        A concept about resilience links your systems architecture notes to your
-        personal growth notes &mdash; because they&apos;re the same idea applied
-        in different domains. The graph sees what folders can&apos;t.
-      </p>
+      <div className="max-w-xl space-y-3 text-sm text-muted leading-relaxed">
+        <p>
+          Your notes aren&apos;t isolated files. They&apos;re nodes in a graph.
+          A concept about resilience might link your engineering notes to your
+          personal journal &mdash; because the same idea shows up in both places.
+          Your AI can follow those connections.
+        </p>
+        <p>
+          Every note has structured frontmatter. Every link is a real relationship.
+          Grove understands your vault&apos;s conventions &mdash; types, tags, folder
+          structure &mdash; and enforces them on every write. Agents can&apos;t
+          corrupt what you&apos;ve built.
+        </p>
+      </div>
     </section>
   );
 }
@@ -214,23 +265,20 @@ function Groves() {
         Coming soon
       </p>
       <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
-        Share a grove &mdash; a shaped window into your knowledge.
+        Share a grove &mdash; a window into your knowledge.
       </p>
 
       <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
         <p>
-          A grove is a topic-scoped, permission-controlled slice of your graph.
-          Share your AI research with a colleague. Your recipes with a friend.
+          A grove is a topic-scoped slice of your vault with permission controls.
+          Share your research notes with a colleague. Your recipes with a friend.
           Your architecture decisions with your team.
         </p>
         <p>
-          They connect their Claude to your grove. An LLM judge filters every
-          response server-side &mdash; they see exactly what you choose to share,
-          nothing more. Your journal stays yours. Your health notes stay private.
-          The boundaries are enforced by the server, not by trust.
-        </p>
-        <p className="text-foreground">
-          Your knowledge becomes a resource other people&apos;s AIs can draw from.
+          They connect their AI to your grove. An LLM judge filters every response
+          server-side &mdash; they see exactly what you choose to share, nothing more.
+          Your private notes stay private. The boundaries are enforced by the server,
+          not by trust.
         </p>
       </div>
     </section>
@@ -251,19 +299,19 @@ function Discovery() {
 
       <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
         <p>
-          A background loop watches for new notes, changed notes, saved bookmarks.
-          For each one: extract concepts, check if they exist, create if not,
-          wire the links, surface surprising connections.
+          A background loop watches for new and changed notes. It extracts
+          concepts, identifies people, wires links between related ideas,
+          and surfaces surprising connections &mdash; all automatically.
         </p>
         <p>
-          You wake up and the garden has tended itself. New concepts
-          were planted overnight. Orphan notes found their neighbors. A bookmark
-          you saved last week got linked to an idea from three years ago.
+          Save a bookmark. Write a journal entry. Drop a file in your vault.
+          By the next morning, it&apos;s been integrated into the graph, linked
+          to what&apos;s already there, ready for your AI to use.
         </p>
         <p>
-          Every autonomous action is a git commit. Every run has a blast radius
-          limit. Rollback to any point. The vault is sacred &mdash; discovery
-          is a careful gardener, not an unsupervised lawnmower.
+          Every autonomous action is a git commit with a blast radius limit.
+          Rollback to any point. The vault is sacred &mdash; discovery is a
+          careful gardener, not an unsupervised lawnmower.
         </p>
       </div>
     </section>
@@ -329,16 +377,16 @@ function Deploy() {
       </div>
 
       <p className="text-xs text-muted mt-6 max-w-xl">
-        Same API, same MCP protocol, same privacy guarantees across all deployment modes.
-        Works with Claude, ChatGPT, Cursor, and any MCP-compatible client.
+        Same API, same MCP protocol across all modes.
+        Works with Claude, ChatGPT, Cursor, and any MCP client.
       </p>
     </section>
   );
 }
 
-/* ─── The Karpathy Moment ─── */
+/* ─── Why Now ─── */
 
-function TheKarpathyMoment() {
+function WhyNow() {
   return (
     <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <div className="max-w-2xl">
@@ -355,20 +403,17 @@ function TheKarpathyMoment() {
         <div className="mt-8 text-sm text-muted leading-relaxed space-y-3">
           <p>
             Karpathy described a workflow where LLMs compile raw documents into
-            structured wikis. That works for research collections.
+            structured wikis. That works for research collections. But most people
+            don&apos;t start with a pile of papers &mdash; they start with notes
+            they&apos;ve already been taking.
           </p>
           <p>
-            But most people don&apos;t start with a pile of papers. They start with
-            years of notes, journal entries, and ideas scattered across conversations.
-            They need something that meets them where they are &mdash; not a compiler,
-            but a living system that grows with them.
+            There are 24 Obsidian MCP servers on the registry. Every one is
+            local-only, read-only, and treats your vault as a bag of text files.
+            They work from your laptop. Open Claude on your phone &mdash; nothing.
           </p>
           <p className="text-foreground">
-            24 Obsidian MCP servers tried to bridge this gap. All local-only.
-            All read-only. All treat your vault as flat files.
-          </p>
-          <p>
-            Grove is remote, bidirectional, and graph-aware. It doesn&apos;t just
+            Grove is remote, bidirectional, and vault-aware. It doesn&apos;t just
             search your notes &mdash; it understands how they connect, writes back
             with validation, and works from every device you own.
           </p>
@@ -388,10 +433,10 @@ function BottomCTA() {
     >
       <div className="max-w-xl">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Stop explaining yourself from scratch.
+          Your AI should know what you know.
         </h2>
         <p className="mt-3 text-muted">
-          You talk. The graph grows. Every conversation makes the next one better.
+          Connect your notes. Every conversation gets better.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-4">
