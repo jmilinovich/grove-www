@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #e0e0e0;
+  --background: #08090a;
+  --foreground: #d4d4d4;
   --accent: #4ade80;
-  --accent-dim: #22633a;
-  --surface: #141414;
-  --surface-border: #1e1e1e;
-  --muted: #666;
+  --accent-dim: #1a3a28;
+  --amber: #f5a623;
+  --amber-dim: #3a2a10;
+  --surface: #111214;
+  --surface-border: #1c1d20;
+  --surface-hover: #1a1b1e;
+  --muted: #5a5a5a;
+  --muted-light: #888;
 }
 
 @theme inline {
@@ -15,10 +19,13 @@
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
   --color-accent-dim: var(--accent-dim);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
   --color-surface: var(--surface);
   --color-surface-border: var(--surface-border);
+  --color-surface-hover: var(--surface-hover);
   --color-muted: var(--muted);
-  --font-sans: var(--font-geist-sans);
+  --color-muted-light: var(--muted-light);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -32,8 +39,54 @@ body {
   color: var(--background);
 }
 
-/* ASCII diagram styling */
-.ascii-diagram {
-  line-height: 1.35;
-  letter-spacing: 0.02em;
+/* Cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Fade in on scroll */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  opacity: 0;
+  animation: fadeUp 0.5s ease-out forwards;
+}
+
+/* Staggered delays */
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+
+/* Deployment card hover */
+.deploy-card {
+  transition: border-color 0.2s, background 0.2s;
+}
+.deploy-card:hover {
+  border-color: var(--muted);
+  background: var(--surface-hover);
+}
+
+/* Subtle noise texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Code block styling */
+.code-block {
+  line-height: 1.5;
+  letter-spacing: 0.01em;
 }

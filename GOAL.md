@@ -86,19 +86,43 @@
 - **An invitation, not a sales pitch.** "Here's how I use it. Here's how you can too. The code is right here."
 - **Fast, dark, typographic.** Monospace. No images. No illustrations. No stock photos. The content IS the design. Think: a well-formatted man page that you actually want to read.
 
+### Positioning: Hosted-First, Self-Host as Option
+
+**The primary path is hosted.** Most people don't want to run a VPS. They want the experience — "my AI knows who I am from every surface" — without the infrastructure. The hosted version is the default. Self-hosted is for people who need full control.
+
+Like mem0.ai's "Choose Your Deployment Mode" — present both as equal, legitimate choices. Not "hosted for beginners, self-hosted for real users." Both are real. Both are first-class.
+
+```
+Choose how you run Grove:
+
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│   Hosted        │  │   Self-Hosted   │  │   Enterprise    │
+│                 │  │                 │  │                 │
+│  Connect your   │  │  Your server,   │  │  On-prem,       │
+│  GitHub repo.   │  │  your data.     │  │  SOC 2, HIPAA.  │
+│  We handle      │  │  Full control,  │  │  Dedicated      │
+│  the rest.      │  │  MIT licensed.  │  │  support.       │
+│                 │  │                 │  │                 │
+│  [Get started]  │  │  [GitHub →]     │  │  [Contact us]   │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+
+Same API. Same tools. Same privacy guarantees.
+Your vault never leaves your infrastructure — hosted or self-hosted.
+```
+
 ### Key Sections (in order of scroll):
 
-1. **Hook** — "your knowledge, everywhere your AI is." + the phone problem in one sentence
-2. **The Demo** — Not an architecture diagram. A real interaction. Show Claude on a phone finding something from the vault. Show a write-back creating a note. Show the git log entry. Make it feel *alive*.
-3. **The Story** — Why this exists. Personal, specific, not corporate. The README's "How I got here" section, tightened.
-4. **The Architecture** — For the power users who want to understand before they trust. Clean diagram, honest about the stack.
-5. **The 6 Tools** — Quick, scannable. Each tool with a one-line example, not just a description.
-6. **The Comparison** — "24 Obsidian MCP servers. All local-only." Table that makes the case without being snarky.
-7. **Get Started** — Two paths:
-   - **Self-host:** `git clone && docker compose up` (power users)
-   - **Hosted:** "Coming soon — connect your GitHub repo" (builders) with email capture
-8. **Groves Preview** — Tease Phase 2. "Share a slice of your knowledge. Coming soon."
-9. **Footer** — GitHub, MIT, minimal
+1. **Hook** — "your knowledge, everywhere your AI is." + the phone problem in one sentence. Primary CTA: "Get started" (hosted). Secondary: "Self-host →"
+2. **The Demo** — A real interaction. Show Claude on a phone finding something from the vault. Show a write-back. Show the git commit. Make it feel alive.
+3. **The Story** — Why this exists. Personal, first-person. Tightened from the README.
+4. **How It Works** — Three steps: Connect your vault → Your AI remembers → Knowledge compounds. Simple, not architecture-diagram-first.
+5. **The 6 Tools** — Quick, scannable. Each with a real example query/response, not just description.
+6. **Choose Your Deployment** — The mem0-style three-option selector. Hosted / Self-Hosted / Enterprise. Same API, same behavior. No tradeoffs.
+7. **Privacy & Security** — Self-hosted embeddings. Git-backed. Every write is a commit. Your data never leaves. This matters for all three deployment modes.
+8. **The Comparison** — "24 Obsidian MCP servers. All local-only." Quick table.
+9. **Groves Preview** — "Share a slice of your knowledge. Coming soon." Tease Phase 2.
+10. **Bottom CTA** — "Stop starting from zero." Email capture for hosted waitlist + GitHub link.
+11. **Footer** — Minimal
 
 ### The Voice:
 - First person where it matters ("I built this because...")
