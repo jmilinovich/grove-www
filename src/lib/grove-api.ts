@@ -3,7 +3,15 @@
  * Used by server components during SSR.
  */
 
+import { createHash } from "node:crypto";
+
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
+
+/** Short hash of the API key, used as a cache-busting query param so
+ *  different users get independent Next.js fetch cache entries. */
+function cacheKey(apiKey: string): string {
+  return createHash("sha256").update(apiKey).digest("hex").slice(0, 8);
+}
 
 export class AuthError extends Error {
   constructor() { super("unauthorized"); this.name = "AuthError"; }
@@ -35,9 +43,10 @@ export async function fetchNote(
   path: string,
   apiKey: string,
 ): Promise<NoteResponse | null> {
-  const res = await fetch(`${API_URL}/v1/notes/${encodeURIComponent(path)}`, {
+  const ck = cacheKey(apiKey);
+  const res = await fetch(`${API_URL}/v1/notes/${encodeURIComponent(path)}?_ck=${ck}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
-    cache: "no-store",
+    next: { revalidate: 300 },
   });
   if (res.status === 404) return null;
   if (res.status === 401) throw new AuthError();
@@ -57,10 +66,11 @@ export async function listNotes(
   prefix: string,
   apiKey: string,
 ): Promise<ListEntry[]> {
-  const params = new URLSearchParams({ prefix });
+  const ck = cacheKey(apiKey);
+  const params = new URLSearchParams({ prefix, _ck: ck });
   const res = await fetch(`${API_URL}/v1/list?${params}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
-    cache: "no-store",
+    next: { revalidate: 300 },
   });
   if (res.status === 401) throw new AuthError();
   if (!res.ok) throw new Error(`Grove API error: ${res.status}`);
@@ -73,9 +83,11 @@ export async function searchNotes(
   apiKey: string,
   limit = 10,
 ): Promise<SearchResult[]> {
-  const params = new URLSearchParams({ q: query, limit: String(limit) });
+  const ck = cacheKey(apiKey);
+  const params = new URLSearchParams({ q: query, limit: String(limit), _ck: ck });
   const res = await fetch(`${API_URL}/v1/search?${params}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
+    next: { revalidate: 300 },
   });
   if (!res.ok) throw new Error(`Grove API error: ${res.status}`);
   const data = await res.json();
