@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import CommandPalette from "@/components/command-palette";
+import LastVisited from "@/components/last-visited";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistMono.variable} ${inter.variable} antialiased`}>
       <body className="min-h-screen bg-background text-foreground font-mono">
         <CommandPalette />
+        <LastVisited />
         {children}
       </body>
     </html>
