@@ -159,7 +159,6 @@ body::before {
 
 .wikilink-unresolved {
   color: var(--muted);
-  border-bottom: 1px dotted #b44;
   cursor: default;
 }
 
