@@ -40,6 +40,28 @@ export async function fetchNote(
   return res.json();
 }
 
+export interface ListEntry {
+  path: string;
+  name: string;
+  type: string | null;
+  tags: string[];
+  modified_at: string;
+}
+
+export async function listNotes(
+  prefix: string,
+  apiKey: string,
+): Promise<ListEntry[]> {
+  const params = new URLSearchParams({ prefix });
+  const res = await fetch(`${API_URL}/v1/list?${params}`, {
+    headers: { Authorization: `Bearer ${apiKey}` },
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) throw new Error(`Grove API error: ${res.status}`);
+  const data = await res.json();
+  return data.entries;
+}
+
 export async function searchNotes(
   query: string,
   apiKey: string,
