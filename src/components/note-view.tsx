@@ -4,6 +4,7 @@
 
 import type { NoteResponse } from "@/lib/grove-api";
 import { renderMarkdown } from "@/lib/markdown";
+import MermaidHydrator from "./mermaid-hydrator";
 
 function formatJournalDate(path: string): string {
   // Journal paths: Journal/YYYY/YYYY-MM-DD.md
@@ -58,6 +59,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
         className="prose prose-invert"
         dangerouslySetInnerHTML={{ __html: html }}
       />
+      <MermaidHydrator />
     </article>
   );
 }
