@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
-import { fetchNote, listNotes, type ListEntry } from "@/lib/grove-api";
+import { fetchNote, listNotes, AuthError, type ListEntry } from "@/lib/grove-api";
 import NoteView from "@/components/note-view";
 import MetadataBar from "@/components/metadata-bar";
 import Breadcrumbs from "@/components/breadcrumbs";
@@ -151,8 +151,23 @@ export default async function NotePage({ params }: PageProps) {
     notFound();
   }
 
-  // Try fetching as a note first
-  const note = await fetchNote(vaultPath, apiKey);
+  let note;
+  let entries: ListEntry[] = [];
+
+  try {
+    // Try fetching as a note first
+    note = await fetchNote(vaultPath, apiKey);
+
+    if (!note) {
+      // Not a note — try as a directory listing
+      entries = await listNotes(vaultPath, apiKey);
+    }
+  } catch (err) {
+    if (err instanceof AuthError) {
+      redirect(`/login?redirect=${encodeURIComponent("/" + vaultPath)}`);
+    }
+    throw err;
+  }
 
   if (note) {
     return (
@@ -165,9 +180,6 @@ export default async function NotePage({ params }: PageProps) {
       </div>
     );
   }
-
-  // Not a note — try as a directory listing
-  const entries = await listNotes(vaultPath, apiKey);
 
   if (entries.length === 0) {
     notFound();
