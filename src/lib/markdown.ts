@@ -152,6 +152,21 @@ function visitText(
 }
 
 // ---------------------------------------------------------------------------
+// Remark plugin: strip Dataview queries
+// ---------------------------------------------------------------------------
+
+function remarkStripDataview(): Plugin<[], MdastRoot> {
+  return () => {
+    return (tree: MdastRoot) => {
+      tree.children = tree.children.filter((node) => {
+        if (node.type !== "code") return true;
+        const lang = (node as { lang?: string }).lang ?? "";
+        return !["dataview", "dataviewjs"].includes(lang.toLowerCase());
+      });
+    };
+  };
+}
+
 // Remark plugin: Obsidian callouts
 // ---------------------------------------------------------------------------
 
@@ -376,6 +391,7 @@ export async function renderMarkdown(
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkWikilinks(links))
+    .use(remarkStripDataview())
     .use(remarkCallouts())
     .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })
