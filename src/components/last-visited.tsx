@@ -20,17 +20,23 @@ export default function LastVisited() {
 
     // On "/": try to redirect if logged in
     if (pathname === "/") {
-      const lastPath = localStorage.getItem("grove_last_path");
-      if (lastPath) {
-        router.replace(lastPath);
-        return;
-      }
-
-      // No last path — fetch a random note to land on
-      fetch("/api/search?q=concept&limit=20")
-        .then((r) => (r.ok ? r.json() : null))
+      // Always try the search first to confirm we're actually logged in
+      fetch("/api/search?q=*&limit=30")
+        .then((r) => {
+          if (!r.ok) return null;
+          return r.json();
+        })
         .then((data) => {
           if (!data?.results?.length) return;
+
+          // Check for a saved last path
+          const lastPath = localStorage.getItem("grove_last_path");
+          if (lastPath) {
+            router.replace(lastPath);
+            return;
+          }
+
+          // No last path — pick a random note
           const results = data.results;
           const pick = results[Math.floor(Math.random() * results.length)];
           const href = "/" + pick.path.replace(/\.md$/, "");
