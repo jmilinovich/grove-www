@@ -10,16 +10,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "API key is required" }, { status: 400 });
     }
 
-    // Validate the key against the Grove API
-    const res = await fetch(`${API_URL}/health`, {
-      headers: { Authorization: `Bearer ${api_key}` },
+    // Validate the key by hitting an authenticated endpoint
+    const cleanKey = api_key.trim().replace(/\s+/g, "");
+    const res = await fetch(`${API_URL}/v1/list?prefix=Resources&limit=1`, {
+      headers: { Authorization: `Bearer ${cleanKey}` },
     });
 
-    if (!res.ok) {
+    if (res.status === 401) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
+    if (!res.ok) {
+      return NextResponse.json({ error: "Could not validate key" }, { status: 502 });
+    }
 
-    const encrypted = encryptKey(api_key);
+    const encrypted = encryptKey(cleanKey);
     const response = NextResponse.json({ ok: true });
     response.cookies.set("grove_token", encrypted, {
       httpOnly: true,
