@@ -5,7 +5,7 @@ const PUBLIC_PATHS = ["/", "/login", "/api/auth"];
 const PUBLIC_PREFIXES = ["/_next/", "/api/"];
 const PUBLIC_FILES = ["/favicon.ico", "/robots.txt", "/sitemap.xml"];
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public exact paths
