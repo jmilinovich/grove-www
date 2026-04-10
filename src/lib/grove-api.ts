@@ -37,7 +37,7 @@ export async function fetchNote(
 ): Promise<NoteResponse | null> {
   const res = await fetch(`${API_URL}/v1/notes/${encodeURIComponent(path)}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
-    next: { revalidate: 300 }, // 5 min cache
+    cache: "no-store",
   });
   if (res.status === 404) return null;
   if (res.status === 401) throw new AuthError();
@@ -60,7 +60,7 @@ export async function listNotes(
   const params = new URLSearchParams({ prefix });
   const res = await fetch(`${API_URL}/v1/list?${params}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
-    next: { revalidate: 300 },
+    cache: "no-store",
   });
   if (res.status === 401) throw new AuthError();
   if (!res.ok) throw new Error(`Grove API error: ${res.status}`);
