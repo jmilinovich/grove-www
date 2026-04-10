@@ -12,15 +12,20 @@ export default function LastVisited() {
   const router = useRouter();
 
   useEffect(() => {
-    // On note pages: save the path
+    // On note pages: only save if the page actually rendered content
+    // (check for note-content class which only exists on successful renders)
     if (pathname !== "/" && pathname !== "/login" && !pathname.startsWith("/api/")) {
-      localStorage.setItem("grove_last_path", pathname);
+      requestAnimationFrame(() => {
+        if (document.querySelector(".note-content")) {
+          localStorage.setItem("grove_last_path", pathname);
+        }
+      });
       return;
     }
 
     // On "/": try to redirect if logged in
     if (pathname === "/") {
-      // Always try the search first to confirm we're actually logged in
+      // Verify auth by hitting search, then redirect
       fetch("/api/search?q=*&limit=30")
         .then((r) => {
           if (!r.ok) return null;
@@ -29,14 +34,25 @@ export default function LastVisited() {
         .then((data) => {
           if (!data?.results?.length) return;
 
-          // Check for a saved last path
+          // Check for a saved last path — verify it's in the search results
           const lastPath = localStorage.getItem("grove_last_path");
           if (lastPath) {
-            router.replace(lastPath);
-            return;
+            // Validate the saved path still exists
+            const lastPathClean = lastPath.replace(/^\//, "");
+            const exists = data.results.some(
+              (r: { path: string }) =>
+                r.path.replace(/\.md$/, "") === lastPathClean ||
+                r.path === lastPathClean,
+            );
+            if (exists) {
+              router.replace(lastPath);
+              return;
+            }
+            // Stale path — clear it
+            localStorage.removeItem("grove_last_path");
           }
 
-          // No last path — pick a random note
+          // Pick a random note from results
           const results = data.results;
           const pick = results[Math.floor(Math.random() * results.length)];
           const href = "/" + pick.path.replace(/\.md$/, "");
