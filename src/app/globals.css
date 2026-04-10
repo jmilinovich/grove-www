@@ -27,6 +27,7 @@
   --color-muted: var(--muted);
   --color-muted-light: var(--muted-light);
   --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
 }
 
 body {
@@ -89,4 +90,138 @@ body::before {
 .code-block {
   line-height: 1.5;
   letter-spacing: 0.01em;
+}
+
+/* ---------------------------------------------------------------------------
+   Note viewer styles
+   --------------------------------------------------------------------------- */
+
+/* KaTeX CSS */
+@import "katex/dist/katex.min.css";
+
+/* Prose overrides for dark theme */
+.note-content .prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: #e5e5e5;
+  --tw-prose-links: var(--accent);
+  --tw-prose-bold: #e5e5e5;
+  --tw-prose-code: #e5e5e5;
+  --tw-prose-pre-bg: var(--surface);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-quotes: var(--muted-light);
+  --tw-prose-quote-borders: var(--surface-border);
+  --tw-prose-hr: var(--surface-border);
+  --tw-prose-th-borders: var(--surface-border);
+  --tw-prose-td-borders: var(--surface-border);
+  max-width: none;
+}
+
+.note-content .prose a:not(.wikilink):not(.wikilink-unresolved) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.note-content .prose img {
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+}
+
+/* Shiki code blocks inside prose */
+.note-content .prose pre {
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+.note-content .prose :not(pre) > code {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 4px;
+  padding: 0.15em 0.35em;
+  font-size: 0.85em;
+}
+
+/* Wikilinks */
+.wikilink {
+  color: var(--foreground);
+  text-decoration: none;
+  border-bottom: 1px solid var(--surface-border);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.wikilink:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.wikilink-unresolved {
+  color: var(--muted);
+  border-bottom: 1px dotted #b44;
+  cursor: default;
+}
+
+/* Callouts */
+.callout {
+  border-left: 3px solid var(--surface-border);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.callout-title {
+  font-weight: 600;
+  font-size: 0.9em;
+  margin-bottom: 0.5rem;
+}
+
+.callout-note {
+  border-left-color: #3b82f6;
+}
+.callout-note .callout-title { color: #60a5fa; }
+
+.callout-warning {
+  border-left-color: #f59e0b;
+}
+.callout-warning .callout-title { color: #fbbf24; }
+
+.callout-tip {
+  border-left-color: #22c55e;
+}
+.callout-tip .callout-title { color: #4ade80; }
+
+.callout-danger {
+  border-left-color: #ef4444;
+}
+.callout-danger .callout-title { color: #f87171; }
+
+.callout-info {
+  border-left-color: #06b6d4;
+}
+.callout-info .callout-title { color: #22d3ee; }
+
+.callout-quote {
+  border-left-color: #6b7280;
+}
+.callout-quote .callout-title { color: #9ca3af; }
+
+/* Mermaid placeholder skeleton */
+.mermaid-placeholder {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* Task list checkboxes in prose */
+.note-content .prose input[type="checkbox"] {
+  accent-color: var(--accent);
+  margin-right: 0.5em;
 }
