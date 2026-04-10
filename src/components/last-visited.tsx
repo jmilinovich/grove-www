@@ -13,7 +13,6 @@ export default function LastVisited() {
 
   useEffect(() => {
     // On note pages: only save if the page actually rendered content
-    // (check for note-content class which only exists on successful renders)
     if (pathname !== "/" && pathname !== "/login" && !pathname.startsWith("/api/")) {
       requestAnimationFrame(() => {
         if (document.querySelector(".note-content")) {
@@ -23,44 +22,17 @@ export default function LastVisited() {
       return;
     }
 
-    // On "/": try to redirect if logged in
+    // On "/": redirect if logged in
     if (pathname === "/") {
-      // Verify auth by hitting search, then redirect
-      fetch("/api/search?q=*&limit=30")
-        .then((r) => {
-          if (!r.ok) return null;
-          return r.json();
-        })
-        .then((data) => {
-          if (!data?.results?.length) return;
+      const lastPath = localStorage.getItem("grove_last_path");
+      if (lastPath) {
+        router.replace(lastPath);
+        return;
+      }
 
-          // Check for a saved last path — verify it's in the search results
-          const lastPath = localStorage.getItem("grove_last_path");
-          if (lastPath) {
-            // Validate the saved path still exists
-            const lastPathClean = lastPath.replace(/^\//, "");
-            const exists = data.results.some(
-              (r: { path: string }) =>
-                r.path.replace(/\.md$/, "") === lastPathClean ||
-                r.path === lastPathClean,
-            );
-            if (exists) {
-              router.replace(lastPath);
-              return;
-            }
-            // Stale path — clear it
-            localStorage.removeItem("grove_last_path");
-          }
-
-          // Pick a random note from results
-          const results = data.results;
-          const pick = results[Math.floor(Math.random() * results.length)];
-          const href = "/" + pick.path.replace(/\.md$/, "");
-          router.replace(href);
-        })
-        .catch(() => {
-          // Not logged in or API error — stay on marketing page
-        });
+      // No saved path — try to land on a random note
+      // Use Resources/Concepts as the default landing directory
+      router.replace("/Resources/Concepts");
     }
   }, [pathname, router]);
 
