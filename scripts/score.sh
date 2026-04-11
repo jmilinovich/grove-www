@@ -48,8 +48,8 @@ check() {
   fi
 }
 
-has() { grep -qE "$2" "$1" 2>/dev/null && echo 1 || echo 0; }
-hasnt() { grep -qE "$2" "$1" 2>/dev/null && echo 0 || echo 1; }
+has() { grep -qE -- "$2" "$1" 2>/dev/null && echo 1 || echo 0; }
+hasnt() { grep -qE -- "$2" "$1" 2>/dev/null && echo 0 || echo 1; }
 exists() { [[ -f "$1" ]] && echo 1 || echo 0; }
 both() { [[ "$1" == "1" && "$2" == "1" ]] && echo 1 || echo 0; }
 all3() { [[ "$1" == "1" && "$2" == "1" && "$3" == "1" ]] && echo 1 || echo 0; }
@@ -172,7 +172,7 @@ check 3 "Respects prefers-reduced-motion" \
 
 # Color contrast: muted text should have sufficient contrast token
 check 3 "Muted text has 4.5:1+ contrast (>= #767676 on dark)" \
-  "$(has "$CSS" '--muted.*#[789a-f]')"
+  "$(has "$CSS" '--muted: #8')"
 
 
 # ═══════════════════════════════════════════════════════════════════════
