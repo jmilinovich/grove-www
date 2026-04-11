@@ -42,19 +42,19 @@ function LoginForm() {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
+    <div className="min-h-screen flex items-center justify-center px-6 bg-cream">
       <div className="w-full max-w-sm">
         <div className="mb-8">
-          <h1 className="text-lg font-bold tracking-tight">
-            grove<span className="text-accent">.</span>md
+          <h1 className="text-2xl font-serif font-medium text-ink tracking-tight">
+            Grove
           </h1>
-          <p className="text-sm text-muted mt-1">
+          <p className="text-sm text-ink/60 mt-1">
             Enter your API key to view your vault.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <label htmlFor="api-key" className="block text-sm text-muted mb-2">
+          <label htmlFor="api-key" className="block text-xs uppercase tracking-[0.1em] text-ink/60">
             API key
           </label>
           <input
@@ -64,25 +64,25 @@ function LoginForm() {
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="grove_live_..."
             autoFocus
-            className="w-full bg-surface border border-surface-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors font-mono"
+            className="w-full bg-white border border-ink/10 rounded px-4 py-3.5 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/20 transition-colors font-mono"
           />
 
           {error && (
-            <p className="text-sm text-red-400">{error}</p>
+            <p className="text-sm text-red-600">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading || !apiKey}
-            className="w-full bg-accent text-background px-4 py-3 text-sm font-bold hover:bg-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-ink text-cream rounded px-4 py-3.5 text-sm font-semibold hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Authenticating..." : "Connect"}
           </button>
         </form>
 
-        <p className="text-xs text-muted mt-6">
+        <p className="text-xs text-ink/40 mt-6 text-center">
           Need a key?{" "}
-          <a href="https://grove.md" className="text-accent hover:text-green-300 transition-colors">
+          <a href="https://grove.md" className="text-moss hover:underline transition-colors">
             Get early access
           </a>
         </p>
