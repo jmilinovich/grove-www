@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import { Geist_Mono, Inter, Lora } from "next/font/google";
 import "./globals.css";
 import CommandPalette from "@/components/command-palette";
 import LastVisited from "@/components/last-visited";
@@ -11,6 +11,11 @@ const geistMono = Geist_Mono({
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["latin"],
 });
 
@@ -32,8 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistMono.variable} ${inter.variable} antialiased`}>
-      <body className="min-h-screen bg-background text-foreground font-mono">
+    <html lang="en" className={`${geistMono.variable} ${inter.variable} ${lora.variable} antialiased`}>
+      <body className="min-h-screen bg-background text-foreground font-sans">
         <CommandPalette />
         <LastVisited />
         {children}
