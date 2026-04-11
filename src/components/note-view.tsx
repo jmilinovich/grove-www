@@ -21,9 +21,14 @@ function formatJournalDate(path: string): string {
   });
 }
 
+/** Strip [[wikilink]] syntax: [[Target|Display]] → Display, [[Target]] → Target */
+function stripWikilinks(s: string): string {
+  return s.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_m, target, display) => display ?? target);
+}
+
 function getTitle(note: NoteResponse): string {
   const fm = note.frontmatter;
-  if (typeof fm.title === "string" && fm.title) return fm.title;
+  if (typeof fm.title === "string" && fm.title) return stripWikilinks(fm.title);
   // Derive from path: last segment, strip .md
   return note.path.split("/").pop()?.replace(/\.md$/, "") || note.path;
 }
