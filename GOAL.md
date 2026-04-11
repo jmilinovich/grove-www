@@ -158,11 +158,11 @@ bash scripts/score.sh --json   # machine-parseable
 
 | Component | Max | What it measures |
 |-----------|-----|------------------|
-| **Brand Cohesion** | 30 | CSS tokens match DESIGN.md, typography loaded, voice rules, no stock imagery, OG metadata |
+| **Brand Cohesion** | 40 | Brand palette (cream/ink/harvest/moss) in CSS, hero uses warm ground, serif font loaded, wordmark uses serif, warm→dark transition, amber bridge accent |
 | **Landing Page** | 35 | All sections from this spec present — hero, problem, tools, comparison, deploy, waitlist form |
 | **Note Viewer** | 30 | Prose styling, wikilinks, callouts, code blocks, metadata bar, breadcrumbs, backlinks, math, diagrams |
 | **Performance** | 25 | Server rendering, next/font, minimal client JS, no heavy assets or deps |
-| **Polish** | 30 | Command palette, responsive, dark theme, animations, auth flow, 404, keyboard nav |
+| **Usability & Mobile** | 30 | Mobile text scaling, touch targets, max-width readability, overflow handling, mobile nav, stacking cards, touch-accessible search, responsive padding, clear hero copy |
 
 **Mode: Split** — agents can improve the measurement scripts (add checks, fix false positives) but cannot change component weights or point allocations.
 
@@ -180,17 +180,20 @@ bash scripts/score.sh --json   # machine-parseable
 
 | Action | Component | Est. pts | Effort | Notes |
 |--------|-----------|----------|--------|-------|
+| **Add brand palette to CSS** | Brand | +13 | 30 min | Define `--cream`, `--ink`, `--harvest`, `--moss`, `--earth` vars with DESIGN.md hex values. |
+| **Load serif font** | Brand | +9 | 15 min | Add a transitional serif (Lora, DM Serif Display, or Libre Baskerville) via `next/font`. Use on wordmark and hero headline. |
+| **Restyle hero with brand palette** | Brand | +12 | 1 hr | Cream background, ink text, serif headline. Visual transition to dark product palette below. |
 | **Add "The 6 Tools" section** | Landing | +4 | 1 hr | Show each MCP tool with a real query/response example. Scannable, not verbose. |
 | **Add comparison table** | Landing | +4 | 1 hr | "24 Obsidian MCP servers" vs Grove. Columns: hosted, write-back, vault-aware, search quality. |
 | **Add waitlist email form** | Landing | +4 | 30 min | Real `<form>` with email input. Formspree, or server action → Grove note. Replace the `#waitlist` anchor. |
 
-**After those 3, the score is 150/150.** Future work extends the scorecard itself:
+**After those 6, the score is 160/160.** Future work extends the scorecard itself:
 
 | Future check | Component | Pts | What to add |
 |--------------|-----------|-----|-------------|
 | Lighthouse performance >= 95 | Performance | +5 | Run `npx lighthouse` in CI, parse score |
-| Accessibility audit passes | Polish | +5 | axe-core or Lighthouse a11y >= 90 |
-| Real mobile screenshot test | Polish | +3 | Playwright screenshot at 375px, visual diff |
+| Accessibility audit passes | Usability | +5 | axe-core or Lighthouse a11y >= 90 |
+| Real mobile screenshot test | Usability | +3 | Playwright screenshot at 375px, visual diff |
 | OG image with brand mark | Brand | +3 | Generate or serve a proper social card |
 | Analytics instrumented | Landing | +3 | Vercel Analytics or Plausible script present |
 | Favicon is citrus icon | Brand | +2 | Check public/favicon exists and isn't default |

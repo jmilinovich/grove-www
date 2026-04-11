@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # grove-www fitness function — product & visual quality scorecard
+# Measures alignment between the live site and DESIGN.md / GOAL.md
 # Usage: bash scripts/score.sh          (human-readable)
 #        bash scripts/score.sh --json   (machine-parseable)
 set -uo pipefail
@@ -17,6 +18,7 @@ NOTFOUND="$SRC/app/[...path]/not-found.tsx"
 BREADCRUMBS="$SRC/components/breadcrumbs.tsx"
 LOGIN="$SRC/app/login/page.tsx"
 MARKDOWN="$SRC/lib/markdown.ts"
+PKG="$ROOT/package.json"
 
 JSON_MODE=false
 [[ "${1:-}" == "--json" ]] && JSON_MODE=true
@@ -50,45 +52,59 @@ exists() { [[ -f "$1" ]] && echo 1 || echo 0; }
 both() { [[ "$1" == "1" && "$2" == "1" ]] && echo 1 || echo 0; }
 all3() { [[ "$1" == "1" && "$2" == "1" && "$3" == "1" ]] && echo 1 || echo 0; }
 
+
 # ═══════════════════════════════════════════════════════════════════════
-# BRAND COHESION (30 pts)
+# BRAND COHESION (40 pts)
+# Does the site actually look like DESIGN.md describes?
 # ═══════════════════════════════════════════════════════════════════════
 CURRENT_COMPONENT=brand
-$JSON_MODE || printf "\n── Brand Cohesion (30 pts) ──\n"
+$JSON_MODE || printf "\n── Brand Cohesion (40 pts) ──\n"
 
-check 3 "Product palette in CSS vars" \
-  "$(has "$CSS" '#08090a')"
+# Brand palette: cream, ink, harvest, moss, earth must exist as CSS vars
+check 4 "Brand palette defined (cream #FAF7F2)" \
+  "$(has "$CSS" '#FAF7F2|--cream|--brand-cream')"
 
-check 3 "Accent green defined" \
-  "$(has "$CSS" '#4ade80')"
+check 3 "Brand palette defined (ink #2C2416)" \
+  "$(has "$CSS" '#2C2416|--ink|--brand-ink')"
 
-check 3 "Amber secondary defined" \
-  "$(has "$CSS" '#f5a623')"
+check 3 "Brand palette defined (harvest #D4890A)" \
+  "$(has "$CSS" '#D4890A|--harvest|--brand-harvest')"
 
-check 3 "Inter + Geist Mono loaded" \
-  "$(both "$(has "$LAYOUT" 'Geist_Mono')" "$(has "$LAYOUT" 'Inter')")"
+check 3 "Brand palette defined (moss #7A8B5C)" \
+  "$(has "$CSS" '#7A8B5C|--moss|--brand-moss')"
 
-check 3 "No exclamation marks in landing copy" \
+# Hero uses brand palette — cream bg, not dark
+check 5 "Hero uses cream/warm background" \
+  "$(has "$PAGE" 'bg-cream|bg-brand|bg-\[#FAF7F2\]')"
+
+# Hero text uses ink/earth, not white/gray
+check 4 "Hero text uses ink/dark warm tone" \
+  "$(has "$PAGE" 'text-ink|text-brand-ink|text-earth')"
+
+# Serif font loaded for wordmark (DESIGN.md: transitional serif)
+check 5 "Serif font loaded for brand typography" \
+  "$(has "$LAYOUT" 'Playfair|Lora|Libre_Baskerville|DM_Serif|Merriweather|Source_Serif|Crimson')"
+
+# Wordmark in page uses serif class
+check 4 "Wordmark/hero uses serif font class" \
+  "$(has "$PAGE" 'font-serif|font-brand')"
+
+# Transition from brand to product palette exists
+check 3 "Visual transition from hero (warm) to body (dark)" \
+  "$(has "$PAGE" 'bg-background|bg-\[#08090a\]')"
+
+# Amber used as bridge accent (not just on "coming soon" labels)
+check 3 "Amber accent used in product sections" \
+  "$(has "$PAGE" 'text-amber|border-amber|bg-amber')"
+
+# Voice: no exclamation marks
+check 3 "No exclamation marks in copy" \
   "$(hasnt "$PAGE" '"[^"]*![^="]*"')"
-
-check 3 "Selection uses accent color" \
-  "$(has "$CSS" '::selection')"
-
-check 3 "Noise texture overlay" \
-  "$(has "$CSS" 'fractalNoise')"
-
-check 3 "No img tags in landing page" \
-  "$(hasnt "$PAGE" '<img ')"
-
-check 3 "Components use tokens not raw hex" \
-  "$(hasnt "$NOTEVIEW" '#[0-9a-fA-F]{6}')"
-
-check 3 "OpenGraph metadata present" \
-  "$(has "$LAYOUT" 'openGraph')"
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # LANDING PAGE (35 pts)
+# Are all GOAL.md sections present?
 # ═══════════════════════════════════════════════════════════════════════
 CURRENT_COMPONENT=landing
 $JSON_MODE || printf "\n── Landing Page (35 pts) ──\n"
@@ -103,16 +119,16 @@ check 3 "How It Works (numbered steps)" \
   "$(both "$(has "$PAGE" 'function HowItWorks')" "$(has "$PAGE" '01')")"
 
 check 4 "The 6 Tools section with examples" \
-  "$(has "$PAGE" 'Tools\(\)\|SixTools\|TheTools')"
+  "$(has "$PAGE" 'Tools()|SixTools|TheTools')"
 
 check 4 "Comparison table (vs other MCP servers)" \
-  "$(has "$PAGE" 'Comparison\|<table\|comparison')"
+  "$(has "$PAGE" 'Comparison|<table|comparison')"
 
 check 3 "Deploy options (3 cards)" \
   "$(all3 "$(has "$PAGE" 'function Deploy')" "$(has "$PAGE" 'Self-hosted')" "$(has "$PAGE" 'Enterprise')")"
 
 check 4 "Waitlist email capture (real form)" \
-  "$(has "$PAGE" '<form\|<input.*email\|formAction\|action.*submit')"
+  "$(has "$PAGE" '<form|<input.*email|formAction')"
 
 check 3 "Groves preview section" \
   "$(has "$PAGE" 'function Groves')"
@@ -129,6 +145,7 @@ check 2 "Footer with links" \
 
 # ═══════════════════════════════════════════════════════════════════════
 # NOTE VIEWER (30 pts)
+# Reading experience matches DESIGN.md spec
 # ═══════════════════════════════════════════════════════════════════════
 CURRENT_COMPONENT=viewer
 $JSON_MODE || printf "\n── Note Viewer (30 pts) ──\n"
@@ -190,44 +207,59 @@ check 4 "Landing page is server component" \
   "$(hasnt "$PAGE" "'use client'")"
 
 check 4 "No unnecessary heavy deps" \
-  "$(hasnt "$ROOT/package.json" 'framer-motion\|three\|gsap\|lottie')"
+  "$(hasnt "$PKG" 'framer-motion\|three\|gsap\|lottie')"
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# POLISH (30 pts)
+# USABILITY & MOBILE (30 pts)
+# Does it work well on phones? Is it comprehensible to target users?
 # ═══════════════════════════════════════════════════════════════════════
 CURRENT_COMPONENT=polish
-$JSON_MODE || printf "\n── Polish (30 pts) ──\n"
+$JSON_MODE || printf "\n── Usability & Mobile (30 pts) ──\n"
 
-check 4 "Command palette (Cmd+K)" \
-  "$(both "$(exists "$CMDPAL")" "$(has "$CMDPAL" 'metaKey')")"
+# Mobile-first layout: hero must have mobile-specific sizing
+check 3 "Hero has mobile text scaling (base + sm/md breakpoints)" \
+  "$(both "$(has "$PAGE" 'text-4xl')" "$(has "$PAGE" 'sm:text-5xl')")"
 
-check 3 "Mobile responsive (sm: breakpoints)" \
-  "$(has "$PAGE" 'sm:text-')"
+# Touch targets: CTAs must be large enough (py-3 or larger)
+check 3 "Touch-friendly CTA sizing (py-3+)" \
+  "$(has "$PAGE" 'py-3')"
 
-check 3 "Consistent dark theme (bg-background on body)" \
-  "$(has "$LAYOUT" 'bg-background')"
+# Readable line lengths: max-w constraints on prose
+check 3 "Content max-width for readability" \
+  "$(has "$PAGE" 'max-w-2xl')"
 
-check 3 "Fade-up scroll animations" \
-  "$(both "$(has "$CSS" 'fadeUp')" "$(has "$PAGE" 'fade-up')")"
+# No horizontal scroll: code blocks and pre tags handle overflow
+check 2 "Code blocks handle overflow (overflow-x)" \
+  "$(has "$CSS" 'overflow-x')"
 
-check 3 "Hover transitions on surfaces" \
-  "$(has "$CSS" 'transition.*border-color')"
+# Mobile nav: reasonable spacing, not cramped
+check 3 "Nav has reasonable mobile layout" \
+  "$(has "$PAGE" 'gap-6')"
 
-check 3 "Login/auth flow" \
+# Deploy cards stack on mobile (grid-cols-1 base, expand on sm)
+check 3 "Deploy cards stack on mobile" \
+  "$(both "$(has "$PAGE" 'grid-cols-1')" "$(has "$PAGE" 'sm:grid-cols-3')")"
+
+# Command palette accessible without keyboard (touch button exists)
+check 3 "Search accessible via touch (button with onClick)" \
+  "$(has "$CMDPAL" 'openPalette')"
+
+# Full viewport layout
+check 2 "Body has min-h-screen for full viewport" \
+  "$(has "$LAYOUT" 'min-h-screen')"
+
+# Note viewer: responsive padding
+check 3 "Note viewer has responsive padding" \
+  "$(has "$CATCHALL" 'px-6')"
+
+# Comprehensibility: hero explains what Grove IS in first fold
+check 3 "Hero subtitle explains product clearly" \
+  "$(both "$(has "$PAGE" 'notes')" "$(has "$PAGE" 'connected')")"
+
+# Login page exists
+check 2 "Login/auth flow exists" \
   "$(exists "$LOGIN")"
-
-check 3 "404 page" \
-  "$(exists "$NOTFOUND")"
-
-check 3 "Type-colored badges in directory listing" \
-  "$(has "$CATCHALL" 'TYPE_COLORS')"
-
-check 3 "Last-visited redirect" \
-  "$(exists "$SRC/components/last-visited.tsx")"
-
-check 2 "Keyboard nav in command palette" \
-  "$(both "$(has "$CMDPAL" 'ArrowDown')" "$(has "$CMDPAL" 'ArrowUp')")"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -243,17 +275,17 @@ if $JSON_MODE; then
   "landing": $LANDING,
   "viewer": $VIEWER,
   "performance": $PERFORMANCE,
-  "polish": $POLISH
+  "usability": $POLISH
 }
 ENDJSON
 else
   echo ""
   echo "==========================================="
-  printf "  Brand Cohesion:  %3d / 30\n" "$BRAND"
+  printf "  Brand Cohesion:  %3d / 40\n" "$BRAND"
   printf "  Landing Page:    %3d / 35\n" "$LANDING"
   printf "  Note Viewer:     %3d / 30\n" "$VIEWER"
   printf "  Performance:     %3d / 25\n" "$PERFORMANCE"
-  printf "  Polish:          %3d / 30\n" "$POLISH"
+  printf "  Usability:       %3d / 30\n" "$POLISH"
   echo "-------------------------------------------"
   printf "  TOTAL:           %3d / %d\n" "$TOTAL" "$MAX"
   echo "==========================================="
