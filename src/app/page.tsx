@@ -158,11 +158,11 @@ function HowItWorks() {
               the right notes, follows the links between them, and answers
               with your own context.
             </p>
-            <div className="bg-code-bg text-code-fg border border-code-bg/50 p-4 text-sm">
-              <p className="text-foreground">
+            <div className="bg-code-bg rounded-lg p-4 text-sm">
+              <p className="text-cream">
                 &quot;What do I know about design systems?&quot;
               </p>
-              <p className="text-muted mt-2 text-xs">
+              <p className="text-cream/50 mt-2 text-xs">
                 <span className="text-moss">found</span>{" "}
                 3 concept notes, 2 journal entries, linked to 14 other
                 ideas in your vault &mdash; 23ms
@@ -184,15 +184,15 @@ function HowItWorks() {
               extracted entities. Every write is validated against your vault&apos;s
               structure and committed to git.
             </p>
-            <div className="bg-code-bg text-code-fg border border-code-bg/50 p-4 text-xs text-muted font-mono space-y-1">
+            <div className="bg-code-bg rounded-lg p-4 text-xs text-cream/70 font-mono space-y-1">
               <p>
                 <span className="text-moss">+</span> Concepts/Context Engineering.md
               </p>
               <p>
                 <span className="text-moss">~</span> Concepts/Design Systems.md{" "}
-                <span className="text-muted/50">&larr; new link added</span>
+                <span className="text-cream/40">&larr; new link added</span>
               </p>
-              <p className="text-muted/40">
+              <p className="text-cream/30">
                 git commit: grove (claude-ai): create Context Engineering
               </p>
             </div>
@@ -231,8 +231,8 @@ function WhatGrows() {
         Not a folder of files. A graph of connected ideas.
       </h2>
 
-      <div className="bg-code-bg text-code-fg border border-code-bg/50 p-6 sm:p-8 max-w-2xl mb-6">
-        <pre className="text-xs sm:text-base text-ink/60 leading-[1.6] code-block overflow-x-auto">
+      <div className="bg-code-bg rounded-lg p-6 sm:p-8 max-w-2xl mb-6">
+        <pre className="text-xs sm:text-sm text-cream/60 leading-relaxed code-block overflow-x-auto">
 {`Your vault
 ├── concepts
 │   ├── Design Systems ──── linked to 42 other notes
@@ -504,7 +504,7 @@ function TheTools() {
           <div key={tool.name} className="space-y-2">
             <p className="text-sm font-medium text-moss font-mono">{tool.name}</p>
             <p className="text-base text-ink/60 leading-[1.6]">{tool.desc}</p>
-            <div className="bg-code-bg text-code-fg border border-code-bg/50 p-3 text-xs font-mono text-muted-light">
+            <div className="bg-code-bg rounded-lg p-3 text-xs font-mono text-cream/50">
               {tool.example}
             </div>
           </div>
