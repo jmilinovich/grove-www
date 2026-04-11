@@ -51,11 +51,11 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
   return (
     <article className="note-content mx-auto" style={{ maxWidth: 680 }}>
       <header className="mb-10 pb-8 border-b border-ink/10">
-        <h1 className="text-[2.441rem] font-serif font-medium text-ink leading-[1.2] tracking-[-0.015em]">
+        <h1 className="text-heading font-serif font-medium text-ink leading-[1.2] tracking-[-0.015em]">
           {title}
         </h1>
         {aliases.length > 0 && (
-          <p className="mt-2 text-sm text-ink/50">
+          <p className="mt-2 text-sm text-ink/40">
             {aliases.join(" · ")}
           </p>
         )}
@@ -69,7 +69,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
 
       {note.backlinks.length > 0 && (
         <footer className="mt-16 pt-8 border-t border-ink/10">
-          <h2 className="text-[0.8rem] uppercase tracking-[0.15em] text-ink/40 mb-4">
+          <h2 className="text-label uppercase tracking-[0.15em] text-ink/40 mb-4">
             Referenced by
           </h2>
           <ul className="space-y-1">
@@ -91,7 +91,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="shrink-0 text-ink/30"
+                      className="shrink-0 text-ink/15"
                     >
                       <path d="M9 17H7A5 5 0 0 1 7 7h2" />
                       <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
@@ -100,7 +100,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
                     <span className="text-sm text-ink/60 group-hover:text-ink transition-colors">
                       {name}
                     </span>
-                    <span className="text-xs text-ink/30 ml-auto hidden sm:inline">
+                    <span className="text-xs text-ink/15 ml-auto hidden sm:inline">
                       {bl.split("/").slice(0, -1).join("/")}
                     </span>
                   </Link>

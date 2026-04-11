@@ -26,13 +26,13 @@ export async function generateMetadata({ params }: PageProps) {
 // ── Type colors for directory listing ────────────────────────────────
 
 const TYPE_COLORS: Record<string, string> = {
-  concept: "text-green-700",
-  person: "text-blue-700",
-  recipe: "text-amber-700",
-  project: "text-purple-700",
-  company: "text-rose-700",
-  place: "text-cyan-700",
-  journal: "text-stone-500",
+  concept: "text-moss",
+  person: "text-ink/60",
+  recipe: "text-harvest",
+  project: "text-earth",
+  company: "text-earth",
+  place: "text-moss",
+  journal: "text-ink/40",
 };
 
 // ── Directory listing component ──────────────────────────────────────
@@ -64,8 +64,8 @@ function DirectoryListing({
 
   return (
     <div>
-      <h1 className="font-serif text-[1.953rem] font-medium tracking-[-0.015em] mb-2">{folderName}</h1>
-      <p className="text-[0.8rem] text-ink/50 mb-8">
+      <h1 className="font-serif text-heading font-medium tracking-[-0.015em] mb-2">{folderName}</h1>
+      <p className="text-label text-ink/40 mb-8">
         {entries.length} note{entries.length !== 1 ? "s" : ""}
         {subfolders.size > 0 &&
           ` · ${subfolders.size} subfolder${subfolders.size !== 1 ? "s" : ""}`}
@@ -116,7 +116,7 @@ function DirectoryListing({
                 <div className="flex items-center gap-3 min-w-0">
                   {entry.type && (
                     <span
-                      className={`text-xs font-medium shrink-0 ${TYPE_COLORS[entry.type] ?? "text-stone-400"}`}
+                      className={`text-xs font-medium shrink-0 ${TYPE_COLORS[entry.type] ?? "text-ink/40"}`}
                     >
                       {entry.type}
                     </span>

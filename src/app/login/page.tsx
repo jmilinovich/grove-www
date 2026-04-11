@@ -64,7 +64,7 @@ function LoginForm() {
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="grove_live_..."
             autoFocus
-            className="w-full bg-white border border-ink/10 rounded px-4 py-3.5 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/20 transition-colors font-mono"
+            className="w-full bg-white border border-ink/15 rounded px-4 py-3.5 text-sm text-ink placeholder:text-ink/15 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors font-mono"
           />
 
           {error && (
@@ -74,7 +74,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading || !apiKey}
-            className="w-full bg-ink text-cream rounded px-4 py-3.5 text-sm font-semibold hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-ink text-cream rounded px-4 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Authenticating..." : "Connect"}
           </button>

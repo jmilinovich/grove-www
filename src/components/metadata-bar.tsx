@@ -3,16 +3,16 @@
  */
 
 const TYPE_COLORS: Record<string, string> = {
-  concept: "bg-green-50 text-green-800 border-green-200",
-  person: "bg-blue-50 text-blue-800 border-blue-200",
-  recipe: "bg-amber-50 text-amber-800 border-amber-200",
-  project: "bg-purple-50 text-purple-800 border-purple-200",
-  company: "bg-rose-50 text-rose-800 border-rose-200",
-  place: "bg-cyan-50 text-cyan-800 border-cyan-200",
-  journal: "bg-stone-100 text-stone-600 border-stone-200",
+  concept: "bg-moss/15 text-moss border-moss/15",
+  person: "bg-ink/15 text-ink border-ink/15",
+  recipe: "bg-harvest/15 text-harvest border-harvest/15",
+  project: "bg-ink/15 text-earth border-ink/15",
+  company: "bg-harvest/15 text-earth border-harvest/15",
+  place: "bg-moss/15 text-earth border-moss/15",
+  journal: "bg-ink/5 text-ink/60 border-ink/15",
 };
 
-const DEFAULT_TYPE_COLOR = "bg-stone-100 text-stone-600 border-stone-200";
+const DEFAULT_TYPE_COLOR = "bg-ink/5 text-ink/60 border-ink/15";
 
 function relativeDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -61,17 +61,17 @@ export default function MetadataBar({
       {visibleTags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center rounded-full border border-ink/15 bg-ink/5 px-2 py-0.5 text-ink/70"
+          className="inline-flex items-center rounded-full border border-ink/15 bg-ink/5 px-2 py-0.5 text-ink/60"
         >
           {tag}
         </span>
       ))}
       {overflowCount > 0 && (
-        <span className="text-ink/50">+{overflowCount}</span>
+        <span className="text-ink/40">+{overflowCount}</span>
       )}
 
       {(created || modified) && (
-        <span className="ml-auto text-ink/50">
+        <span className="ml-auto text-ink/40">
           {created && <span>created {relativeDate(created)}</span>}
           {created && modified && <span className="mx-1">·</span>}
           {modified && <span>edited {relativeDate(modified)}</span>}
