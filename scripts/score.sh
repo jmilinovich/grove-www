@@ -190,7 +190,9 @@ $JSON_MODE || printf "  [%s] [...path]/page.tsx uses brand tokens (%d/5 pts)\n" 
   "$([[ $CATCH_COLOR_SCORE -eq 5 ]] && echo PASS || echo FAIL)" "$CATCH_COLOR_SCORE"
 
 # Callout colors use hardcoded hex (deduct 1 per, max 10)
-CALLOUT_HEX=$(grep -E 'callout' "$CSS" 2>/dev/null | grep -cE '#[0-9a-fA-F]{3,6}' || echo 0)
+CALLOUT_HEX=$(grep -E 'callout' "$CSS" 2>/dev/null | grep -cE '#[0-9a-fA-F]{3,6}' 2>/dev/null || true)
+CALLOUT_HEX=${CALLOUT_HEX:-0}
+CALLOUT_HEX=$(echo "$CALLOUT_HEX" | tr -d '[:space:]')
 CALLOUT_SCORE=$((10 - CALLOUT_HEX))
 if [ $CALLOUT_SCORE -lt 0 ]; then CALLOUT_SCORE=0; fi
 MAX=$((MAX + 10)); COLOR=$((COLOR + CALLOUT_SCORE)); TOTAL=$((TOTAL + CALLOUT_SCORE))
@@ -218,7 +220,7 @@ CURRENT=spacing
 $JSON_MODE || printf "\n── Spacing Consistency (30 pts) ──\n"
 
 # All landing sections use same py- value (exactly 1 = perfect)
-PY_VALUES=$(grep -oE 'className="py-[0-9]+' "$PAGE" 2>/dev/null | grep -oE 'py-[0-9]+' | sort -u | wc -l | tr -d ' ')
+PY_VALUES=$(grep '<section' "$PAGE" 2>/dev/null | grep -oE 'py-[0-9]+' | sort -u | wc -l | tr -d ' ')
 check 8 "All sections use same py- value ($PY_VALUES unique)" \
   "$([[ $PY_VALUES -eq 1 ]] && echo 1 || echo 0)"
 

@@ -184,7 +184,7 @@ function HowItWorks() {
               extracted entities. Every write is validated against your vault&apos;s
               structure and committed to git.
             </p>
-            <div className="bg-code-bg rounded-lg p-4 text-xs text-cream/60 font-mono space-y-1">
+            <div className="bg-code-bg rounded-lg p-4 text-xs text-cream/60 font-mono space-y-4">
               <p>
                 <span className="text-moss">+</span> Concepts/Context Engineering.md
               </p>
@@ -501,7 +501,7 @@ function TheTools() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
         {tools.map((tool) => (
-          <div key={tool.name} className="space-y-2">
+          <div key={tool.name} className="space-y-4">
             <p className="text-sm font-medium text-moss font-mono">{tool.name}</p>
             <p className="text-base text-ink/60 leading-[1.6]">{tool.desc}</p>
             <div className="bg-code-bg rounded-lg p-3 text-xs font-mono text-cream/40">

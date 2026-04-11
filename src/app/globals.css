@@ -37,12 +37,12 @@ html {
   --text-hero: 3.052rem;
   --text-hero-lg: 3.815rem;
 
-  /* ── Callout colors ── */
-  --callout-note: #2563eb;
-  --callout-warning: #d97706;
+  /* ── Callout colors (brand-derived) ── */
+  --callout-note: var(--moss);
+  --callout-warning: var(--harvest);
   --callout-tip: var(--moss);
-  --callout-danger: #dc2626;
-  --callout-info: #0891b2;
+  --callout-danger: var(--harvest);
+  --callout-info: var(--moss);
   --callout-quote: var(--earth);
 
   /* ── Code surfaces (warm dark inset) ── */
