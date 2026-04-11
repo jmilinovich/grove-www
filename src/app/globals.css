@@ -157,9 +157,21 @@ body::before {
   --tw-prose-td-borders: #2C241610;
   --tw-prose-counters: #2C241660;
   --tw-prose-bullets: #2C241640;
-  max-width: none;
+  max-width: 65ch;
   font-family: var(--font-serif);
-  line-height: 1.75;
+  font-size: 1.05rem;
+  line-height: 1.85;
+}
+
+/* Bold-as-heading pattern: bold text on its own line looks like a subheading */
+.note-content .prose p > strong:first-child:last-child,
+.note-content .prose p > strong:only-child {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-top: 1.5rem;
+  color: var(--ink);
 }
 
 /* Serif headings in prose — editorial size hierarchy */
