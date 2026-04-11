@@ -46,7 +46,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
   return (
     <article className="note-content mx-auto" style={{ maxWidth: 680 }}>
       <header className="mb-10 pb-8 border-b border-ink/10">
-        <h1 className="text-3xl font-serif font-medium text-ink leading-tight tracking-tight">
+        <h1 className="text-[2.441rem] font-serif font-medium text-ink leading-[1.2] tracking-[-0.015em]">
           {title}
         </h1>
         {aliases.length > 0 && (
@@ -64,7 +64,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
 
       {note.backlinks.length > 0 && (
         <footer className="mt-16 pt-8 border-t border-ink/10">
-          <h2 className="text-xs uppercase tracking-widest text-ink/40 mb-4">
+          <h2 className="text-[0.8rem] uppercase tracking-[0.15em] text-ink/40 mb-4">
             Referenced by
           </h2>
           <ul className="space-y-1">

@@ -25,6 +25,18 @@ html {
   --muted: #2C241680;
   --muted-light: #2C241660;
 
+  /* ── Type scale (Major Third, 1.25 ratio) ── */
+  --text-xs: 0.64rem;
+  --text-sm: 0.8rem;
+  --text-base: 1rem;
+  --text-prose: 1.0625rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.953rem;
+  --text-2xl: 2.441rem;
+  --text-hero: 3.052rem;
+  --text-hero-lg: 3.815rem;
+
   /* ── Code surfaces (warm dark inset) ── */
   --code-bg: #2C2416;
   --code-fg: #E8E2D6;
@@ -159,8 +171,14 @@ body::before {
   --tw-prose-bullets: #2C241640;
   max-width: 65ch;
   font-family: var(--font-serif);
-  font-size: 1.05rem;
-  line-height: 1.85;
+  font-size: var(--text-prose);
+  line-height: 1.75;
+}
+
+@media (max-width: 639px) {
+  .note-content .prose {
+    font-size: var(--text-base);
+  }
 }
 
 /* Bold-as-heading pattern: bold text on its own line looks like a subheading */
@@ -168,8 +186,9 @@ body::before {
 .note-content .prose p > strong:only-child {
   display: block;
   font-family: var(--font-serif);
-  font-size: 1.25rem;
+  font-size: var(--text-md);
   font-weight: 500;
+  letter-spacing: -0.01em;
   margin-top: 1.5rem;
   color: var(--ink);
 }
@@ -186,30 +205,33 @@ body::before {
 }
 
 .note-content .prose h1 {
-  font-size: 1.875rem;
+  font-size: var(--text-2xl);
   line-height: 1.2;
-  margin-top: 2.5rem;
+  letter-spacing: -0.015em;
+  margin-top: 3rem;
   margin-bottom: 1rem;
 }
 
 .note-content .prose h2 {
-  font-size: 1.5rem;
-  line-height: 1.3;
-  margin-top: 2rem;
+  font-size: var(--text-xl);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin-top: 2.5rem;
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(44, 36, 22, 0.1);
 }
 
 .note-content .prose h3 {
-  font-size: 1.25rem;
-  line-height: 1.4;
-  margin-top: 1.75rem;
+  font-size: var(--text-lg);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin-top: 2rem;
   margin-bottom: 0.5rem;
 }
 
 .note-content .prose h4 {
-  font-size: 1.1rem;
+  font-size: var(--text-md);
   line-height: 1.4;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;

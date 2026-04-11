@@ -55,13 +55,13 @@ function Hero() {
   return (
     <section className="bg-cream pt-28 pb-20 sm:pt-40 sm:pb-28 px-6">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight max-w-3xl fade-up font-serif text-ink text-pretty">
+        <h1 className="text-[3.052rem] md:text-[3.815rem] font-medium leading-[1.08] tracking-[-0.025em] max-w-[20ch] fade-up font-serif text-ink text-pretty">
           Your notes and your AI,
           <br />
           finally connected.
         </h1>
 
-        <p className="mt-8 text-lg text-ink/60 max-w-xl leading-relaxed fade-up delay-1">
+        <p className="mt-8 text-base text-ink/70 max-w-[60ch] leading-[1.6] fade-up delay-1">
           You take notes. You journal. You save ideas. Then you talk to your AI
           and it knows none of it. Grove connects them &mdash; your AI reads your
           notes, writes back, and the knowledge grows together.
@@ -92,9 +92,9 @@ function TheProblem() {
   return (
     <section aria-label="The problem" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <div className="max-w-2xl space-y-6">
-        <p className="text-muted text-xs tracking-[0.2em] uppercase mb-2">The problem</p>
+        <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-2">The problem</p>
 
-        <h2 className="text-xl sm:text-2xl leading-snug font-serif font-medium text-pretty">
+        <h2 className="text-[1.953rem] leading-snug font-serif font-medium text-pretty">
           Your notes live in one world. Your AI lives in another.
         </h2>
 
@@ -123,7 +123,7 @@ function TheProblem() {
 function HowItWorks() {
   return (
     <section aria-label="How it works" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-12">
+      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-12">
         How it works
       </p>
       <h2 className="sr-only">How it works</h2>
@@ -136,7 +136,7 @@ function HowItWorks() {
             <span className="text-lg font-medium">Connect your vault</span>
           </div>
           <div className="border-l border-surface-border pl-5">
-            <p className="text-sm text-muted leading-relaxed">
+            <p className="text-base text-ink/60 leading-[1.6]">
               Point Grove at your Obsidian vault, markdown folder, or git repo.
               It indexes everything &mdash; your notes, your frontmatter, your
               wikilinks &mdash; and gives you an MCP endpoint. Add that URL to
@@ -152,7 +152,7 @@ function HowItWorks() {
             <span className="text-lg font-medium">Your AI reads your notes</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
-            <p className="text-sm text-muted leading-relaxed">
+            <p className="text-base text-ink/60 leading-[1.6]">
               Ask a question and your AI searches your vault &mdash; keyword
               and semantic search fused together in under 30ms. It finds
               the right notes, follows the links between them, and answers
@@ -178,7 +178,7 @@ function HowItWorks() {
             <span className="text-lg font-medium">Your AI writes back</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
-            <p className="text-sm text-muted leading-relaxed">
+            <p className="text-base text-ink/60 leading-[1.6]">
               When you discover something new in a conversation, your AI can
               save it directly to your vault. New concepts, updated notes,
               extracted entities. Every write is validated against your vault&apos;s
@@ -206,7 +206,7 @@ function HowItWorks() {
             <span className="text-lg font-medium">Knowledge compounds</span>
           </div>
           <div className="border-l border-surface-border pl-5">
-            <p className="text-sm text-muted leading-relaxed">
+            <p className="text-base text-ink/60 leading-[1.6]">
               Next conversation &mdash; any device, any client &mdash; your AI
               already knows. The note exists. The links are wired. You never
               explain the same thing twice. The more you use it, the more
@@ -224,15 +224,15 @@ function HowItWorks() {
 function WhatGrows() {
   return (
     <section aria-label="What grows" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
+      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">
         What grows
       </p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
+      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         Not a folder of files. A graph of connected ideas.
       </h2>
 
       <div className="bg-code-bg text-code-fg border border-code-bg/50 p-6 sm:p-8 max-w-2xl mb-6">
-        <pre className="text-xs sm:text-sm text-muted leading-relaxed code-block overflow-x-auto">
+        <pre className="text-xs sm:text-base text-ink/60 leading-[1.6] code-block overflow-x-auto">
 {`Your vault
 ├── concepts
 │   ├── Design Systems ──── linked to 42 other notes
@@ -246,7 +246,7 @@ function WhatGrows() {
     └── the graph sees what folders can't`}</pre>
       </div>
 
-      <div className="max-w-xl space-y-3 text-sm text-muted leading-relaxed">
+      <div className="max-w-xl space-y-3 text-base text-ink/60 leading-[1.6]">
         <p>
           Your notes aren&apos;t isolated files. They&apos;re nodes in a graph.
           A concept about resilience might link your engineering notes to your
@@ -269,14 +269,14 @@ function WhatGrows() {
 function Groves() {
   return (
     <section aria-label="Groves" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
+      <p className="text-harvest text-[0.8rem] tracking-[0.15em] uppercase mb-4">
         Coming soon
       </p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
+      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         Share a grove &mdash; a window into your knowledge.
       </h2>
 
-      <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
+      <div className="max-w-xl space-y-4 text-base text-ink/60 leading-[1.6]">
         <p>
           A grove is a topic-scoped slice of your vault with permission controls.
           Share your research notes with a colleague. Your recipes with a friend.
@@ -298,14 +298,14 @@ function Groves() {
 function Discovery() {
   return (
     <section aria-label="Discovery" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
+      <p className="text-harvest text-[0.8rem] tracking-[0.15em] uppercase mb-4">
         Coming soon
       </p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
+      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         The graph grows while you sleep.
       </h2>
 
-      <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
+      <div className="max-w-xl space-y-4 text-base text-ink/60 leading-[1.6]">
         <p>
           A background loop watches for new and changed notes. It extracts
           concepts, identifies people, wires links between related ideas,
@@ -331,7 +331,7 @@ function Discovery() {
 function Deploy() {
   return (
     <section id="deploy" aria-label="Deployment options" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
+      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">
         Your vault, your choice
       </p>
       <h2 className="sr-only">Deployment options</h2>
@@ -410,7 +410,7 @@ function WhyNow() {
           </footer>
         </blockquote>
 
-        <div className="mt-8 text-sm text-muted leading-relaxed space-y-3">
+        <div className="mt-8 text-base text-ink/60 leading-[1.6] space-y-3">
           <p>
             Karpathy described a workflow where LLMs compile raw documents into
             structured wikis. That works for research collections. But most people
@@ -443,7 +443,7 @@ function BottomCTA() {
       className="py-28 px-6 max-w-5xl mx-auto border-t border-surface-border"
     >
       <div className="max-w-xl">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-pretty">
+        <h2 className="text-[1.953rem] sm:text-[2.441rem] font-serif font-medium tracking-[-0.015em] text-pretty">
           Your AI should know what you know.
         </h2>
         <p className="mt-3 text-muted">
@@ -494,8 +494,8 @@ function TheTools() {
 
   return (
     <section aria-label="The six tools" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">The tools</p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-12 text-pretty">
+      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">The tools</p>
+      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-12 text-pretty">
         Six tools. No more. Agents work better with less choice.
       </h2>
 
@@ -503,7 +503,7 @@ function TheTools() {
         {tools.map((tool) => (
           <div key={tool.name} className="space-y-2">
             <p className="text-sm font-medium text-moss font-mono">{tool.name}</p>
-            <p className="text-sm text-muted leading-relaxed">{tool.desc}</p>
+            <p className="text-base text-ink/60 leading-[1.6]">{tool.desc}</p>
             <div className="bg-code-bg text-code-fg border border-code-bg/50 p-3 text-xs font-mono text-muted-light">
               {tool.example}
             </div>
@@ -519,8 +519,8 @@ function TheTools() {
 function Comparison() {
   return (
     <section aria-label="Comparison" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">The landscape</p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-8 text-pretty">
+      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">The landscape</p>
+      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-8 text-pretty">
         24 Obsidian MCP servers. All local-only.
       </h2>
       <div className="max-w-2xl overflow-x-auto">

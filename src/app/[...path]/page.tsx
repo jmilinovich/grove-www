@@ -64,8 +64,8 @@ function DirectoryListing({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold tracking-tight mb-2">{folderName}</h1>
-      <p className="text-sm text-muted mb-8">
+      <h1 className="font-serif text-[1.953rem] font-medium tracking-[-0.015em] mb-2">{folderName}</h1>
+      <p className="text-[0.8rem] text-ink/50 mb-8">
         {entries.length} note{entries.length !== 1 ? "s" : ""}
         {subfolders.size > 0 &&
           ` · ${subfolders.size} subfolder${subfolders.size !== 1 ? "s" : ""}`}
