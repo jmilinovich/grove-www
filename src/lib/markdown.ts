@@ -158,13 +158,45 @@ function visitText(
 function remarkStripDataview(): Plugin<[], MdastRoot> {
   return () => {
     return (tree: MdastRoot) => {
-      tree.children = tree.children.filter((node) => {
-        if (node.type !== "code") return true;
+      // Mark dataview code blocks and their preceding headings for removal
+      const removeIndices = new Set<number>();
+
+      for (let i = 0; i < tree.children.length; i++) {
+        const node = tree.children[i];
+        if (node.type !== "code") continue;
         const lang = (node as { lang?: string }).lang ?? "";
-        return !["dataview", "dataviewjs"].includes(lang.toLowerCase());
-      });
+        if (!["dataview", "dataviewjs"].includes(lang.toLowerCase())) continue;
+
+        removeIndices.add(i);
+
+        // Also remove the heading immediately before this dataview block
+        if (i > 0 && tree.children[i - 1].type === "heading") {
+          removeIndices.add(i - 1);
+        }
+      }
+
+      tree.children = tree.children.filter((_, i) => !removeIndices.has(i));
+
+      // Strip inline dataview queries: `= expression` or `$= expression`
+      stripInlineDataview(tree);
     };
   };
+}
+
+/** Remove inline code nodes that are dataview expressions (`= ...` or `$= ...`) */
+function stripInlineDataview(tree: MdastRoot) {
+  function visit(node: { type: string; children?: unknown[] }) {
+    if (!node.children) return;
+    for (let i = node.children.length - 1; i >= 0; i--) {
+      const child = node.children[i] as { type: string; value?: string; children?: unknown[] };
+      if (child.type === "inlineCode" && child.value && /^\$?=\s/.test(child.value)) {
+        node.children.splice(i, 1);
+      } else {
+        visit(child);
+      }
+    }
+  }
+  visit(tree as unknown as { type: string; children: unknown[] });
 }
 
 // Remark plugin: Obsidian callouts
