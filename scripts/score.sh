@@ -199,9 +199,9 @@ $JSON_MODE || printf "  [%s] Callout colors use brand tokens (%d/10 pts)\n" \
   "$([[ $CALLOUT_SCORE -eq 10 ]] && echo PASS || echo FAIL)" "$CALLOUT_SCORE"
 
 # Prose overrides use hardcoded hex instead of var() (deduct 1 per, max 10)
-PROSE_HEX=$(grep -A1 'tw-prose-' "$CSS" 2>/dev/null | grep -cE '#[0-9a-fA-F]{3,6}' || echo 0)
-# Also count hex in prose body/headings/links vars
-PROSE_HEX2=$(grep -E 'tw-prose-(body|headings|links|bold|code)' "$CSS" 2>/dev/null | grep -cE '#[0-9a-fA-F]{3,6}' || echo 0)
+PROSE_HEX2=$(grep -E 'tw-prose-(body|headings|links|bold|code)' "$CSS" 2>/dev/null | grep -cE '#[0-9a-fA-F]{3,6}' 2>/dev/null || true)
+PROSE_HEX2=${PROSE_HEX2:-0}
+PROSE_HEX2=$(echo "$PROSE_HEX2" | tr -d '[:space:]')
 PROSE_SCORE=$((10 - PROSE_HEX2))
 if [ $PROSE_SCORE -lt 0 ]; then PROSE_SCORE=0; fi
 MAX=$((MAX + 10)); COLOR=$((COLOR + PROSE_SCORE)); TOTAL=$((TOTAL + PROSE_SCORE))

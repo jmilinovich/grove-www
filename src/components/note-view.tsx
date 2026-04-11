@@ -50,7 +50,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
 
   return (
     <article className="note-content mx-auto" style={{ maxWidth: 680 }}>
-      <header className="mb-10 pb-8 border-b border-ink/10">
+      <header className="mb-10 pb-8 border-b border-ink/15">
         <h1 className="text-heading font-serif font-medium text-ink leading-[1.2] tracking-[-0.015em]">
           {title}
         </h1>
@@ -62,13 +62,13 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
       </header>
 
       <div
-        className="prose prose-stone prose-lg"
+        className="prose prose-lg"
         dangerouslySetInnerHTML={{ __html: html }}
       />
       <MermaidHydrator />
 
       {note.backlinks.length > 0 && (
-        <footer className="mt-16 pt-8 border-t border-ink/10">
+        <footer className="mt-16 pt-8 border-t border-ink/15">
           <h2 className="text-label uppercase tracking-[0.15em] text-ink/40 mb-4">
             Referenced by
           </h2>

@@ -38,7 +38,7 @@ export default function MermaidBlock({ source }: { source: string }) {
 
   if (error) {
     return (
-      <pre className="text-sm text-red-400 bg-surface border border-surface-border rounded p-4 overflow-x-auto">
+      <pre className="text-sm text-harvest bg-surface border border-surface-border rounded p-4 overflow-x-auto">
         <code>{source}</code>
         <p className="mt-2 text-xs text-muted">Mermaid error: {error}</p>
       </pre>

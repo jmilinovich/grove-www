@@ -161,7 +161,7 @@ export default function CommandPalette() {
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <span className="hidden sm:inline">Search</span>
-          <kbd className="hidden sm:inline-flex items-center rounded border border-surface-border px-1.5 py-0.5 text-[10px] text-muted font-mono">
+          <kbd className="hidden sm:inline-flex items-center rounded border border-surface-border px-1.5 py-0.5 text-detail text-muted font-mono">
             <span className="text-xs">&#8984;</span>K
           </kbd>
         </button>
