@@ -145,9 +145,9 @@ Your vault never leaves your infrastructure — hosted or self-hosted.
 | **Time on page** | >60s average | Vercel Analytics |
 | **Bounce rate** | <50% | Vercel Analytics |
 
-### Automated Scorecard (180 pts)
+### Automated Scorecard (250 pts)
 
-Calibrated against Linear, Vercel, Raycast, and Arc quality bars. Scoring 180/180 means the site is genuinely world-class — not just functional.
+Tests for system COHERENCE, not feature PRESENCE. Violation-based: a clean system scores high by having zero violations. Current state: ~147/250. Hitting 200+ means genuinely coherent. 250 means world-class.
 
 ```bash
 bash scripts/score.sh          # human-readable
@@ -158,13 +158,13 @@ bash scripts/score.sh --json   # machine-parseable
 
 | Component | Max | What it measures |
 |-----------|-----|------------------|
-| **Brand Identity** | 35 | DESIGN.md palette (cream/ink/harvest/moss) in CSS, serif font for wordmark, hero uses warm ground with warm→dark transition, sans-serif body default, tokenized colors |
-| **Content & Comprehension** | 30 | All GOAL.md sections present, real waitlist form, quantified social proof, proper heading hierarchy (h1→h2) |
-| **Accessibility** | 30 | WCAG 2.1 AA: heading hierarchy, focus states, touch targets, form labels, aria, skip-nav, reduced motion, contrast ratios |
-| **Visual Craft** | 25 | Micro-interactions (press feedback, text-wrap balance, entrance animations), error recovery, loading states, smooth scroll |
-| **Mobile & Responsive** | 25 | 375px-proof: text scaling, 44px touch targets, card stacking, readable line lengths, touch search |
-| **Performance** | 20 | Server rendering, next/font, <=4 client components, no heavy deps, lazy-loaded Mermaid |
-| **Note Viewer** | 15 | Prose typography, wikilinks, callouts, Shiki, metadata bar, backlinks, KaTeX, Mermaid, breadcrumbs |
+| **Token Discipline** | 50 | No raw Tailwind palette colors, no hardcoded hex, no bracket size literals, opacity uses only 100/60/40/15 stops |
+| **Typography Coherence** | 40 | Type scale CSS vars defined and referenced, serif loaded, note prose uses serif, only font-medium/font-normal weights, consistent heading/label sizes |
+| **Color Coherence** | 40 | Brand palette vars defined, metadata-bar and catch-all use tokens not raw Tailwind, callout colors use brand tokens, prose colors use CSS vars |
+| **Spacing Consistency** | 30 | All sections use same py-, label-to-heading gap consistent, heading-to-content gap consistent, paragraph spacing consistent |
+| **Content Completeness** | 40 | Hero, problem, how-it-works, tools, comparison, deploy, waitlist form, heading hierarchy |
+| **Accessibility** | 30 | Heading hierarchy, focus states, form labels, aria-label, skip-nav, reduced motion, selection color |
+| **Performance** | 20 | Server rendering, next/font, minimal client components, no heavy deps, lazy Mermaid |
 
 **Mode: Split** — agents can improve measurement scripts (add checks, fix false positives) but cannot change component weights or point allocations.
 
@@ -180,45 +180,36 @@ bash scripts/score.sh --json   # machine-parseable
 
 ### Action Catalog
 
-**Brand Identity (7/35 → 35/35):**
+**Token Discipline (10/50 → 50/50):**
 
 | Action | Pts | Effort | Notes |
 |--------|-----|--------|-------|
-| Add brand palette CSS vars (cream, ink, harvest, moss, earth) | +4 | 15 min | DESIGN.md hex values as custom properties |
-| Load serif font via next/font | +5 | 15 min | Lora, DM Serif Display, or Libre Baskerville |
-| Restyle hero: cream bg, ink text, serif headline | +13 | 1 hr | Cream background, earth-tone text, serif h1. Visual transition to dark below |
-| Change body default to font-sans | +3 | 5 min | layout.tsx: `font-mono` → `font-sans` |
-| Warm→dark section transition | +3 | 15 min | Explicit bg-background on first dark section |
+| Replace raw Tailwind colors in metadata-bar.tsx with brand tokens | +up to 15 | 30 min | bg-green-50 → bg-moss/15, text-green-800 → text-moss, etc. |
+| Replace raw Tailwind colors in [...path]/page.tsx TYPE_COLORS | +up to 15 | 30 min | text-green-700 → text-moss, text-blue-700 → text-ink, etc. |
+| Replace bracket sizes with type scale vars or Tailwind tokens | +up to 10 | 1 hr | text-[1.953rem] → use CSS var, text-[0.8rem] → text-sm token |
+| Normalize opacity to 100/60/40/15 stops only | +up to 15 | 1 hr | /50 → /40 or /60, /70 → /60, /30 → /40 or /15, /20 → /15 |
 
-**Content & Comprehension (18/30 → 30/30):**
-
-| Action | Pts | Effort | Notes |
-|--------|-----|--------|-------|
-| Add "The 6 Tools" section with real examples | +4 | 1 hr | Each MCP tool with a query/response. Scannable, not verbose |
-| Add comparison table (24 MCP servers vs Grove) | +4 | 1 hr | Columns: hosted, write-back, vault-aware, search quality |
-| Add real waitlist email form | +4 | 30 min | Formspree or server action. Replace `#waitlist` anchor |
-
-**Accessibility (4/30 → 30/30):**
+**Typography Coherence (30/40 → 40/40):**
 
 | Action | Pts | Effort | Notes |
 |--------|-----|--------|-------|
-| Add h2 tags to all landing page sections | +5 | 15 min | Currently h1→p→p. Need h1→h2→h2→h2 |
-| Add focus states (focus:ring-2) to all interactive elements | +5 | 30 min | Global focus-visible style or per-element |
-| Add `<label>` to login form input | +4 | 5 min | `<label htmlFor="api-key">` |
-| Add aria-label to sections | +3 | 10 min | `<section aria-label="How it works">` |
-| Add skip-to-content link | +3 | 10 min | Hidden link, visible on focus, jumps to `#main` |
-| Add prefers-reduced-motion media query | +3 | 10 min | Disable animations when user prefers reduced motion |
-| Bump muted text contrast to 4.5:1+ | +3 | 5 min | `--muted: #5a5a5a` → `#8a8a8a` or similar |
+| Replace font-bold with font-medium everywhere | +up to 10 | 30 min | 11 violations. font-bold → font-medium, font-semibold → font-medium |
 
-**Visual Craft (11/25 → 25/25):**
+**Color Coherence (17/40 → 40/40):**
 
 | Action | Pts | Effort | Notes |
 |--------|-----|--------|-------|
-| Add active:scale-[0.98] to CTA buttons | +3 | 5 min | Press feedback like Arc |
-| Add text-pretty or text-balance to headlines | +3 | 5 min | Prevents orphaned words on responsive |
-| Add error state to search on API failure | +3 | 15 min | Replace silent catch with "Search failed" message |
-| Add smooth scroll for anchor links | +2 | 5 min | `html { scroll-behavior: smooth }` |
-| Add loading.tsx for note viewer | +3 | 15 min | Next.js loading file with skeleton or spinner |
+| Replace hardcoded hex in callout CSS with brand vars | +up to 10 | 15 min | #2563eb → var(--moss), etc. or create callout-specific tokens |
+| Replace hardcoded hex in prose CSS vars with var() refs | +up to 10 | 15 min | --tw-prose-body: #2C2416 → var(--ink), etc. |
+
+**Spacing Consistency (0/30 → 30/30):**
+
+| Action | Pts | Effort | Notes |
+|--------|-----|--------|-------|
+| Normalize all section py- to py-20 | +8 | 15 min | Currently 3 unique values (py-6, py-20, py-28) |
+| Normalize label mb- to single value (mb-4) | +8 | 15 min | Currently mb-2, mb-4, mb-12 |
+| Normalize h2 mb- to single value (mb-6) | +7 | 15 min | Currently mb-6, mb-8, mb-12 |
+| Normalize space-y to max 2 values | +7 | 30 min | Currently 6 unique (1,2,3,4,6,16). Settle on space-y-4 and space-y-8 |
 
 ### Quality Checks (manual review)
 
