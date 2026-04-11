@@ -37,6 +37,14 @@ html {
   --text-hero: 3.052rem;
   --text-hero-lg: 3.815rem;
 
+  /* ── Callout colors ── */
+  --callout-note: #2563eb;
+  --callout-warning: #d97706;
+  --callout-tip: var(--moss);
+  --callout-danger: #dc2626;
+  --callout-info: #0891b2;
+  --callout-quote: var(--earth);
+
   /* ── Code surfaces (warm dark inset) ── */
   --code-bg: #2C2416;
   --code-fg: #E8E2D6;
@@ -44,6 +52,14 @@ html {
 }
 
 @theme inline {
+  --text-title: var(--text-xl);
+  --text-heading: var(--text-2xl);
+  --text-label: var(--text-sm);
+  --text-display: var(--text-hero);
+  --text-display-lg: var(--text-hero-lg);
+  --text-subhead: var(--text-lg);
+  --text-detail: var(--text-xs);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
@@ -155,20 +171,20 @@ body::before {
 
 /* Prose overrides for warm editorial theme */
 .note-content .prose {
-  --tw-prose-body: #2C2416;
-  --tw-prose-headings: #2C2416;
-  --tw-prose-links: #7A8B5C;
-  --tw-prose-bold: #2C2416;
-  --tw-prose-code: #3D3524;
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-links: var(--moss);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-code: var(--earth);
   --tw-prose-pre-bg: var(--code-bg);
   --tw-prose-pre-code: var(--code-fg);
-  --tw-prose-quotes: #2C241680;
-  --tw-prose-quote-borders: #2C241620;
-  --tw-prose-hr: #2C241615;
-  --tw-prose-th-borders: #2C241615;
-  --tw-prose-td-borders: #2C241610;
-  --tw-prose-counters: #2C241660;
-  --tw-prose-bullets: #2C241640;
+  --tw-prose-quotes: color-mix(in srgb, var(--ink) 60%, transparent);
+  --tw-prose-quote-borders: color-mix(in srgb, var(--ink) 15%, transparent);
+  --tw-prose-hr: color-mix(in srgb, var(--ink) 15%, transparent);
+  --tw-prose-th-borders: color-mix(in srgb, var(--ink) 15%, transparent);
+  --tw-prose-td-borders: color-mix(in srgb, var(--ink) 15%, transparent);
+  --tw-prose-counters: color-mix(in srgb, var(--ink) 60%, transparent);
+  --tw-prose-bullets: color-mix(in srgb, var(--ink) 40%, transparent);
   max-width: 65ch;
   font-family: var(--font-serif);
   font-size: var(--text-prose);
@@ -301,35 +317,23 @@ body::before {
   margin-bottom: 0.5rem;
 }
 
-.callout-note {
-  border-left-color: #2563eb;
-}
-.callout-note .callout-title { color: #2563eb; }
+.callout-note { border-left-color: var(--callout-note); }
+.callout-note .callout-title { color: var(--callout-note); }
 
-.callout-warning {
-  border-left-color: #d97706;
-}
-.callout-warning .callout-title { color: #d97706; }
+.callout-warning { border-left-color: var(--callout-warning); }
+.callout-warning .callout-title { color: var(--callout-warning); }
 
-.callout-tip {
-  border-left-color: #16a34a;
-}
-.callout-tip .callout-title { color: #16a34a; }
+.callout-tip { border-left-color: var(--callout-tip); }
+.callout-tip .callout-title { color: var(--callout-tip); }
 
-.callout-danger {
-  border-left-color: #dc2626;
-}
-.callout-danger .callout-title { color: #dc2626; }
+.callout-danger { border-left-color: var(--callout-danger); }
+.callout-danger .callout-title { color: var(--callout-danger); }
 
-.callout-info {
-  border-left-color: #0891b2;
-}
-.callout-info .callout-title { color: #0891b2; }
+.callout-info { border-left-color: var(--callout-info); }
+.callout-info .callout-title { color: var(--callout-info); }
 
-.callout-quote {
-  border-left-color: #57534e;
-}
-.callout-quote .callout-title { color: #57534e; }
+.callout-quote { border-left-color: var(--callout-quote); }
+.callout-quote .callout-title { color: var(--callout-quote); }
 
 /* Mermaid placeholder skeleton */
 .mermaid-placeholder {
