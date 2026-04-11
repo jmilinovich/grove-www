@@ -153,20 +153,11 @@ function visitText(
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// Remark plugin: strip trailing link-list sections (See Also, Used In, etc.)
-// These are navigation sections that duplicate the "Referenced by" backlinks.
+// Remark plugin: strip empty sections left after dataview removal
+// A heading followed by nothing (or only by another heading) is orphaned.
 // ---------------------------------------------------------------------------
 
-const LINK_SECTION_HEADINGS = new Set([
-  "see also",
-  "used in",
-  "related",
-  "references",
-  "related notes",
-  "related concepts",
-]);
-
-function remarkStripLinkSections(): Plugin<[], MdastRoot> {
+function remarkStripEmptySections(): Plugin<[], MdastRoot> {
   return () => {
     return (tree: MdastRoot) => {
       const removeIndices = new Set<number>();
@@ -175,27 +166,19 @@ function remarkStripLinkSections(): Plugin<[], MdastRoot> {
         const node = tree.children[i];
         if (node.type !== "heading") continue;
 
-        // Extract heading text
-        const heading = node as { type: string; depth: number; children: { type: string; value?: string }[] };
-        const text = heading.children
-          .filter((c) => c.type === "text")
-          .map((c) => c.value ?? "")
-          .join("")
-          .trim()
-          .toLowerCase();
+        const heading = node as { type: string; depth: number };
 
-        if (!LINK_SECTION_HEADINGS.has(text)) continue;
-
-        // Check if the content after this heading is just a list of wikilinks
-        // Remove the heading and all content until the next heading at same or higher level
-        removeIndices.add(i);
+        // Check if this heading has no content before the next heading at same/higher level
+        let hasContent = false;
         for (let j = i + 1; j < tree.children.length; j++) {
           const next = tree.children[j];
-          if (next.type === "heading") {
-            const nextDepth = (next as { depth: number }).depth;
-            if (nextDepth <= heading.depth) break;
-          }
-          removeIndices.add(j);
+          if (next.type === "heading" && (next as { depth: number }).depth <= heading.depth) break;
+          hasContent = true;
+          break;
+        }
+
+        if (!hasContent) {
+          removeIndices.add(i);
         }
       }
 
@@ -477,7 +460,7 @@ export async function renderMarkdown(
     .use(remarkGfm)
     .use(remarkWikilinks(links))
     .use(remarkStripDataview())
-    .use(remarkStripLinkSections())
+    .use(remarkStripEmptySections())
     .use(remarkCallouts())
     .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })

@@ -4,14 +4,49 @@ import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
+const API_URL = process.env.NEXT_PUBLIC_GROVE_API_URL ?? "https://api.grove.md";
+
 function LoginForm() {
   const [apiKey, setApiKey] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handleSubmit = useCallback(
+  const handleMagicLink = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError("");
+      setLoading(true);
+
+      try {
+        const res = await fetch(`${API_URL}/auth/magic-link`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            redirect: `${window.location.origin}/api/auth/callback`,
+          }),
+        });
+
+        if (!res.ok) {
+          setError("Could not send magic link");
+          return;
+        }
+
+        setMagicLinkSent(true);
+      } catch {
+        setError("Network error — could not reach server");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [email],
+  );
+
+  const handleApiKey = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       setError("");
@@ -49,11 +84,56 @@ function LoginForm() {
             Grove
           </h1>
           <p className="text-sm text-ink/60 mt-1">
-            Enter your API key to view your vault.
+            Sign in to view your vault.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Magic Link Form */}
+        {magicLinkSent ? (
+          <div className="mb-8">
+            <div className="bg-moss/10 border border-moss/20 rounded px-4 py-3.5 text-sm text-ink">
+              Check your email for a sign-in link.
+            </div>
+            <button
+              onClick={() => setMagicLinkSent(false)}
+              className="text-xs text-ink/40 mt-3 hover:text-ink/60 transition-colors"
+            >
+              Didn&apos;t receive it? Try again
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleMagicLink} className="mb-8">
+            <label htmlFor="email" className="block text-xs uppercase tracking-[0.1em] text-ink/60 mb-2">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoFocus
+              className="w-full bg-white border border-ink/15 rounded px-4 py-3.5 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={loading || !email}
+              className="w-full mt-3 bg-ink text-cream rounded px-4 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Sending..." : "Send magic link"}
+            </button>
+          </form>
+        )}
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px bg-ink/10" />
+          <span className="text-xs text-ink/30 uppercase tracking-wider">or</span>
+          <div className="flex-1 h-px bg-ink/10" />
+        </div>
+
+        {/* API Key Form */}
+        <form onSubmit={handleApiKey} className="space-y-4">
           <label htmlFor="api-key" className="block text-xs uppercase tracking-[0.1em] text-ink/60">
             API key
           </label>
@@ -63,7 +143,6 @@ function LoginForm() {
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="grove_live_..."
-            autoFocus
             className="w-full bg-white border border-ink/15 rounded px-4 py-3.5 text-sm text-ink placeholder:text-ink/15 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors font-mono"
           />
 
@@ -76,14 +155,14 @@ function LoginForm() {
             disabled={loading || !apiKey}
             className="w-full bg-ink text-cream rounded px-4 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Authenticating..." : "Connect"}
+            {loading ? "Authenticating..." : "Connect with API key"}
           </button>
         </form>
 
         <p className="text-xs text-ink/40 mt-6 text-center">
-          Need a key?{" "}
+          Need access?{" "}
           <a href="https://grove.md" className="text-moss hover:underline transition-colors">
-            Get early access
+            Learn more
           </a>
         </p>
       </div>
