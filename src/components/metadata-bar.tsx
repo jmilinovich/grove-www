@@ -49,7 +49,7 @@ export default function MetadataBar({
   const overflowCount = tags.length - MAX_VISIBLE_TAGS;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs">
+    <div className="flex flex-wrap items-center gap-2 text-xs mb-6">
       {type && (
         <span
           className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-medium ${TYPE_COLORS[type] || DEFAULT_TYPE_COLOR}`}
@@ -61,17 +61,17 @@ export default function MetadataBar({
       {visibleTags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center rounded-full border border-surface-border bg-surface px-2 py-0.5 text-muted-light"
+          className="inline-flex items-center rounded-full border border-ink/15 bg-ink/5 px-2 py-0.5 text-ink/70"
         >
           {tag}
         </span>
       ))}
       {overflowCount > 0 && (
-        <span className="text-muted">+{overflowCount}</span>
+        <span className="text-ink/50">+{overflowCount}</span>
       )}
 
       {(created || modified) && (
-        <span className="ml-auto text-muted">
+        <span className="ml-auto text-ink/50">
           {created && <span>created {relativeDate(created)}</span>}
           {created && modified && <span className="mx-1">·</span>}
           {modified && <span>edited {relativeDate(modified)}</span>}

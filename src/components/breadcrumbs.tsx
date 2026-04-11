@@ -12,7 +12,7 @@ export default function Breadcrumbs({ path }: { path: string }) {
   if (segments.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="text-sm text-muted">
+    <nav aria-label="Breadcrumb" className="text-sm text-ink/50 mb-4">
       <ol className="flex flex-wrap items-center gap-1">
         {segments.map((segment, i) => {
           const isLast = i === segments.length - 1;
@@ -21,16 +21,16 @@ export default function Breadcrumbs({ path }: { path: string }) {
           return (
             <li key={href} className="flex items-center gap-1">
               {i > 0 && (
-                <span className="text-muted select-none" aria-hidden>/</span>
+                <span className="text-ink/30 select-none" aria-hidden>/</span>
               )}
               {isLast ? (
-                <span className="text-foreground truncate max-w-[200px]">
+                <span className="text-ink/70 truncate max-w-[200px]">
                   {segment}
                 </span>
               ) : (
                 <Link
                   href={href}
-                  className="hover:text-accent transition-colors truncate max-w-[120px] md:max-w-none"
+                  className="hover:text-ink transition-colors truncate max-w-[120px] md:max-w-none"
                 >
                   {/* On mobile, hide middle segments when there are 3+ */}
                   <span

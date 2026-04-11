@@ -44,27 +44,27 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
   const aliases = isPerson ? getAliases(note) : [];
 
   return (
-    <article className="note-content mx-auto" style={{ maxWidth: 700 }}>
-      <header className="mb-8">
-        <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
+    <article className="note-content mx-auto" style={{ maxWidth: 680 }}>
+      <header className="mb-10 pb-8 border-b border-ink/10">
+        <h1 className="text-3xl font-serif font-medium text-ink leading-tight tracking-tight">
           {title}
         </h1>
         {aliases.length > 0 && (
-          <p className="mt-1 text-sm text-muted-light">
+          <p className="mt-2 text-sm text-ink/50">
             {aliases.join(" · ")}
           </p>
         )}
       </header>
 
       <div
-        className="prose prose-invert"
+        className="prose prose-stone prose-lg"
         dangerouslySetInnerHTML={{ __html: html }}
       />
       <MermaidHydrator />
 
       {note.backlinks.length > 0 && (
-        <footer className="mt-12 pt-8 border-t border-surface-border">
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-4">
+        <footer className="mt-16 pt-8 border-t border-ink/10">
+          <h2 className="text-xs uppercase tracking-widest text-ink/40 mb-4">
             Referenced by
           </h2>
           <ul className="space-y-1">
@@ -75,7 +75,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
                 <li key={bl}>
                   <Link
                     href={href}
-                    className="group flex items-center gap-2 rounded-lg px-3 py-2 -mx-3 hover:bg-surface transition-colors"
+                    className="group flex items-center gap-2 rounded-lg px-3 py-2.5 -mx-3 hover:bg-ink/5 transition-colors"
                   >
                     <svg
                       width="14"
@@ -86,16 +86,16 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="shrink-0 text-muted"
+                      className="shrink-0 text-ink/30"
                     >
                       <path d="M9 17H7A5 5 0 0 1 7 7h2" />
                       <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
                       <line x1="8" y1="12" x2="16" y2="12" />
                     </svg>
-                    <span className="text-sm text-muted-light group-hover:text-foreground transition-colors">
+                    <span className="text-sm text-ink/60 group-hover:text-ink transition-colors">
                       {name}
                     </span>
-                    <span className="text-xs text-muted ml-auto hidden sm:inline">
+                    <span className="text-xs text-ink/30 ml-auto hidden sm:inline">
                       {bl.split("/").slice(0, -1).join("/")}
                     </span>
                   </Link>
