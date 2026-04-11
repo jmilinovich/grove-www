@@ -145,9 +145,9 @@ Your vault never leaves your infrastructure — hosted or self-hosted.
 | **Time on page** | >60s average | Vercel Analytics |
 | **Bounce rate** | <50% | Vercel Analytics |
 
-### Automated Scorecard (150 pts)
+### Automated Scorecard (180 pts)
 
-Run the fitness function:
+Calibrated against Linear, Vercel, Raycast, and Arc quality bars. Scoring 180/180 means the site is genuinely world-class — not just functional.
 
 ```bash
 bash scripts/score.sh          # human-readable
@@ -158,13 +158,15 @@ bash scripts/score.sh --json   # machine-parseable
 
 | Component | Max | What it measures |
 |-----------|-----|------------------|
-| **Brand Cohesion** | 40 | Brand palette (cream/ink/harvest/moss) in CSS, hero uses warm ground, serif font loaded, wordmark uses serif, warm→dark transition, amber bridge accent |
-| **Landing Page** | 35 | All sections from this spec present — hero, problem, tools, comparison, deploy, waitlist form |
-| **Note Viewer** | 30 | Prose styling, wikilinks, callouts, code blocks, metadata bar, breadcrumbs, backlinks, math, diagrams |
-| **Performance** | 25 | Server rendering, next/font, minimal client JS, no heavy assets or deps |
-| **Usability & Mobile** | 30 | Mobile text scaling, touch targets, max-width readability, overflow handling, mobile nav, stacking cards, touch-accessible search, responsive padding, clear hero copy |
+| **Brand Identity** | 35 | DESIGN.md palette (cream/ink/harvest/moss) in CSS, serif font for wordmark, hero uses warm ground with warm→dark transition, sans-serif body default, tokenized colors |
+| **Content & Comprehension** | 30 | All GOAL.md sections present, real waitlist form, quantified social proof, proper heading hierarchy (h1→h2) |
+| **Accessibility** | 30 | WCAG 2.1 AA: heading hierarchy, focus states, touch targets, form labels, aria, skip-nav, reduced motion, contrast ratios |
+| **Visual Craft** | 25 | Micro-interactions (press feedback, text-wrap balance, entrance animations), error recovery, loading states, smooth scroll |
+| **Mobile & Responsive** | 25 | 375px-proof: text scaling, 44px touch targets, card stacking, readable line lengths, touch search |
+| **Performance** | 20 | Server rendering, next/font, <=4 client components, no heavy deps, lazy-loaded Mermaid |
+| **Note Viewer** | 15 | Prose typography, wikilinks, callouts, Shiki, metadata bar, backlinks, KaTeX, Mermaid, breadcrumbs |
 
-**Mode: Split** — agents can improve the measurement scripts (add checks, fix false positives) but cannot change component weights or point allocations.
+**Mode: Split** — agents can improve measurement scripts (add checks, fix false positives) but cannot change component weights or point allocations.
 
 ### Improvement Loop
 
@@ -178,40 +180,59 @@ bash scripts/score.sh --json   # machine-parseable
 
 ### Action Catalog
 
-| Action | Component | Est. pts | Effort | Notes |
-|--------|-----------|----------|--------|-------|
-| **Add brand palette to CSS** | Brand | +13 | 30 min | Define `--cream`, `--ink`, `--harvest`, `--moss`, `--earth` vars with DESIGN.md hex values. |
-| **Load serif font** | Brand | +9 | 15 min | Add a transitional serif (Lora, DM Serif Display, or Libre Baskerville) via `next/font`. Use on wordmark and hero headline. |
-| **Restyle hero with brand palette** | Brand | +12 | 1 hr | Cream background, ink text, serif headline. Visual transition to dark product palette below. |
-| **Add "The 6 Tools" section** | Landing | +4 | 1 hr | Show each MCP tool with a real query/response example. Scannable, not verbose. |
-| **Add comparison table** | Landing | +4 | 1 hr | "24 Obsidian MCP servers" vs Grove. Columns: hosted, write-back, vault-aware, search quality. |
-| **Add waitlist email form** | Landing | +4 | 30 min | Real `<form>` with email input. Formspree, or server action → Grove note. Replace the `#waitlist` anchor. |
+**Brand Identity (7/35 → 35/35):**
 
-**After those 6, the score is 160/160.** Future work extends the scorecard itself:
+| Action | Pts | Effort | Notes |
+|--------|-----|--------|-------|
+| Add brand palette CSS vars (cream, ink, harvest, moss, earth) | +4 | 15 min | DESIGN.md hex values as custom properties |
+| Load serif font via next/font | +5 | 15 min | Lora, DM Serif Display, or Libre Baskerville |
+| Restyle hero: cream bg, ink text, serif headline | +13 | 1 hr | Cream background, earth-tone text, serif h1. Visual transition to dark below |
+| Change body default to font-sans | +3 | 5 min | layout.tsx: `font-mono` → `font-sans` |
+| Warm→dark section transition | +3 | 15 min | Explicit bg-background on first dark section |
 
-| Future check | Component | Pts | What to add |
-|--------------|-----------|-----|-------------|
-| Lighthouse performance >= 95 | Performance | +5 | Run `npx lighthouse` in CI, parse score |
-| Accessibility audit passes | Usability | +5 | axe-core or Lighthouse a11y >= 90 |
-| Real mobile screenshot test | Usability | +3 | Playwright screenshot at 375px, visual diff |
-| OG image with brand mark | Brand | +3 | Generate or serve a proper social card |
-| Analytics instrumented | Landing | +3 | Vercel Analytics or Plausible script present |
-| Favicon is citrus icon | Brand | +2 | Check public/favicon exists and isn't default |
+**Content & Comprehension (18/30 → 30/30):**
 
-### Content Quality Checks (manual review):
+| Action | Pts | Effort | Notes |
+|--------|-----|--------|-------|
+| Add "The 6 Tools" section with real examples | +4 | 1 hr | Each MCP tool with a query/response. Scannable, not verbose |
+| Add comparison table (24 MCP servers vs Grove) | +4 | 1 hr | Columns: hosted, write-back, vault-aware, search quality |
+| Add real waitlist email form | +4 | 30 min | Formspree or server action. Replace `#waitlist` anchor |
+
+**Accessibility (4/30 → 30/30):**
+
+| Action | Pts | Effort | Notes |
+|--------|-----|--------|-------|
+| Add h2 tags to all landing page sections | +5 | 15 min | Currently h1→p→p. Need h1→h2→h2→h2 |
+| Add focus states (focus:ring-2) to all interactive elements | +5 | 30 min | Global focus-visible style or per-element |
+| Add `<label>` to login form input | +4 | 5 min | `<label htmlFor="api-key">` |
+| Add aria-label to sections | +3 | 10 min | `<section aria-label="How it works">` |
+| Add skip-to-content link | +3 | 10 min | Hidden link, visible on focus, jumps to `#main` |
+| Add prefers-reduced-motion media query | +3 | 10 min | Disable animations when user prefers reduced motion |
+| Bump muted text contrast to 4.5:1+ | +3 | 5 min | `--muted: #5a5a5a` → `#8a8a8a` or similar |
+
+**Visual Craft (11/25 → 25/25):**
+
+| Action | Pts | Effort | Notes |
+|--------|-----|--------|-------|
+| Add active:scale-[0.98] to CTA buttons | +3 | 5 min | Press feedback like Arc |
+| Add text-pretty or text-balance to headlines | +3 | 5 min | Prevents orphaned words on responsive |
+| Add error state to search on API failure | +3 | 15 min | Replace silent catch with "Search failed" message |
+| Add smooth scroll for anchor links | +2 | 5 min | `html { scroll-behavior: smooth }` |
+| Add loading.tsx for note viewer | +3 | 15 min | Next.js loading file with skeleton or spinner |
+
+### Quality Checks (manual review)
+
+**Content:**
 - [ ] Every section has a clear "so what" for at least one persona
 - [ ] No section is pure feature list — each connects to a pain point
 - [ ] The self-host path is copy-pasteable (works in <5 minutes on a fresh VPS)
 - [ ] The hosted path has a clear, low-friction signup
-- [ ] The comparison table is factual and verifiable
-- [ ] The story section is personal, not corporate
-- [ ] Mobile-first — the phone is literally the pain point
-- [ ] Page loads in <1s on 3G (no images, no heavy JS)
+- [ ] Copy density: ~50-70 words per section max (Linear standard)
 - [ ] Every code block is real, not pseudocode
 
-### Design Quality Checks (manual review):
-- [ ] Dark theme, monospace, zero stock imagery
-- [ ] Typography hierarchy is clear — you can scan the page in 10 seconds
-- [ ] Responsive — works on phone (this is literally the pitch)
+**Design:**
+- [ ] Typography hierarchy scannable in 10 seconds
+- [ ] Responsive — works on phone (the phone IS the pitch)
 - [ ] No animations that don't serve comprehension
-- [ ] The page feels like it was made by someone who cares about craft, not someone who used a template
+- [ ] Feels handcrafted, not templated
+- [ ] The page itself IS the product demo — if it's slow, you've disproven the pitch
