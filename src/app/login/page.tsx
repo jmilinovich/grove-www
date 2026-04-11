@@ -4,8 +4,6 @@ import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-const API_URL = process.env.NEXT_PUBLIC_GROVE_API_URL ?? "https://api.grove.md";
-
 function LoginForm() {
   const [apiKey, setApiKey] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +20,7 @@ function LoginForm() {
       setLoading(true);
 
       try {
-        const res = await fetch(`${API_URL}/auth/magic-link`, {
+        const res = await fetch("/api/auth/magic-link", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
