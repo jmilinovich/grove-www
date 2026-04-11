@@ -4,16 +4,21 @@ const WAITLIST_URL = "#waitlist";
 export default function Home() {
   return (
     <div className="flex flex-col items-center">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-accent focus:text-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium">
+        Skip to content
+      </a>
       <Nav />
-      <main className="w-full">
+      <main id="main" className="w-full">
         <Hero />
         <TheProblem />
         <HowItWorks />
+        <TheTools />
         <WhatGrows />
         <Groves />
         <Discovery />
         <Deploy />
         <WhyNow />
+        <Comparison />
         <BottomCTA />
       </main>
       <Footer />
@@ -48,32 +53,34 @@ function Nav() {
 
 function Hero() {
   return (
-    <section className="pt-28 pb-20 sm:pt-40 sm:pb-28 px-6 max-w-5xl mx-auto">
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight max-w-3xl fade-up">
-        Your notes and your AI,
-        <br />
-        finally connected.
-      </h1>
+    <section className="bg-cream pt-28 pb-20 sm:pt-40 sm:pb-28 px-6">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08] tracking-tight max-w-3xl fade-up font-serif text-ink text-pretty">
+          Your notes and your AI,
+          <br />
+          finally connected.
+        </h1>
 
-      <p className="mt-8 text-lg text-muted max-w-xl leading-relaxed fade-up delay-1">
-        You take notes. You journal. You save ideas. Then you talk to your AI
-        and it knows none of it. Grove connects them &mdash; your AI reads your
-        notes, writes back, and the knowledge grows together.
-      </p>
+        <p className="mt-8 text-lg text-ink/60 max-w-xl leading-relaxed fade-up delay-1">
+          You take notes. You journal. You save ideas. Then you talk to your AI
+          and it knows none of it. Grove connects them &mdash; your AI reads your
+          notes, writes back, and the knowledge grows together.
+        </p>
 
-      <div className="mt-10 flex flex-wrap gap-4 fade-up delay-2">
-        <a
-          href={WAITLIST_URL}
-          className="inline-flex items-center bg-accent text-background px-7 py-3.5 text-sm font-bold hover:bg-green-300 transition-colors"
-        >
-          Get early access
-        </a>
-        <a
-          href={GITHUB_URL}
-          className="inline-flex items-center border border-surface-border px-7 py-3.5 text-sm text-muted hover:text-foreground hover:border-muted transition-colors"
-        >
-          Self-host &rarr;
-        </a>
+        <div className="mt-10 flex flex-wrap gap-4 fade-up delay-2">
+          <a
+            href={WAITLIST_URL}
+            className="inline-flex items-center bg-ink text-cream px-7 py-3.5 text-sm font-bold hover:bg-earth transition-colors active:scale-[0.98]"
+          >
+            Get early access
+          </a>
+          <a
+            href={GITHUB_URL}
+            className="inline-flex items-center border border-ink/20 px-7 py-3.5 text-sm text-ink hover:bg-ink/5 transition-colors active:scale-[0.98]"
+          >
+            Self-host &rarr;
+          </a>
+        </div>
       </div>
     </section>
   );
@@ -83,13 +90,13 @@ function Hero() {
 
 function TheProblem() {
   return (
-    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+    <section aria-label="The problem" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
       <div className="max-w-2xl space-y-6">
         <p className="text-muted text-xs tracking-[0.2em] uppercase mb-2">The problem</p>
 
-        <p className="text-xl sm:text-2xl leading-snug font-medium">
+        <h2 className="text-xl sm:text-2xl leading-snug font-medium text-pretty">
           Your notes live in one world. Your AI lives in another.
-        </p>
+        </h2>
 
         <p className="text-muted leading-relaxed">
           You have an Obsidian vault, a folder of markdown, years of journal entries.
@@ -115,10 +122,11 @@ function TheProblem() {
 
 function HowItWorks() {
   return (
-    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+    <section aria-label="How it works" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-12">
         How it works
       </p>
+      <h2 className="sr-only">How it works</h2>
 
       <div className="max-w-2xl space-y-16">
         {/* Connect */}
@@ -215,13 +223,13 @@ function HowItWorks() {
 
 function WhatGrows() {
   return (
-    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+    <section aria-label="What grows" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
         What grows
       </p>
-      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6 text-pretty">
         Not a folder of files. A graph of connected ideas.
-      </p>
+      </h2>
 
       <div className="bg-surface border border-surface-border p-6 sm:p-8 max-w-2xl mb-6">
         <pre className="text-xs sm:text-sm text-muted leading-relaxed code-block overflow-x-auto">
@@ -260,13 +268,13 @@ function WhatGrows() {
 
 function Groves() {
   return (
-    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+    <section aria-label="Groves" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
       <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
         Coming soon
       </p>
-      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6 text-pretty">
         Share a grove &mdash; a window into your knowledge.
-      </p>
+      </h2>
 
       <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
         <p>
@@ -289,13 +297,13 @@ function Groves() {
 
 function Discovery() {
   return (
-    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+    <section aria-label="Discovery" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
       <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
         Coming soon
       </p>
-      <p className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6 text-pretty">
         The graph grows while you sleep.
-      </p>
+      </h2>
 
       <div className="max-w-xl space-y-4 text-sm text-muted leading-relaxed">
         <p>
@@ -322,10 +330,11 @@ function Discovery() {
 
 function Deploy() {
   return (
-    <section id="deploy" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+    <section id="deploy" aria-label="Deployment options" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
         Your vault, your choice
       </p>
+      <h2 className="sr-only">Deployment options</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
         <div className="deploy-card border border-accent/40 bg-accent-dim/10 p-6 flex flex-col gap-3">
@@ -388,8 +397,9 @@ function Deploy() {
 
 function WhyNow() {
   return (
-    <section className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
+    <section aria-label="Why now" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
       <div className="max-w-2xl">
+        <h2 className="sr-only">Why now</h2>
         <blockquote className="border-l-2 border-muted pl-5 text-muted leading-relaxed">
           <p className="text-lg">
             &quot;I think there is room here for an incredible new product
@@ -429,34 +439,132 @@ function BottomCTA() {
   return (
     <section
       id="waitlist"
-      className="py-28 px-6 max-w-5xl mx-auto border-t border-surface-border"
+      aria-label="Get started"
+      className="py-28 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background"
     >
       <div className="max-w-xl">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-pretty">
           Your AI should know what you know.
         </h2>
         <p className="mt-3 text-muted">
           Connect your notes. Every conversation gets better.
         </p>
 
-        <div className="mt-8 flex flex-wrap gap-4">
-          <a
-            href={WAITLIST_URL}
-            className="inline-flex items-center bg-accent text-background px-7 py-3.5 text-sm font-bold hover:bg-green-300 transition-colors"
+        <form className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md" action="https://formspree.io/f/placeholder" method="POST">
+          <input
+            type="email"
+            name="email"
+            placeholder="you@example.com"
+            required
+            className="flex-1 bg-surface border border-surface-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center bg-accent text-background px-7 py-3 text-sm font-bold hover:bg-green-300 transition-colors active:scale-[0.98]"
           >
             Get early access
-          </a>
-          <a
-            href={GITHUB_URL}
-            className="inline-flex items-center border border-surface-border px-7 py-3.5 text-sm text-muted hover:text-foreground hover:border-muted transition-colors"
-          >
-            Self-host now &rarr;
-          </a>
-        </div>
+          </button>
+        </form>
+        <a
+          href={GITHUB_URL}
+          className="mt-3 inline-flex items-center text-sm text-muted hover:text-foreground transition-colors"
+        >
+          Or self-host now &rarr;
+        </a>
 
         <p className="mt-6 text-xs text-muted">
           Open source &middot; MIT licensed &middot; Privacy-first &middot; Git-native
         </p>
+      </div>
+    </section>
+  );
+}
+
+/* ─── The Tools ─── */
+
+function TheTools() {
+  const tools = [
+    { name: "query", desc: "Hybrid search — keywords and meaning fused together.", example: '"design systems" → 3 concepts, 2 journals, 14 links — 23ms' },
+    { name: "get", desc: "Read a note with parsed frontmatter and content hash.", example: 'get("Resilience") → type: concept, 847 words, 12 backlinks' },
+    { name: "multi_get", desc: "Batch-read notes by glob pattern or list.", example: '"Resources/Concepts/D*" → Design Systems, Decision Making, ...' },
+    { name: "write_note", desc: "Create or update with frontmatter validation and git commit.", example: 'write("Context Engineering") → committed, reindexed, 140ms' },
+    { name: "list_notes", desc: "Browse by folder, type, or pattern.", example: '"Resources/People/*" → 84 notes, sorted by modified' },
+    { name: "vault_status", desc: "Health, history, diagnostics, graph analysis, lifecycle digest.", example: 'mode: "graph" → 4,500 links, 12 clusters, 3 bridges' },
+  ];
+
+  return (
+    <section aria-label="The six tools" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">The tools</p>
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-12 text-pretty">
+        Six tools. No more. Agents work better with less choice.
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
+        {tools.map((tool) => (
+          <div key={tool.name} className="space-y-2">
+            <p className="text-sm font-medium text-accent font-mono">{tool.name}</p>
+            <p className="text-sm text-muted leading-relaxed">{tool.desc}</p>
+            <div className="bg-surface border border-surface-border p-3 text-xs font-mono text-muted-light">
+              {tool.example}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Comparison ─── */
+
+function Comparison() {
+  return (
+    <section aria-label="Comparison" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+      <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">The landscape</p>
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-8 text-pretty">
+        24 Obsidian MCP servers. All local-only.
+      </h2>
+      <div className="max-w-2xl overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead>
+            <tr className="border-b border-surface-border text-muted text-xs uppercase tracking-wider">
+              <th className="py-3 pr-6"></th>
+              <th className="py-3 pr-6">Others</th>
+              <th className="py-3 text-accent">Grove</th>
+            </tr>
+          </thead>
+          <tbody className="text-muted-light">
+            <tr className="border-b border-surface-border/50">
+              <td className="py-3 pr-6">Works from your phone</td>
+              <td className="py-3 pr-6 text-muted">No</td>
+              <td className="py-3 text-foreground">Yes</td>
+            </tr>
+            <tr className="border-b border-surface-border/50">
+              <td className="py-3 pr-6">Write-back with validation</td>
+              <td className="py-3 pr-6 text-muted">No</td>
+              <td className="py-3 text-foreground">Yes</td>
+            </tr>
+            <tr className="border-b border-surface-border/50">
+              <td className="py-3 pr-6">Frontmatter-aware search</td>
+              <td className="py-3 pr-6 text-muted">No</td>
+              <td className="py-3 text-foreground">Yes</td>
+            </tr>
+            <tr className="border-b border-surface-border/50">
+              <td className="py-3 pr-6">Semantic + keyword hybrid</td>
+              <td className="py-3 pr-6 text-muted">Rare</td>
+              <td className="py-3 text-foreground">Yes</td>
+            </tr>
+            <tr className="border-b border-surface-border/50">
+              <td className="py-3 pr-6">Git-backed writes</td>
+              <td className="py-3 pr-6 text-muted">No</td>
+              <td className="py-3 text-foreground">Every write</td>
+            </tr>
+            <tr>
+              <td className="py-3 pr-6">Graph analysis</td>
+              <td className="py-3 pr-6 text-muted">No</td>
+              <td className="py-3 text-foreground">Centrality, clusters, bridges</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
   );
