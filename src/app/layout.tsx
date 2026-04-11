@@ -3,6 +3,9 @@ import { Geist_Mono, Inter, Lora } from "next/font/google";
 import "./globals.css";
 import CommandPalette from "@/components/command-palette";
 import LastVisited from "@/components/last-visited";
+import SidebarProvider from "@/components/sidebar-provider";
+import SearchProvider from "@/components/search-provider";
+import AppShell from "@/components/app-shell";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -39,9 +42,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistMono.variable} ${inter.variable} ${lora.variable} antialiased`}>
       <body className="min-h-screen bg-background text-foreground font-sans">
-        <CommandPalette />
-        <LastVisited />
-        {children}
+        <SearchProvider>
+          <SidebarProvider>
+            <CommandPalette />
+            <LastVisited />
+            <AppShell>
+              {children}
+            </AppShell>
+          </SidebarProvider>
+        </SearchProvider>
       </body>
     </html>
   );

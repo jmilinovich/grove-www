@@ -81,7 +81,7 @@ All landing page sections: `py-20 px-6 max-w-5xl mx-auto`.
 
 ## Layout
 
-- **Content-first.** No sidebars or chrome competing with content.
+- **Content-first.** Chrome is subordinate to content. Sidebars and headers are collapsible and minimal.
 - **Generous whitespace.** Cream background is not emptiness — it is negative space.
 - **Mobile-first.** Every layout works on 375px first.
 - **No decorative elements.** No gradients, no stock photos, no illustrations in UI.

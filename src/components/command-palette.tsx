@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearch } from "./search-provider";
 
 interface SearchResult {
   path: string;
@@ -11,7 +12,7 @@ interface SearchResult {
 }
 
 export default function CommandPalette() {
-  const [open, setOpen] = useState(false);
+  const { open, openSearch, closeSearch } = useSearch();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -21,18 +22,11 @@ export default function CommandPalette() {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const router = useRouter();
 
-  // Open/close handlers
-  const openPalette = useCallback(() => {
-    setOpen(true);
+  const resetState = useCallback(() => {
     setQuery("");
     setResults([]);
     setSelectedIndex(0);
-  }, []);
-
-  const closePalette = useCallback(() => {
-    setOpen(false);
-    setQuery("");
-    setResults([]);
+    setError(null);
   }, []);
 
   // Keyboard shortcut: Cmd+K / Ctrl+K
@@ -41,18 +35,21 @@ export default function CommandPalette() {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         if (open) {
-          closePalette();
+          closeSearch();
+          resetState();
         } else {
-          openPalette();
+          resetState();
+          openSearch();
         }
       }
       if (e.key === "Escape" && open) {
-        closePalette();
+        closeSearch();
+        resetState();
       }
     }
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, openPalette, closePalette]);
+  }, [open, openSearch, closeSearch, resetState]);
 
   // Focus input when opened
   useEffect(() => {
@@ -93,7 +90,8 @@ export default function CommandPalette() {
   // Navigate to result
   function navigateTo(path: string) {
     const href = "/" + path.replace(/\.md$/, "");
-    closePalette();
+    closeSearch();
+    resetState();
     router.push(href);
   }
 
@@ -111,73 +109,26 @@ export default function CommandPalette() {
     }
   }
 
-  function handleLogout() {
-    fetch("/api/auth", { method: "DELETE" }).then(() => {
-      localStorage.removeItem("grove_last_path");
-      window.location.href = "/login";
-    });
-  }
-
-  if (!open) {
-    return (
-      <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface px-3 py-1.5 text-sm text-muted hover:text-foreground hover:border-muted transition-colors"
-          aria-label="Log out"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          <span className="hidden sm:inline">Log out</span>
-        </button>
-        <button
-          onClick={openPalette}
-          className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface px-3 py-1.5 text-sm text-muted hover:text-foreground hover:border-muted transition-colors"
-          aria-label="Search notes"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <span className="hidden sm:inline">Search</span>
-          <kbd className="hidden sm:inline-flex items-center rounded border border-surface-border px-1.5 py-0.5 text-detail text-muted font-mono">
-            <span className="text-xs">&#8984;</span>K
-          </kbd>
-        </button>
-      </div>
-    );
-  }
+  if (!open) return null;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
       onClick={(e) => {
-        if (e.target === e.currentTarget) closePalette();
+        if (e.target === e.currentTarget) {
+          closeSearch();
+          resetState();
+        }
       }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={closePalette} />
+      <div
+        className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+        onClick={() => {
+          closeSearch();
+          resetState();
+        }}
+      />
 
       {/* Palette */}
       <div className="relative w-full max-w-lg mx-4 rounded-xl border border-surface-border bg-white shadow-2xl overflow-hidden">

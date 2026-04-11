@@ -1,0 +1,239 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { useSidebar } from "./sidebar-provider";
+
+interface TreeEntry {
+  name: string;
+  path: string;
+  isFolder: boolean;
+  children?: TreeEntry[];
+}
+
+// Top-level PARA folders in display order
+const PRIMARY_FOLDERS = ["Areas", "Resources", "Journal", "Sources", "Notes"];
+const OTHER_FOLDERS = ["Archives", "Inbox"];
+
+function FolderIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ expanded, className }: { expanded: boolean; className?: string }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`transition-transform duration-150 ${expanded ? "rotate-90" : ""} ${className ?? ""}`}
+    >
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  );
+}
+
+function TreeNode({ entry, depth = 0 }: { entry: TreeEntry; depth?: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const [children, setChildren] = useState<TreeEntry[] | null>(entry.children ?? null);
+  const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = pathname === `/${entry.path}` || pathname.startsWith(`/${entry.path}/`);
+
+  const handleToggle = useCallback(async () => {
+    if (!entry.isFolder) return;
+
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+
+    if (children === null) {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/list?prefix=${encodeURIComponent(entry.path)}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Group into subfolders only (two-tier: don't show individual notes)
+          const subfolders = new Set<string>();
+          for (const e of data.entries) {
+            const relative = e.path.slice(entry.path.length + 1);
+            const slashIndex = relative.indexOf("/");
+            if (slashIndex !== -1) {
+              subfolders.add(relative.slice(0, slashIndex));
+            }
+          }
+          const folderEntries: TreeEntry[] = [...subfolders].sort().map((name) => ({
+            name,
+            path: `${entry.path}/${name}`,
+            isFolder: true,
+          }));
+          setChildren(folderEntries);
+        }
+      } catch {
+        // Silently fail — user can retry
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    setExpanded(true);
+  }, [entry, expanded, children]);
+
+  return (
+    <li>
+      <div
+        className="flex items-center group"
+        style={{ paddingLeft: `${depth * 12 + 8}px` }}
+      >
+        {entry.isFolder ? (
+          <>
+            <button
+              onClick={handleToggle}
+              className="flex items-center gap-1.5 py-1.5 pr-2 text-muted hover:text-foreground transition-colors"
+              aria-expanded={expanded}
+            >
+              <ChevronIcon expanded={expanded} className="text-ink/40" />
+            </button>
+            <Link
+              href={`/${entry.path}`}
+              className={`flex items-center gap-2 flex-1 py-1.5 text-sm rounded-md transition-colors truncate ${
+                isActive
+                  ? "text-foreground font-medium"
+                  : "text-muted-light hover:text-foreground"
+              }`}
+            >
+              <FolderIcon className="shrink-0 text-ink/40" />
+              <span className="truncate">{entry.name}</span>
+            </Link>
+          </>
+        ) : (
+          <Link
+            href={`/${entry.path}`}
+            className={`flex items-center gap-2 flex-1 py-1.5 pl-5 text-sm rounded-md transition-colors truncate ${
+              isActive
+                ? "text-foreground font-medium"
+                : "text-muted-light hover:text-foreground"
+            }`}
+          >
+            <span className="truncate">{entry.name}</span>
+          </Link>
+        )}
+      </div>
+
+      {expanded && children && children.length > 0 && (
+        <ul>
+          {children.map((child) => (
+            <TreeNode key={child.path} entry={child} depth={depth + 1} />
+          ))}
+        </ul>
+      )}
+
+      {loading && (
+        <div
+          className="py-1.5 text-xs text-muted"
+          style={{ paddingLeft: `${(depth + 1) * 12 + 28}px` }}
+        >
+          Loading...
+        </div>
+      )}
+    </li>
+  );
+}
+
+export default function Sidebar() {
+  const { open, close } = useSidebar();
+  const [firstVisit, setFirstVisit] = useState(false);
+
+  useEffect(() => {
+    const visited = localStorage.getItem("grove_sidebar_hint_shown");
+    if (!visited) {
+      setFirstVisit(true);
+      localStorage.setItem("grove_sidebar_hint_shown", "1");
+    }
+  }, []);
+
+  const primaryEntries: TreeEntry[] = PRIMARY_FOLDERS.map((name) => ({
+    name,
+    path: name,
+    isFolder: true,
+  }));
+
+  const otherEntries: TreeEntry[] = OTHER_FOLDERS.map((name) => ({
+    name,
+    path: name,
+    isFolder: true,
+  }));
+
+  return (
+    <>
+      {/* Mobile overlay backdrop */}
+      {open && (
+        <div
+          className="fixed inset-0 z-30 bg-ink/15 lg:hidden"
+          onClick={close}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`
+          shrink-0 overflow-hidden transition-all duration-200 ease-out
+          lg:relative lg:z-auto
+          ${open ? "w-64" : "w-0"}
+          max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-30 max-lg:pt-12
+          ${open ? "max-lg:w-64" : "max-lg:w-0"}
+        `}
+        aria-label="Vault navigation"
+      >
+        <div className="w-64 h-full overflow-y-auto bg-background border-r border-surface-border px-2 py-4">
+          {firstVisit && (
+            <p className="px-2 pb-3 text-xs text-muted">
+              Your table of contents.
+            </p>
+          )}
+
+          <nav>
+            <ul className="space-y-0.5">
+              {primaryEntries.map((entry) => (
+                <TreeNode key={entry.path} entry={entry} />
+              ))}
+            </ul>
+
+            {/* De-emphasized other folders */}
+            <div className="mt-6 pt-4 border-t border-surface-border">
+              <p className="px-2 pb-2 text-xs uppercase tracking-widest text-ink/40">
+                Other
+              </p>
+              <ul className="space-y-0.5 opacity-60">
+                {otherEntries.map((entry) => (
+                  <TreeNode key={entry.path} entry={entry} />
+                ))}
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </aside>
+    </>
+  );
+}
