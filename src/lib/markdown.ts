@@ -152,6 +152,59 @@ function visitText(
 }
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Remark plugin: strip trailing link-list sections (See Also, Used In, etc.)
+// These are navigation sections that duplicate the "Referenced by" backlinks.
+// ---------------------------------------------------------------------------
+
+const LINK_SECTION_HEADINGS = new Set([
+  "see also",
+  "used in",
+  "related",
+  "references",
+  "related notes",
+  "related concepts",
+]);
+
+function remarkStripLinkSections(): Plugin<[], MdastRoot> {
+  return () => {
+    return (tree: MdastRoot) => {
+      const removeIndices = new Set<number>();
+
+      for (let i = 0; i < tree.children.length; i++) {
+        const node = tree.children[i];
+        if (node.type !== "heading") continue;
+
+        // Extract heading text
+        const heading = node as { type: string; depth: number; children: { type: string; value?: string }[] };
+        const text = heading.children
+          .filter((c) => c.type === "text")
+          .map((c) => c.value ?? "")
+          .join("")
+          .trim()
+          .toLowerCase();
+
+        if (!LINK_SECTION_HEADINGS.has(text)) continue;
+
+        // Check if the content after this heading is just a list of wikilinks
+        // Remove the heading and all content until the next heading at same or higher level
+        removeIndices.add(i);
+        for (let j = i + 1; j < tree.children.length; j++) {
+          const next = tree.children[j];
+          if (next.type === "heading") {
+            const nextDepth = (next as { depth: number }).depth;
+            if (nextDepth <= heading.depth) break;
+          }
+          removeIndices.add(j);
+        }
+      }
+
+      tree.children = tree.children.filter((_, i) => !removeIndices.has(i));
+    };
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Remark plugin: strip Dataview queries
 // ---------------------------------------------------------------------------
 
@@ -424,6 +477,7 @@ export async function renderMarkdown(
     .use(remarkGfm)
     .use(remarkWikilinks(links))
     .use(remarkStripDataview())
+    .use(remarkStripLinkSections())
     .use(remarkCallouts())
     .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })
