@@ -31,16 +31,16 @@ export default function Home() {
 function Nav() {
   return (
     <nav className="w-full max-w-5xl mx-auto flex items-center justify-between px-6 py-6 text-sm">
-      <span className="text-foreground font-bold tracking-tight text-base">
-        grove<span className="text-accent">.</span>md
+      <span className="font-serif font-medium tracking-tight text-lg text-ink">
+        Grove
       </span>
-      <div className="flex items-center gap-6 text-muted">
-        <a href={GITHUB_URL} className="hover:text-foreground transition-colors">
+      <div className="flex items-center gap-6 text-ink/50">
+        <a href={GITHUB_URL} className="hover:text-ink transition-colors">
           GitHub
         </a>
         <a
           href={WAITLIST_URL}
-          className="text-accent hover:text-green-300 transition-colors font-medium"
+          className="text-moss hover:text-earth transition-colors font-medium"
         >
           Early access
         </a>
@@ -90,11 +90,11 @@ function Hero() {
 
 function TheProblem() {
   return (
-    <section aria-label="The problem" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="The problem" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <div className="max-w-2xl space-y-6">
         <p className="text-muted text-xs tracking-[0.2em] uppercase mb-2">The problem</p>
 
-        <h2 className="text-xl sm:text-2xl leading-snug font-medium text-pretty">
+        <h2 className="text-xl sm:text-2xl leading-snug font-serif font-medium text-pretty">
           Your notes live in one world. Your AI lives in another.
         </h2>
 
@@ -122,7 +122,7 @@ function TheProblem() {
 
 function HowItWorks() {
   return (
-    <section aria-label="How it works" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="How it works" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-12">
         How it works
       </p>
@@ -132,7 +132,7 @@ function HowItWorks() {
         {/* Connect */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-accent text-xs font-bold">01</span>
+            <span className="text-moss text-xs font-bold">01</span>
             <span className="text-lg font-medium">Connect your vault</span>
           </div>
           <div className="border-l border-surface-border pl-5">
@@ -148,7 +148,7 @@ function HowItWorks() {
         {/* Read */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-accent text-xs font-bold">02</span>
+            <span className="text-moss text-xs font-bold">02</span>
             <span className="text-lg font-medium">Your AI reads your notes</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
@@ -158,12 +158,12 @@ function HowItWorks() {
               the right notes, follows the links between them, and answers
               with your own context.
             </p>
-            <div className="bg-surface border border-surface-border p-4 text-sm">
+            <div className="bg-code-bg text-code-fg border border-code-bg/50 p-4 text-sm">
               <p className="text-foreground">
                 &quot;What do I know about design systems?&quot;
               </p>
               <p className="text-muted mt-2 text-xs">
-                <span className="text-accent">found</span>{" "}
+                <span className="text-moss">found</span>{" "}
                 3 concept notes, 2 journal entries, linked to 14 other
                 ideas in your vault &mdash; 23ms
               </p>
@@ -174,7 +174,7 @@ function HowItWorks() {
         {/* Write back */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-accent text-xs font-bold">03</span>
+            <span className="text-moss text-xs font-bold">03</span>
             <span className="text-lg font-medium">Your AI writes back</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
@@ -184,12 +184,12 @@ function HowItWorks() {
               extracted entities. Every write is validated against your vault&apos;s
               structure and committed to git.
             </p>
-            <div className="bg-surface border border-surface-border p-4 text-xs text-muted font-mono space-y-1">
+            <div className="bg-code-bg text-code-fg border border-code-bg/50 p-4 text-xs text-muted font-mono space-y-1">
               <p>
-                <span className="text-accent">+</span> Concepts/Context Engineering.md
+                <span className="text-moss">+</span> Concepts/Context Engineering.md
               </p>
               <p>
-                <span className="text-accent">~</span> Concepts/Design Systems.md{" "}
+                <span className="text-moss">~</span> Concepts/Design Systems.md{" "}
                 <span className="text-muted/50">&larr; new link added</span>
               </p>
               <p className="text-muted/40">
@@ -202,7 +202,7 @@ function HowItWorks() {
         {/* Compound */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-accent text-xs font-bold">04</span>
+            <span className="text-moss text-xs font-bold">04</span>
             <span className="text-lg font-medium">Knowledge compounds</span>
           </div>
           <div className="border-l border-surface-border pl-5">
@@ -223,15 +223,15 @@ function HowItWorks() {
 
 function WhatGrows() {
   return (
-    <section aria-label="What grows" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="What grows" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
         What grows
       </p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6 text-pretty">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         Not a folder of files. A graph of connected ideas.
       </h2>
 
-      <div className="bg-surface border border-surface-border p-6 sm:p-8 max-w-2xl mb-6">
+      <div className="bg-code-bg text-code-fg border border-code-bg/50 p-6 sm:p-8 max-w-2xl mb-6">
         <pre className="text-xs sm:text-sm text-muted leading-relaxed code-block overflow-x-auto">
 {`Your vault
 ├── concepts
@@ -268,11 +268,11 @@ function WhatGrows() {
 
 function Groves() {
   return (
-    <section aria-label="Groves" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="Groves" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
         Coming soon
       </p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6 text-pretty">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         Share a grove &mdash; a window into your knowledge.
       </h2>
 
@@ -297,11 +297,11 @@ function Groves() {
 
 function Discovery() {
   return (
-    <section aria-label="Discovery" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="Discovery" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-amber text-xs tracking-[0.2em] uppercase mb-4">
         Coming soon
       </p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-6 text-pretty">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         The graph grows while you sleep.
       </h2>
 
@@ -330,15 +330,15 @@ function Discovery() {
 
 function Deploy() {
   return (
-    <section id="deploy" aria-label="Deployment options" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section id="deploy" aria-label="Deployment options" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">
         Your vault, your choice
       </p>
       <h2 className="sr-only">Deployment options</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
-        <div className="deploy-card border border-accent/40 bg-accent-dim/10 p-6 flex flex-col gap-3">
-          <p className="text-xs text-accent font-bold uppercase tracking-wider">
+        <div className="deploy-card border border-moss/30 bg-moss/5 p-6 flex flex-col gap-3">
+          <p className="text-xs text-moss font-bold uppercase tracking-wider">
             Hosted
           </p>
           <p className="text-sm text-muted flex-1">
@@ -347,14 +347,14 @@ function Deploy() {
           </p>
           <a
             href={WAITLIST_URL}
-            className="text-sm text-accent hover:text-green-300 transition-colors font-medium"
+            className="text-sm text-moss hover:text-earth transition-colors font-medium"
           >
             Get early access &rarr;
           </a>
         </div>
 
         <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
-          <p className="text-xs text-foreground font-bold uppercase tracking-wider">
+          <p className="text-xs text-ink font-bold uppercase tracking-wider">
             Self-hosted
           </p>
           <p className="text-sm text-muted flex-1">
@@ -370,7 +370,7 @@ function Deploy() {
         </div>
 
         <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
-          <p className="text-xs text-foreground font-bold uppercase tracking-wider">
+          <p className="text-xs text-ink font-bold uppercase tracking-wider">
             Enterprise
           </p>
           <p className="text-sm text-muted flex-1">
@@ -397,7 +397,7 @@ function Deploy() {
 
 function WhyNow() {
   return (
-    <section aria-label="Why now" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="Why now" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <div className="max-w-2xl">
         <h2 className="sr-only">Why now</h2>
         <blockquote className="border-l-2 border-muted pl-5 text-muted leading-relaxed">
@@ -440,7 +440,7 @@ function BottomCTA() {
     <section
       id="waitlist"
       aria-label="Get started"
-      className="py-28 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background"
+      className="py-28 px-6 max-w-5xl mx-auto border-t border-surface-border"
     >
       <div className="max-w-xl">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-pretty">
@@ -456,11 +456,11 @@ function BottomCTA() {
             name="email"
             placeholder="you@example.com"
             required
-            className="flex-1 bg-surface border border-surface-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
+            className="flex-1 bg-white border border-ink/10 rounded px-4 py-3 text-sm text-ink placeholder:text-ink/30 focus:border-moss focus:outline-none focus:ring-2 focus:ring-moss/20"
           />
           <button
             type="submit"
-            className="inline-flex items-center justify-center bg-accent text-background px-7 py-3 text-sm font-bold hover:bg-green-300 transition-colors active:scale-[0.98]"
+            className="inline-flex items-center justify-center bg-ink text-cream rounded px-7 py-3 text-sm font-bold hover:bg-earth transition-colors active:scale-[0.98]"
           >
             Get early access
           </button>
@@ -493,18 +493,18 @@ function TheTools() {
   ];
 
   return (
-    <section aria-label="The six tools" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="The six tools" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">The tools</p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-12 text-pretty">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-12 text-pretty">
         Six tools. No more. Agents work better with less choice.
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
         {tools.map((tool) => (
           <div key={tool.name} className="space-y-2">
-            <p className="text-sm font-medium text-accent font-mono">{tool.name}</p>
+            <p className="text-sm font-medium text-moss font-mono">{tool.name}</p>
             <p className="text-sm text-muted leading-relaxed">{tool.desc}</p>
-            <div className="bg-surface border border-surface-border p-3 text-xs font-mono text-muted-light">
+            <div className="bg-code-bg text-code-fg border border-code-bg/50 p-3 text-xs font-mono text-muted-light">
               {tool.example}
             </div>
           </div>
@@ -518,9 +518,9 @@ function TheTools() {
 
 function Comparison() {
   return (
-    <section aria-label="Comparison" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border bg-background">
+    <section aria-label="Comparison" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
       <p className="text-muted text-xs tracking-[0.2em] uppercase mb-4">The landscape</p>
-      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-medium mb-8 text-pretty">
+      <h2 className="text-xl sm:text-2xl max-w-2xl leading-snug font-serif font-medium mb-8 text-pretty">
         24 Obsidian MCP servers. All local-only.
       </h2>
       <div className="max-w-2xl overflow-x-auto">
@@ -529,7 +529,7 @@ function Comparison() {
             <tr className="border-b border-surface-border text-muted text-xs uppercase tracking-wider">
               <th className="py-3 pr-6"></th>
               <th className="py-3 pr-6">Others</th>
-              <th className="py-3 text-accent">Grove</th>
+              <th className="py-3 text-moss">Grove</th>
             </tr>
           </thead>
           <tbody className="text-muted-light">
@@ -574,12 +574,12 @@ function Comparison() {
 
 function Footer() {
   return (
-    <footer className="w-full max-w-5xl mx-auto px-6 py-8 border-t border-surface-border flex items-center justify-between text-xs text-muted">
-      <span>
-        grove<span className="text-accent">.</span>md
+    <footer className="w-full max-w-5xl mx-auto px-6 py-8 border-t border-surface-border flex items-center justify-between text-xs text-ink/40">
+      <span className="font-serif font-medium text-sm text-ink/60">
+        Grove
       </span>
       <div className="flex gap-6">
-        <a href={GITHUB_URL} className="hover:text-foreground transition-colors">
+        <a href={GITHUB_URL} className="hover:text-ink transition-colors">
           GitHub
         </a>
         <span>MIT</span>

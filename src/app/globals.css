@@ -5,22 +5,30 @@ html {
 }
 
 :root {
-  --background: #08090a;
-  --foreground: #d4d4d4;
-  --accent: #4ade80;
-  --accent-dim: #1a3a28;
-  --amber: #f5a623;
-  --amber-dim: #3a2a10;
-  --surface: #111214;
-  --surface-border: #1c1d20;
-  --surface-hover: #1a1b1e;
-  --muted: #8a8a8a;
-  --muted-light: #888;
+  /* ── Brand palette ── */
   --cream: #FAF7F2;
   --ink: #2C2416;
   --harvest: #D4890A;
   --moss: #7A8B5C;
   --earth: #3D3524;
+
+  /* ── Product palette (warm light) ── */
+  --background: #FAF7F2;
+  --foreground: #2C2416;
+  --accent: #7A8B5C;
+  --accent-dim: rgba(122, 139, 92, 0.1);
+  --amber: #D4890A;
+  --amber-dim: rgba(212, 137, 10, 0.1);
+  --surface: #F0EBE1;
+  --surface-border: rgba(44, 36, 22, 0.1);
+  --surface-hover: #E8E2D6;
+  --muted: #2C241680;
+  --muted-light: #2C241660;
+
+  /* ── Code surfaces (dark inset) ── */
+  --code-bg: #1a1814;
+  --code-fg: #d4cfc8;
+  --code-border: #2a2520;
 }
 
 @theme inline {
@@ -35,13 +43,15 @@ html {
   --color-surface-hover: var(--surface-hover);
   --color-muted: var(--muted);
   --color-muted-light: var(--muted-light);
-  --font-mono: var(--font-geist-mono);
-  --font-sans: var(--font-inter);
   --color-cream: var(--cream);
   --color-ink: var(--ink);
   --color-harvest: var(--harvest);
   --color-moss: var(--moss);
   --color-earth: var(--earth);
+  --color-code-bg: var(--code-bg);
+  --color-code-fg: var(--code-fg);
+  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
   --font-serif: var(--font-lora);
 }
 
@@ -51,13 +61,13 @@ body {
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--background);
+  background: var(--moss);
+  color: var(--cream);
 }
 
 /* Focus ring for keyboard navigation */
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--moss);
   outline-offset: 2px;
 }
 
@@ -103,7 +113,7 @@ body {
   transition: border-color 0.2s, background 0.2s;
 }
 .deploy-card:hover {
-  border-color: var(--muted);
+  border-color: var(--ink);
   background: var(--surface-hover);
 }
 
@@ -112,7 +122,7 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  opacity: 0.015;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 9999;
@@ -125,22 +135,22 @@ body::before {
 }
 
 /* ---------------------------------------------------------------------------
-   Note viewer styles
+   Note viewer styles — warm light theme with editorial typography
    --------------------------------------------------------------------------- */
 
 /* KaTeX CSS */
 @import "katex/dist/katex.min.css";
 
-/* Prose overrides for dark theme */
+/* Prose overrides for warm theme */
 .note-content .prose {
   --tw-prose-body: var(--foreground);
-  --tw-prose-headings: #e5e5e5;
-  --tw-prose-links: var(--accent);
-  --tw-prose-bold: #e5e5e5;
-  --tw-prose-code: #e5e5e5;
-  --tw-prose-pre-bg: var(--surface);
-  --tw-prose-pre-code: var(--foreground);
-  --tw-prose-quotes: var(--muted-light);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-links: var(--moss);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-code: var(--ink);
+  --tw-prose-pre-bg: var(--code-bg);
+  --tw-prose-pre-code: var(--code-fg);
+  --tw-prose-quotes: var(--muted);
   --tw-prose-quote-borders: var(--surface-border);
   --tw-prose-hr: var(--surface-border);
   --tw-prose-th-borders: var(--surface-border);
@@ -148,7 +158,15 @@ body::before {
   max-width: none;
 }
 
+/* Serif headings in prose — editorial feel */
+.note-content .prose h1,
+.note-content .prose h2,
+.note-content .prose h3 {
+  font-family: var(--font-serif);
+}
+
 .note-content .prose a:not(.wikilink):not(.wikilink-unresolved) {
+  color: var(--moss);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -158,9 +176,11 @@ body::before {
   border: 1px solid var(--surface-border);
 }
 
-/* Shiki code blocks inside prose */
+/* Code blocks — dark inset on warm background */
 .note-content .prose pre {
-  border: 1px solid var(--surface-border);
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border: 1px solid var(--code-border);
   border-radius: 8px;
   padding: 1rem;
   overflow-x: auto;
@@ -185,8 +205,8 @@ body::before {
 }
 
 .wikilink:hover {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  color: var(--moss);
+  border-bottom-color: var(--moss);
 }
 
 .wikilink-unresolved {
@@ -194,7 +214,7 @@ body::before {
   cursor: default;
 }
 
-/* Callouts */
+/* Callouts — warm tones on light surface */
 .callout {
   border-left: 3px solid var(--surface-border);
   border-radius: 4px;
@@ -210,34 +230,34 @@ body::before {
 }
 
 .callout-note {
-  border-left-color: #3b82f6;
+  border-left-color: #2563eb;
 }
-.callout-note .callout-title { color: #60a5fa; }
+.callout-note .callout-title { color: #2563eb; }
 
 .callout-warning {
-  border-left-color: #f59e0b;
+  border-left-color: #d97706;
 }
-.callout-warning .callout-title { color: #fbbf24; }
+.callout-warning .callout-title { color: #d97706; }
 
 .callout-tip {
-  border-left-color: #22c55e;
+  border-left-color: #16a34a;
 }
-.callout-tip .callout-title { color: #4ade80; }
+.callout-tip .callout-title { color: #16a34a; }
 
 .callout-danger {
-  border-left-color: #ef4444;
+  border-left-color: #dc2626;
 }
-.callout-danger .callout-title { color: #f87171; }
+.callout-danger .callout-title { color: #dc2626; }
 
 .callout-info {
-  border-left-color: #06b6d4;
+  border-left-color: #0891b2;
 }
-.callout-info .callout-title { color: #22d3ee; }
+.callout-info .callout-title { color: #0891b2; }
 
 .callout-quote {
-  border-left-color: #6b7280;
+  border-left-color: #57534e;
 }
-.callout-quote .callout-title { color: #9ca3af; }
+.callout-quote .callout-title { color: #57534e; }
 
 /* Mermaid placeholder skeleton */
 .mermaid-placeholder {
@@ -253,6 +273,6 @@ body::before {
 
 /* Task list checkboxes in prose */
 .note-content .prose input[type="checkbox"] {
-  accent-color: var(--accent);
+  accent-color: var(--moss);
   margin-right: 0.5em;
 }

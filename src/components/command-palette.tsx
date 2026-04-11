@@ -177,10 +177,10 @@ export default function CommandPalette() {
       }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closePalette} />
+      <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={closePalette} />
 
       {/* Palette */}
-      <div className="relative w-full max-w-lg mx-4 rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg mx-4 rounded-xl border border-surface-border bg-white shadow-2xl overflow-hidden">
         <div className="flex items-center gap-3 border-b border-surface-border px-4 py-3">
           <svg
             width="16"

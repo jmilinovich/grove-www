@@ -26,13 +26,13 @@ export async function generateMetadata({ params }: PageProps) {
 // ── Type colors for directory listing ────────────────────────────────
 
 const TYPE_COLORS: Record<string, string> = {
-  concept: "text-green-400",
-  person: "text-blue-400",
-  recipe: "text-amber-400",
-  project: "text-purple-400",
-  company: "text-rose-400",
-  place: "text-cyan-400",
-  journal: "text-slate-400",
+  concept: "text-green-700",
+  person: "text-blue-700",
+  recipe: "text-amber-700",
+  project: "text-purple-700",
+  company: "text-rose-700",
+  place: "text-cyan-700",
+  journal: "text-stone-500",
 };
 
 // ── Directory listing component ──────────────────────────────────────

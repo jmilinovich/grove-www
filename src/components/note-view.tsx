@@ -46,7 +46,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
   return (
     <article className="note-content mx-auto" style={{ maxWidth: 700 }}>
       <header className="mb-8">
-        <h1 className="text-2xl font-bold text-foreground leading-tight">
+        <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
           {title}
         </h1>
         {aliases.length > 0 && (

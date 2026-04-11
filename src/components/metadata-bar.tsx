@@ -3,16 +3,16 @@
  */
 
 const TYPE_COLORS: Record<string, string> = {
-  concept: "bg-green-900/40 text-green-400 border-green-800/50",
-  person: "bg-blue-900/40 text-blue-400 border-blue-800/50",
-  recipe: "bg-amber-900/40 text-amber-400 border-amber-800/50",
-  project: "bg-purple-900/40 text-purple-400 border-purple-800/50",
-  company: "bg-rose-900/40 text-rose-400 border-rose-800/50",
-  place: "bg-cyan-900/40 text-cyan-400 border-cyan-800/50",
-  journal: "bg-slate-800/40 text-slate-400 border-slate-700/50",
+  concept: "bg-green-50 text-green-800 border-green-200",
+  person: "bg-blue-50 text-blue-800 border-blue-200",
+  recipe: "bg-amber-50 text-amber-800 border-amber-200",
+  project: "bg-purple-50 text-purple-800 border-purple-200",
+  company: "bg-rose-50 text-rose-800 border-rose-200",
+  place: "bg-cyan-50 text-cyan-800 border-cyan-200",
+  journal: "bg-stone-100 text-stone-600 border-stone-200",
 };
 
-const DEFAULT_TYPE_COLOR = "bg-stone-800/40 text-stone-400 border-stone-700/50";
+const DEFAULT_TYPE_COLOR = "bg-stone-100 text-stone-600 border-stone-200";
 
 function relativeDate(dateStr: string): string {
   const date = new Date(dateStr);
