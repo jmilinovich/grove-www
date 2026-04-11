@@ -22,8 +22,11 @@ export default function LastVisited() {
       return;
     }
 
-    // On "/": redirect if logged in
+    // On "/": redirect only if logged in (has auth cookie)
     if (pathname === "/") {
+      const hasToken = document.cookie.includes("grove_token");
+      if (!hasToken) return; // Let unauthenticated visitors see the landing page
+
       const lastPath = localStorage.getItem("grove_last_path");
       if (lastPath) {
         router.replace(lastPath);
