@@ -34,7 +34,7 @@ function Nav() {
       <span className="font-serif font-medium tracking-tight text-lg text-ink">
         Grove
       </span>
-      <div className="flex items-center gap-6 text-ink/50">
+      <div className="flex items-center gap-6 text-ink/40">
         <a href={GITHUB_URL} className="hover:text-ink transition-colors">
           GitHub
         </a>
@@ -55,13 +55,13 @@ function Hero() {
   return (
     <section className="bg-cream pt-28 pb-20 sm:pt-40 sm:pb-28 px-6">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-[3.052rem] md:text-[3.815rem] font-medium leading-[1.08] tracking-[-0.025em] max-w-[20ch] fade-up font-serif text-ink text-pretty">
+        <h1 className="text-display md:text-display-lg font-medium leading-[1.08] tracking-[-0.025em] max-w-[20ch] fade-up font-serif text-ink text-pretty">
           Your notes and your AI,
           <br />
           finally connected.
         </h1>
 
-        <p className="mt-8 text-base text-ink/70 max-w-[60ch] leading-[1.6] fade-up delay-1">
+        <p className="mt-8 text-base text-ink/60 max-w-[60ch] leading-[1.6] fade-up delay-1">
           You take notes. You journal. You save ideas. Then you talk to your AI
           and it knows none of it. Grove connects them &mdash; your AI reads your
           notes, writes back, and the knowledge grows together.
@@ -70,13 +70,13 @@ function Hero() {
         <div className="mt-10 flex flex-wrap gap-4 fade-up delay-2">
           <a
             href={WAITLIST_URL}
-            className="inline-flex items-center bg-ink text-cream px-7 py-3.5 text-sm font-bold hover:bg-earth transition-colors active:scale-[0.98]"
+            className="inline-flex items-center bg-ink text-cream px-7 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
           >
             Get early access
           </a>
           <a
             href={GITHUB_URL}
-            className="inline-flex items-center border border-ink/20 px-7 py-3.5 text-sm text-ink hover:bg-ink/5 transition-colors active:scale-[0.98]"
+            className="inline-flex items-center border border-ink/15 px-7 py-3.5 text-sm text-ink hover:bg-ink/5 transition-colors active:scale-[0.98]"
           >
             Self-host &rarr;
           </a>
@@ -91,10 +91,10 @@ function Hero() {
 function TheProblem() {
   return (
     <section aria-label="The problem" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <div className="max-w-2xl space-y-6">
-        <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-2">The problem</p>
+      <div className="max-w-2xl space-y-4">
+        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">The problem</p>
 
-        <h2 className="text-[1.953rem] leading-snug font-serif font-medium text-pretty">
+        <h2 className="text-title leading-snug font-serif font-medium text-pretty">
           Your notes live in one world. Your AI lives in another.
         </h2>
 
@@ -123,16 +123,16 @@ function TheProblem() {
 function HowItWorks() {
   return (
     <section aria-label="How it works" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-12">
+      <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">
         How it works
       </p>
       <h2 className="sr-only">How it works</h2>
 
-      <div className="max-w-2xl space-y-16">
+      <div className="max-w-2xl space-y-12">
         {/* Connect */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-bold">01</span>
+            <span className="text-moss text-xs font-medium">01</span>
             <span className="text-lg font-medium">Connect your vault</span>
           </div>
           <div className="border-l border-surface-border pl-5">
@@ -148,7 +148,7 @@ function HowItWorks() {
         {/* Read */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-bold">02</span>
+            <span className="text-moss text-xs font-medium">02</span>
             <span className="text-lg font-medium">Your AI reads your notes</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
@@ -162,7 +162,7 @@ function HowItWorks() {
               <p className="text-cream">
                 &quot;What do I know about design systems?&quot;
               </p>
-              <p className="text-cream/50 mt-2 text-xs">
+              <p className="text-cream/40 mt-2 text-xs">
                 <span className="text-moss">found</span>{" "}
                 3 concept notes, 2 journal entries, linked to 14 other
                 ideas in your vault &mdash; 23ms
@@ -174,7 +174,7 @@ function HowItWorks() {
         {/* Write back */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-bold">03</span>
+            <span className="text-moss text-xs font-medium">03</span>
             <span className="text-lg font-medium">Your AI writes back</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
@@ -184,7 +184,7 @@ function HowItWorks() {
               extracted entities. Every write is validated against your vault&apos;s
               structure and committed to git.
             </p>
-            <div className="bg-code-bg rounded-lg p-4 text-xs text-cream/70 font-mono space-y-1">
+            <div className="bg-code-bg rounded-lg p-4 text-xs text-cream/60 font-mono space-y-1">
               <p>
                 <span className="text-moss">+</span> Concepts/Context Engineering.md
               </p>
@@ -192,7 +192,7 @@ function HowItWorks() {
                 <span className="text-moss">~</span> Concepts/Design Systems.md{" "}
                 <span className="text-cream/40">&larr; new link added</span>
               </p>
-              <p className="text-cream/30">
+              <p className="text-cream/15">
                 git commit: grove (claude-ai): create Context Engineering
               </p>
             </div>
@@ -202,7 +202,7 @@ function HowItWorks() {
         {/* Compound */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-bold">04</span>
+            <span className="text-moss text-xs font-medium">04</span>
             <span className="text-lg font-medium">Knowledge compounds</span>
           </div>
           <div className="border-l border-surface-border pl-5">
@@ -224,10 +224,10 @@ function HowItWorks() {
 function WhatGrows() {
   return (
     <section aria-label="What grows" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">
+      <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">
         What grows
       </p>
-      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
+      <h2 className="text-title max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         Not a folder of files. A graph of connected ideas.
       </h2>
 
@@ -246,7 +246,7 @@ function WhatGrows() {
     └── the graph sees what folders can't`}</pre>
       </div>
 
-      <div className="max-w-xl space-y-3 text-base text-ink/60 leading-[1.6]">
+      <div className="max-w-xl space-y-4 text-base text-ink/60 leading-[1.6]">
         <p>
           Your notes aren&apos;t isolated files. They&apos;re nodes in a graph.
           A concept about resilience might link your engineering notes to your
@@ -269,10 +269,10 @@ function WhatGrows() {
 function Groves() {
   return (
     <section aria-label="Groves" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-harvest text-[0.8rem] tracking-[0.15em] uppercase mb-4">
+      <p className="text-harvest text-label tracking-[0.15em] uppercase mb-4">
         Coming soon
       </p>
-      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
+      <h2 className="text-title max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         Share a grove &mdash; a window into your knowledge.
       </h2>
 
@@ -298,10 +298,10 @@ function Groves() {
 function Discovery() {
   return (
     <section aria-label="Discovery" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-harvest text-[0.8rem] tracking-[0.15em] uppercase mb-4">
+      <p className="text-harvest text-label tracking-[0.15em] uppercase mb-4">
         Coming soon
       </p>
-      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
+      <h2 className="text-title max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         The graph grows while you sleep.
       </h2>
 
@@ -331,14 +331,14 @@ function Discovery() {
 function Deploy() {
   return (
     <section id="deploy" aria-label="Deployment options" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">
+      <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">
         Your vault, your choice
       </p>
       <h2 className="sr-only">Deployment options</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
-        <div className="deploy-card border border-moss/30 bg-moss/5 p-6 flex flex-col gap-3">
-          <p className="text-xs text-moss font-bold uppercase tracking-wider">
+        <div className="deploy-card border border-moss/15 bg-moss/5 p-6 flex flex-col gap-3">
+          <p className="text-xs text-moss font-medium uppercase tracking-wider">
             Hosted
           </p>
           <p className="text-sm text-muted flex-1">
@@ -354,7 +354,7 @@ function Deploy() {
         </div>
 
         <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
-          <p className="text-xs text-ink font-bold uppercase tracking-wider">
+          <p className="text-xs text-ink font-medium uppercase tracking-wider">
             Self-hosted
           </p>
           <p className="text-sm text-muted flex-1">
@@ -370,7 +370,7 @@ function Deploy() {
         </div>
 
         <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
-          <p className="text-xs text-ink font-bold uppercase tracking-wider">
+          <p className="text-xs text-ink font-medium uppercase tracking-wider">
             Enterprise
           </p>
           <p className="text-sm text-muted flex-1">
@@ -410,7 +410,7 @@ function WhyNow() {
           </footer>
         </blockquote>
 
-        <div className="mt-8 text-base text-ink/60 leading-[1.6] space-y-3">
+        <div className="mt-8 text-base text-ink/60 leading-[1.6] space-y-4">
           <p>
             Karpathy described a workflow where LLMs compile raw documents into
             structured wikis. That works for research collections. But most people
@@ -440,10 +440,10 @@ function BottomCTA() {
     <section
       id="waitlist"
       aria-label="Get started"
-      className="py-28 px-6 max-w-5xl mx-auto border-t border-surface-border"
+      className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border"
     >
       <div className="max-w-xl">
-        <h2 className="text-[1.953rem] sm:text-[2.441rem] font-serif font-medium tracking-[-0.015em] text-pretty">
+        <h2 className="text-title sm:text-heading font-serif font-medium tracking-[-0.015em] text-pretty">
           Your AI should know what you know.
         </h2>
         <p className="mt-3 text-muted">
@@ -456,11 +456,11 @@ function BottomCTA() {
             name="email"
             placeholder="you@example.com"
             required
-            className="flex-1 bg-white border border-ink/10 rounded px-4 py-3 text-sm text-ink placeholder:text-ink/30 focus:border-moss focus:outline-none focus:ring-2 focus:ring-moss/20"
+            className="flex-1 bg-white border border-ink/15 rounded px-4 py-3 text-sm text-ink placeholder:text-ink/15 focus:border-moss focus:outline-none focus:ring-2 focus:ring-moss/15"
           />
           <button
             type="submit"
-            className="inline-flex items-center justify-center bg-ink text-cream rounded px-7 py-3 text-sm font-bold hover:bg-earth transition-colors active:scale-[0.98]"
+            className="inline-flex items-center justify-center bg-ink text-cream rounded px-7 py-3 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
           >
             Get early access
           </button>
@@ -494,8 +494,8 @@ function TheTools() {
 
   return (
     <section aria-label="The six tools" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">The tools</p>
-      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-12 text-pretty">
+      <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">The tools</p>
+      <h2 className="text-title max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         Six tools. No more. Agents work better with less choice.
       </h2>
 
@@ -504,7 +504,7 @@ function TheTools() {
           <div key={tool.name} className="space-y-2">
             <p className="text-sm font-medium text-moss font-mono">{tool.name}</p>
             <p className="text-base text-ink/60 leading-[1.6]">{tool.desc}</p>
-            <div className="bg-code-bg rounded-lg p-3 text-xs font-mono text-cream/50">
+            <div className="bg-code-bg rounded-lg p-3 text-xs font-mono text-cream/40">
               {tool.example}
             </div>
           </div>
@@ -519,8 +519,8 @@ function TheTools() {
 function Comparison() {
   return (
     <section aria-label="Comparison" className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border">
-      <p className="text-ink/50 text-[0.8rem] tracking-[0.15em] uppercase mb-4">The landscape</p>
-      <h2 className="text-[1.953rem] max-w-2xl leading-snug font-serif font-medium mb-8 text-pretty">
+      <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">The landscape</p>
+      <h2 className="text-title max-w-2xl leading-snug font-serif font-medium mb-6 text-pretty">
         24 Obsidian MCP servers. All local-only.
       </h2>
       <div className="max-w-2xl overflow-x-auto">
@@ -533,27 +533,27 @@ function Comparison() {
             </tr>
           </thead>
           <tbody className="text-muted-light">
-            <tr className="border-b border-surface-border/50">
+            <tr className="border-b border-surface-border/40">
               <td className="py-3 pr-6">Works from your phone</td>
               <td className="py-3 pr-6 text-muted">No</td>
               <td className="py-3 text-foreground">Yes</td>
             </tr>
-            <tr className="border-b border-surface-border/50">
+            <tr className="border-b border-surface-border/40">
               <td className="py-3 pr-6">Write-back with validation</td>
               <td className="py-3 pr-6 text-muted">No</td>
               <td className="py-3 text-foreground">Yes</td>
             </tr>
-            <tr className="border-b border-surface-border/50">
+            <tr className="border-b border-surface-border/40">
               <td className="py-3 pr-6">Frontmatter-aware search</td>
               <td className="py-3 pr-6 text-muted">No</td>
               <td className="py-3 text-foreground">Yes</td>
             </tr>
-            <tr className="border-b border-surface-border/50">
+            <tr className="border-b border-surface-border/40">
               <td className="py-3 pr-6">Semantic + keyword hybrid</td>
               <td className="py-3 pr-6 text-muted">Rare</td>
               <td className="py-3 text-foreground">Yes</td>
             </tr>
-            <tr className="border-b border-surface-border/50">
+            <tr className="border-b border-surface-border/40">
               <td className="py-3 pr-6">Git-backed writes</td>
               <td className="py-3 pr-6 text-muted">No</td>
               <td className="py-3 text-foreground">Every write</td>
