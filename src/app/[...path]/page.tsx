@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
@@ -175,7 +176,9 @@ export default async function NotePage({ params }: PageProps) {
         <div className="max-w-3xl mx-auto px-6 py-8">
           <Breadcrumbs path={vaultPath} />
           <MetadataBar frontmatter={note.frontmatter} path={vaultPath} />
-          <NoteView note={note} />
+          <Suspense fallback={<div className="animate-pulse space-y-3 py-8"><div className="h-4 bg-surface rounded w-3/4" /><div className="h-4 bg-surface rounded w-1/2" /><div className="h-4 bg-surface rounded w-5/6" /><div className="h-4 bg-surface rounded w-2/3" /></div>}>
+            <NoteView note={note} />
+          </Suspense>
         </div>
       </div>
     );

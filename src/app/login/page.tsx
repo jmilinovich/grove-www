@@ -54,7 +54,11 @@ function LoginForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <label htmlFor="api-key" className="block text-sm text-muted mb-2">
+            API key
+          </label>
           <input
+            id="api-key"
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}

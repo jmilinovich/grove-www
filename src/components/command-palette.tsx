@@ -16,6 +16,7 @@ export default function CommandPalette() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const router = useRouter();
@@ -67,6 +68,8 @@ export default function CommandPalette() {
       return;
     }
 
+    setError(null);
+
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
@@ -78,7 +81,7 @@ export default function CommandPalette() {
           setSelectedIndex(0);
         }
       } catch {
-        // Silently fail
+        setError("Search unavailable");
       } finally {
         setLoading(false);
       }
@@ -235,6 +238,12 @@ export default function CommandPalette() {
         {query.trim() && !loading && results.length === 0 && (
           <div className="px-4 py-8 text-center text-sm text-muted">
             No results found
+          </div>
+        )}
+
+        {error && !loading && (
+          <div className="px-4 py-8 text-center text-sm text-muted">
+            {error}
           </div>
         )}
       </div>
