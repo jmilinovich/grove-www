@@ -134,7 +134,7 @@ Your vault never leaves your infrastructure — hosted or self-hosted.
 
 ## Fitness Function
 
-The website's quality is measured by whether it converts each persona:
+### Conversion Metrics (measure externally)
 
 | Metric | Target | How to measure |
 |--------|--------|----------------|
@@ -145,7 +145,57 @@ The website's quality is measured by whether it converts each persona:
 | **Time on page** | >60s average | Vercel Analytics |
 | **Bounce rate** | <50% | Vercel Analytics |
 
-### Content Quality Checks:
+### Automated Scorecard (150 pts)
+
+Run the fitness function:
+
+```bash
+bash scripts/score.sh          # human-readable
+bash scripts/score.sh --json   # machine-parseable
+```
+
+**Components:**
+
+| Component | Max | What it measures |
+|-----------|-----|------------------|
+| **Brand Cohesion** | 30 | CSS tokens match DESIGN.md, typography loaded, voice rules, no stock imagery, OG metadata |
+| **Landing Page** | 35 | All sections from this spec present — hero, problem, tools, comparison, deploy, waitlist form |
+| **Note Viewer** | 30 | Prose styling, wikilinks, callouts, code blocks, metadata bar, breadcrumbs, backlinks, math, diagrams |
+| **Performance** | 25 | Server rendering, next/font, minimal client JS, no heavy assets or deps |
+| **Polish** | 30 | Command palette, responsive, dark theme, animations, auth flow, 404, keyboard nav |
+
+**Mode: Split** — agents can improve the measurement scripts (add checks, fix false positives) but cannot change component weights or point allocations.
+
+### Improvement Loop
+
+1. `bash scripts/score.sh --json` → identify lowest-scoring component
+2. Pick highest-impact action from the catalog below
+3. Implement the fix
+4. Re-run `bash scripts/score.sh --json`
+5. If improved: commit with `www: <component> <before>→<after>`
+6. If regressed: revert
+7. Append to `iterations.jsonl`
+
+### Action Catalog
+
+| Action | Component | Est. pts | Effort | Notes |
+|--------|-----------|----------|--------|-------|
+| **Add "The 6 Tools" section** | Landing | +4 | 1 hr | Show each MCP tool with a real query/response example. Scannable, not verbose. |
+| **Add comparison table** | Landing | +4 | 1 hr | "24 Obsidian MCP servers" vs Grove. Columns: hosted, write-back, vault-aware, search quality. |
+| **Add waitlist email form** | Landing | +4 | 30 min | Real `<form>` with email input. Formspree, or server action → Grove note. Replace the `#waitlist` anchor. |
+
+**After those 3, the score is 150/150.** Future work extends the scorecard itself:
+
+| Future check | Component | Pts | What to add |
+|--------------|-----------|-----|-------------|
+| Lighthouse performance >= 95 | Performance | +5 | Run `npx lighthouse` in CI, parse score |
+| Accessibility audit passes | Polish | +5 | axe-core or Lighthouse a11y >= 90 |
+| Real mobile screenshot test | Polish | +3 | Playwright screenshot at 375px, visual diff |
+| OG image with brand mark | Brand | +3 | Generate or serve a proper social card |
+| Analytics instrumented | Landing | +3 | Vercel Analytics or Plausible script present |
+| Favicon is citrus icon | Brand | +2 | Check public/favicon exists and isn't default |
+
+### Content Quality Checks (manual review):
 - [ ] Every section has a clear "so what" for at least one persona
 - [ ] No section is pure feature list — each connects to a pain point
 - [ ] The self-host path is copy-pasteable (works in <5 minutes on a fresh VPS)
@@ -156,7 +206,7 @@ The website's quality is measured by whether it converts each persona:
 - [ ] Page loads in <1s on 3G (no images, no heavy JS)
 - [ ] Every code block is real, not pseudocode
 
-### Design Quality Checks:
+### Design Quality Checks (manual review):
 - [ ] Dark theme, monospace, zero stock imagery
 - [ ] Typography hierarchy is clear — you can scan the page in 10 seconds
 - [ ] Responsive — works on phone (this is literally the pitch)
