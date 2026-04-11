@@ -74,21 +74,35 @@ function TreeNode({ entry, depth = 0 }: { entry: TreeEntry; depth?: number }) {
         const res = await fetch(`/api/list?prefix=${encodeURIComponent(entry.path)}`);
         if (res.ok) {
           const data = await res.json();
-          // Group into subfolders only (two-tier: don't show individual notes)
           const subfolders = new Set<string>();
+          const directNotes: TreeEntry[] = [];
+
           for (const e of data.entries) {
             const relative = e.path.slice(entry.path.length + 1);
             const slashIndex = relative.indexOf("/");
             if (slashIndex !== -1) {
               subfolders.add(relative.slice(0, slashIndex));
+            } else {
+              // Direct child note
+              directNotes.push({
+                name: e.name,
+                path: e.path.replace(/\.md$/, ""),
+                isFolder: false,
+              });
             }
           }
+
           const folderEntries: TreeEntry[] = [...subfolders].sort().map((name) => ({
             name,
             path: `${entry.path}/${name}`,
             isFolder: true,
           }));
-          setChildren(folderEntries);
+
+          // Folders first, then notes sorted alphabetically
+          setChildren([
+            ...folderEntries,
+            ...directNotes.sort((a, b) => a.name.localeCompare(b.name)),
+          ]);
         }
       } catch {
         // Silently fail — user can retry
