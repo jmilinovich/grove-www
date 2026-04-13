@@ -13,6 +13,8 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const trailId = searchParams.get("trail");
+
   const handleMagicLink = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -20,12 +22,15 @@ function LoginForm() {
       setLoading(true);
 
       try {
+        const callbackUrl = new URL("/api/auth/callback", window.location.origin);
+        if (trailId) callbackUrl.searchParams.set("trail", trailId);
+
         const res = await fetch("/api/auth/magic-link", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: email.trim(),
-            redirect: `${window.location.origin}/api/auth/callback`,
+            redirect: callbackUrl.toString(),
           }),
         });
 
@@ -41,7 +46,7 @@ function LoginForm() {
         setLoading(false);
       }
     },
-    [email],
+    [email, trailId],
   );
 
   const handleApiKey = useCallback(

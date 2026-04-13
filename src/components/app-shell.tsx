@@ -8,7 +8,7 @@ const CHROME_HIDDEN_PATHS = ["/login", "/"];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showChrome = !CHROME_HIDDEN_PATHS.includes(pathname);
+  const showChrome = !CHROME_HIDDEN_PATHS.includes(pathname) && !pathname.startsWith("/trails/");
 
   if (!showChrome) {
     return <>{children}</>;

@@ -1,8 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useSidebar } from "./sidebar-provider";
 import { useSearch } from "./search-provider";
+
+interface TrailInfo {
+  id: string;
+  name: string;
+}
 
 function handleLogout() {
   fetch("/api/auth", { method: "DELETE" }).then(() => {
@@ -14,6 +20,16 @@ function handleLogout() {
 export default function Header() {
   const { toggle, open: sidebarOpen } = useSidebar();
   const { openSearch } = useSearch();
+  const [trail, setTrail] = useState<TrailInfo | null>(null);
+
+  useEffect(() => {
+    fetch("/api/whoami")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.trail) setTrail(data.trail);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-12 flex items-center justify-between px-4 bg-background/95 backdrop-blur-sm border-b border-surface-border">
@@ -46,6 +62,11 @@ export default function Header() {
         >
           Grove
         </Link>
+        {trail && (
+          <span className="text-xs text-muted border-l border-surface-border pl-3 ml-1">
+            {trail.name}
+          </span>
+        )}
       </div>
 
       {/* Center: search trigger */}

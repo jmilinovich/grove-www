@@ -5,6 +5,8 @@ const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
+  const trailId = request.nextUrl.searchParams.get("trail");
+
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=missing_code", request.url));
   }
@@ -22,7 +24,9 @@ export async function GET(request: NextRequest) {
     const setCookieHeader = exchangeRes.headers.get("set-cookie") ?? "";
     const sessionCookie = setCookieHeader.match(/grove_session=([a-f0-9]+)/)?.[1] ?? session_token;
 
-    // Check if this user already has a grove-www key
+    // Check if this user already has a grove-www key (possibly trail-scoped)
+    const keyName = trailId ? `grove-www-trail-${user.id}` : `grove-www-${user.id}`;
+
     const listRes = await fetch(`${API_URL}/keys`, {
       method: "POST",
       headers: {
@@ -36,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     if (listRes.ok) {
       const { keys } = await listRes.json();
-      const existingKey = keys?.find((k: { name: string }) => k.name === `grove-www-${user.id}`);
+      const existingKey = keys?.find((k: { name: string }) => k.name === keyName);
 
       if (!existingKey) {
         // Create an API key for this user's web sessions
@@ -48,8 +52,9 @@ export async function GET(request: NextRequest) {
           },
           body: JSON.stringify({
             action: "create",
-            name: `grove-www-${user.id}`,
+            name: keyName,
             scopes: ["read"],
+            trail_id: trailId ?? undefined,
           }),
         });
 
@@ -70,8 +75,9 @@ export async function GET(request: NextRequest) {
         },
         body: JSON.stringify({
           action: "create",
-          name: `grove-www-${user.id}`,
+          name: keyName,
           scopes: ["read"],
+          trail_id: trailId ?? undefined,
         }),
       });
 
@@ -85,7 +91,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/login?error=key_creation_failed", request.url));
     }
 
-    // Encrypt the API key into the existing grove_token cookie
+    // Encrypt the API key into the grove_token cookie
     const encrypted = encryptKey(apiKeyToken);
     const response = NextResponse.redirect(new URL("/", request.url));
     response.cookies.set("grove_token", encrypted, {
