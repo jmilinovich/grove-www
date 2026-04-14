@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Paths that never require auth
 const PUBLIC_PATHS = ["/", "/login", "/api/auth"];
-const PUBLIC_PREFIXES = ["/_next/", "/api/"];
+const PUBLIC_PREFIXES = ["/_next/", "/api/", "/s/"];
 const PUBLIC_FILES = ["/favicon.ico", "/robots.txt", "/sitemap.xml"];
 
 export default function proxy(request: NextRequest) {
