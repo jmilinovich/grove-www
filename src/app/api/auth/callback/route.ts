@@ -59,7 +59,8 @@ export async function GET(request: NextRequest) {
 
     // Encrypt the API key into the grove_token cookie
     const encrypted = encryptKey(apiKeyToken);
-    const destination = trailId ? `/trails/${encodeURIComponent(trailId)}` : "/";
+    // Trail users go to browsable content; regular users go to home
+    const destination = trailId ? "/Resources" : "/";
     const response = NextResponse.redirect(new URL(destination, request.url));
     response.cookies.set("grove_token", encrypted, {
       httpOnly: true,
