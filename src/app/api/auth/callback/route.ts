@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     // Exchange the auth code for a session
     const exchangeRes = await fetch(`${API_URL}/auth/exchange?code=${encodeURIComponent(code)}`);
     if (!exchangeRes.ok) {
-      console.error("[auth/callback] exchange failed:", exchangeRes.status, await exchangeRes.text());
+      console.error("[auth/callback] exchange failed:", exchangeRes.status);
       return NextResponse.redirect(new URL("/login?error=invalid_code", request.url));
     }
 
@@ -25,81 +25,35 @@ export async function GET(request: NextRequest) {
     const setCookieHeader = exchangeRes.headers.get("set-cookie") ?? "";
     const sessionCookie = setCookieHeader.match(/grove_session=([a-f0-9]+)/)?.[1] ?? session_token;
 
-    console.log("[auth/callback] exchanged code for user:", user?.id, "session cookie found:", !!sessionCookie);
+    // Always create a fresh API key for this session (unique name avoids collision)
+    const keyName = trailId
+      ? `grove-www-trail-${user.id}-${Date.now()}`
+      : `grove-www-${user.id}-${Date.now()}`;
 
-    // Create a grove-www API key for this user's web sessions
-    const keyName = trailId ? `grove-www-trail-${user.id}` : `grove-www-${user.id}`;
-
-    // Try to list existing keys first
-    const listRes = await fetch(`${API_URL}/keys`, {
+    const createRes = await fetch(`${API_URL}/keys`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Cookie": `grove_session=${sessionCookie}`,
       },
-      body: JSON.stringify({ action: "list" }),
+      body: JSON.stringify({
+        action: "create",
+        name: keyName,
+        scopes: ["read"],
+        trail_id: trailId ?? undefined,
+      }),
     });
 
-    let apiKeyToken: string | null = null;
-
-    if (listRes.ok) {
-      const { keys } = await listRes.json();
-      const existingKey = keys?.find((k: { name: string }) => k.name === keyName);
-      console.log("[auth/callback] listed keys:", keys?.length, "existing grove-www key:", existingKey?.id ?? "none");
-
-      if (!existingKey) {
-        // Create an API key for this user's web sessions
-        const createRes = await fetch(`${API_URL}/keys`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cookie": `grove_session=${sessionCookie}`,
-          },
-          body: JSON.stringify({
-            action: "create",
-            name: keyName,
-            scopes: ["read"],
-            trail_id: trailId ?? undefined,
-          }),
-        });
-
-        if (createRes.ok) {
-          const keyData = await createRes.json();
-          apiKeyToken = keyData.token;
-          console.log("[auth/callback] created key:", keyName);
-        } else {
-          console.error("[auth/callback] key create failed:", createRes.status, await createRes.text());
-        }
-      }
-    } else {
-      console.error("[auth/callback] key list failed:", listRes.status, await listRes.text());
-
-      // List failed — try creating directly
-      const createRes = await fetch(`${API_URL}/keys`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Cookie": `grove_session=${sessionCookie}`,
-        },
-        body: JSON.stringify({
-          action: "create",
-          name: keyName,
-          scopes: ["read"],
-          trail_id: trailId ?? undefined,
-        }),
-      });
-
-      if (createRes.ok) {
-        const keyData = await createRes.json();
-        apiKeyToken = keyData.token;
-        console.log("[auth/callback] created key (fallback):", keyName);
-      } else {
-        console.error("[auth/callback] key create fallback failed:", createRes.status, await createRes.text());
-      }
+    if (!createRes.ok) {
+      console.error("[auth/callback] key create failed:", createRes.status, await createRes.text());
+      return NextResponse.redirect(new URL("/login?error=key_creation_failed", request.url));
     }
 
+    const keyData = await createRes.json();
+    const apiKeyToken = keyData.token;
+
     if (!apiKeyToken) {
-      console.error("[auth/callback] no API key obtained, redirecting to login");
+      console.error("[auth/callback] key create returned no token");
       return NextResponse.redirect(new URL("/login?error=key_creation_failed", request.url));
     }
 
