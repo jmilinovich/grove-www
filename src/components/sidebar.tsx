@@ -12,10 +12,6 @@ interface TreeEntry {
   children?: TreeEntry[];
 }
 
-// Top-level PARA folders in display order
-const PRIMARY_FOLDERS = ["Areas", "Resources", "Journal", "Sources", "Notes"];
-const OTHER_FOLDERS = ["Archives", "Inbox"];
-
 function FolderIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -178,6 +174,7 @@ function TreeNode({ entry, depth = 0 }: { entry: TreeEntry; depth?: number }) {
 export default function Sidebar() {
   const { open, close } = useSidebar();
   const [firstVisit, setFirstVisit] = useState(false);
+  const [topLevelFolders, setTopLevelFolders] = useState<TreeEntry[] | null>(null);
 
   useEffect(() => {
     const visited = localStorage.getItem("grove_sidebar_hint_shown");
@@ -187,17 +184,35 @@ export default function Sidebar() {
     }
   }, []);
 
-  const primaryEntries: TreeEntry[] = PRIMARY_FOLDERS.map((name) => ({
-    name,
-    path: name,
-    isFolder: true,
-  }));
+  // Fetch top-level folders from the API — only shows what the user's key can access
+  useEffect(() => {
+    async function loadFolders() {
+      try {
+        const res = await fetch("/api/list?prefix=");
+        if (!res.ok) return;
+        const data = await res.json();
 
-  const otherEntries: TreeEntry[] = OTHER_FOLDERS.map((name) => ({
-    name,
-    path: name,
-    isFolder: true,
-  }));
+        const folders = new Set<string>();
+        for (const entry of data.entries) {
+          const slashIndex = entry.path.indexOf("/");
+          if (slashIndex !== -1) {
+            folders.add(entry.path.slice(0, slashIndex));
+          }
+        }
+
+        setTopLevelFolders(
+          [...folders].sort().map((name) => ({
+            name,
+            path: name,
+            isFolder: true,
+          })),
+        );
+      } catch {
+        // Fall back to nothing if fetch fails
+      }
+    }
+    loadFolders();
+  }, []);
 
   return (
     <>
@@ -228,23 +243,17 @@ export default function Sidebar() {
           )}
 
           <nav>
-            <ul className="space-y-0.5">
-              {primaryEntries.map((entry) => (
-                <TreeNode key={entry.path} entry={entry} />
-              ))}
-            </ul>
-
-            {/* De-emphasized other folders */}
-            <div className="mt-6 pt-4 border-t border-surface-border">
-              <p className="px-2 pb-2 text-xs uppercase tracking-widest text-ink/40">
-                Other
-              </p>
-              <ul className="space-y-0.5 opacity-60">
-                {otherEntries.map((entry) => (
+            {topLevelFolders === null ? (
+              <div className="px-2 py-2 text-xs text-muted">Loading...</div>
+            ) : topLevelFolders.length === 0 ? (
+              <div className="px-2 py-2 text-xs text-muted">No accessible folders.</div>
+            ) : (
+              <ul className="space-y-0.5">
+                {topLevelFolders.map((entry) => (
                   <TreeNode key={entry.path} entry={entry} />
                 ))}
               </ul>
-            </div>
+            )}
           </nav>
         </div>
       </aside>
