@@ -60,14 +60,21 @@ export interface ListEntry {
   type: string | null;
   tags: string[];
   modified_at: string;
+  // Image-specific (populated only for notes with type: image)
+  thumbnail_url?: string;
+  image_url?: string;
+  dimensions?: { width: number; height: number };
+  description?: string;
 }
 
 export async function listNotes(
   prefix: string,
   apiKey: string,
+  type?: string,
 ): Promise<ListEntry[]> {
   const ck = cacheKey(apiKey);
   const params = new URLSearchParams({ prefix, _ck: ck });
+  if (type) params.set("type", type);
   const res = await fetch(`${API_URL}/v1/list?${params}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
     next: { revalidate: 300 },
