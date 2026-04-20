@@ -115,7 +115,29 @@ export default function Header() {
         </svg>
       </button>
 
-      {/* Right: logout */}
+      {/* Right: dashboard + logout */}
+      <div className="flex items-center gap-1">
+      <Link
+        href="/dashboard"
+        className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
+        aria-label="Dashboard"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+      </Link>
       <button
         onClick={handleLogout}
         className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
@@ -136,6 +158,7 @@ export default function Header() {
           <line x1="21" y1="12" x2="9" y2="12" />
         </svg>
       </button>
+      </div>
     </header>
   );
 }
