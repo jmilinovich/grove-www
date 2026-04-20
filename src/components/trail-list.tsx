@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 interface Trail {
   id: string;
@@ -90,6 +90,80 @@ function PathChip({ path, deny }: { path: string; deny?: boolean }) {
   );
 }
 
+interface TrailUsageData {
+  trail_id: string;
+  name: string;
+  requests: number;
+  reads: number;
+  writes: number;
+  last_request_at: string | null;
+}
+
+function TrailUsagePanel({ trailId }: { trailId: string }) {
+  const [usage, setUsage] = useState<TrailUsageData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setLoading(true);
+    setError("");
+    fetch(`/api/admin/trails/${encodeURIComponent(trailId)}/usage`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.error) setError(data.error);
+        else setUsage(data as TrailUsageData);
+      })
+      .catch(() => setError("Failed to load usage"))
+      .finally(() => setLoading(false));
+  }, [trailId]);
+
+  if (loading) {
+    return (
+      <div className="mt-4 pt-4 border-t border-surface-border">
+        <p className="text-xs text-ink/40">Loading usage...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-4 pt-4 border-t border-surface-border">
+        <p className="text-xs text-ink/40">{error}</p>
+      </div>
+    );
+  }
+
+  const lastSeen = usage?.last_request_at
+    ? new Date(usage.last_request_at).toLocaleString()
+    : "Never";
+
+  return (
+    <div className="mt-4 pt-4 border-t border-surface-border">
+      <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-3">
+        Usage
+      </p>
+      <div className="flex flex-wrap gap-6 text-xs text-ink/60">
+        <span>
+          <span className="font-medium text-foreground">{usage?.requests ?? 0}</span>
+          {" requests"}
+        </span>
+        <span>
+          <span className="font-medium text-foreground">{usage?.reads ?? 0}</span>
+          {" reads"}
+        </span>
+        <span>
+          <span className="font-medium text-foreground">{usage?.writes ?? 0}</span>
+          {" writes"}
+        </span>
+        <span className="text-ink/40">
+          {"Last: "}
+          <span className="text-ink/60">{lastSeen}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function TrailCard({
   trail,
   onToggle,
@@ -101,6 +175,7 @@ function TrailCard({
 }) {
   const [toggling, setToggling] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showUsage, setShowUsage] = useState(false);
 
   const handleToggle = async () => {
     setToggling(true);
@@ -135,6 +210,12 @@ function TrailCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setShowUsage((v) => !v)}
+            className="text-xs text-ink/40 hover:text-foreground transition-colors"
+          >
+            {showUsage ? "Hide usage" : "Usage"}
+          </button>
           <button
             onClick={handleToggle}
             disabled={toggling}
@@ -225,6 +306,9 @@ function TrailCard({
           </div>
         </div>
       )}
+
+      {/* Usage panel — lazy loaded on expand */}
+      {showUsage && <TrailUsagePanel trailId={trail.id} />}
     </div>
   );
 }
