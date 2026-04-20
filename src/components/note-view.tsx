@@ -39,8 +39,25 @@ function getAliases(note: NoteResponse): string[] {
   return [];
 }
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export default async function NoteView({ note }: { note: NoteResponse }) {
-  const html = await renderMarkdown(note.content, note.links);
+  let html: string;
+  let renderFailed = false;
+  try {
+    html = await renderMarkdown(note.content, note.links);
+  } catch (err) {
+    console.error("renderMarkdown failed for", note.path, err);
+    renderFailed = true;
+    html = `<pre class="raw-fallback">${escapeHtml(note.content)}</pre>`;
+  }
   const type = typeof note.frontmatter.type === "string" ? note.frontmatter.type : "default";
   const isJournal = type === "journal";
   const isPerson = type === "person";
@@ -61,6 +78,11 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
         )}
       </header>
 
+      {renderFailed && (
+        <div className="mb-6 rounded border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/60">
+          Couldn&apos;t render this note — showing raw content.
+        </div>
+      )}
       <div
         className="prose prose-lg"
         dangerouslySetInnerHTML={{ __html: html }}

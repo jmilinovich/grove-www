@@ -11,7 +11,7 @@ import remarkRehype from "remark-rehype";
 import rehypeKatex from "rehype-katex";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeStringify from "rehype-stringify";
-import { createHighlighter, type Highlighter } from "shiki";
+import { createHighlighter, type Highlighter, type BundledLanguage } from "shiki";
 import type { Root as MdastRoot, Text, Blockquote, Paragraph } from "mdast";
 import type { Root as HastRoot } from "hast";
 import type { Plugin } from "unified";
@@ -21,33 +21,52 @@ import type { Plugin } from "unified";
 // ---------------------------------------------------------------------------
 
 let highlighterPromise: Promise<Highlighter> | null = null;
+const loadedLangs = new Set<string>();
+const langLoadPromises = new Map<string, Promise<void>>();
+
+// Aliases shiki accepts but that load under a canonical id.
+const LANG_ALIASES: Record<string, BundledLanguage> = {
+  sh: "bash",
+  shell: "bash",
+  zsh: "bash",
+  js: "javascript",
+  ts: "typescript",
+  py: "python",
+  yml: "yaml",
+};
+
+// Allowlist: anything outside this set falls through to plain text.
+// Keeps the bundled-languages list bounded so cold-start can't grow.
+const SUPPORTED_LANGS = new Set<BundledLanguage>([
+  "javascript", "typescript", "tsx", "jsx",
+  "python", "bash", "json", "yaml", "markdown",
+  "html", "css", "sql", "rust", "go", "toml", "diff",
+]);
 
 function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: ["github-dark"],
-      langs: [
-        "javascript",
-        "typescript",
-        "python",
-        "bash",
-        "json",
-        "yaml",
-        "markdown",
-        "html",
-        "css",
-        "sql",
-        "rust",
-        "go",
-        "tsx",
-        "jsx",
-        "shell",
-        "toml",
-        "diff",
-      ],
+      langs: [],
     });
   }
   return highlighterPromise;
+}
+
+async function ensureLang(highlighter: Highlighter, lang: string): Promise<string | null> {
+  const resolved = (LANG_ALIASES[lang] ?? lang) as BundledLanguage;
+  if (!SUPPORTED_LANGS.has(resolved)) return null;
+  if (loadedLangs.has(resolved)) return resolved;
+
+  let promise = langLoadPromises.get(resolved);
+  if (!promise) {
+    promise = highlighter.loadLanguage(resolved).then(() => {
+      loadedLangs.add(resolved);
+    });
+    langLoadPromises.set(resolved, promise);
+  }
+  await promise;
+  return resolved;
 }
 
 // ---------------------------------------------------------------------------
@@ -388,18 +407,21 @@ const sanitizeSchema = {
     "annotation",
     "svg", "path", "line", "rect", "circle",
   ],
+  // NOTE: rehype-sanitize uses HAST property names, not HTML attribute names.
+  // Standard markdown code fences emit `className` (array); our custom remark
+  // plugins set `class` (string). We allow both so both paths survive.
   attributes: {
-    "*": ["class", "style", "id", "title", "data-mermaid-source", "data-language"],
+    "*": ["className", "class", "style", "id", "title", "data-mermaid-source", "data-language"],
     a: ["href", "target", "rel"],
     img: ["src", "alt", "width", "height"],
     input: ["type", "checked", "disabled"],
     th: ["align"],
     td: ["align"],
-    code: ["class"],
+    code: ["className", "class"],
     annotation: ["encoding"],
     math: ["xmlns"],
     svg: ["xmlns", "viewBox", "width", "height", "fill", "stroke"],
-    path: ["d", "fill", "stroke", "stroke-width"],
+    path: ["d", "fill", "stroke", "strokeWidth"],
     line: ["x1", "y1", "x2", "y2"],
     rect: ["x", "y", "width", "height", "rx", "ry"],
     circle: ["cx", "cy", "r"],
@@ -416,17 +438,26 @@ const sanitizeSchema = {
 // ---------------------------------------------------------------------------
 
 async function highlightCodeBlocks(html: string): Promise<string> {
-  const highlighter = await getHighlighter();
-  const loadedLangs = highlighter.getLoadedLanguages();
-
-  // Match <pre><code class="language-xxx">...</code></pre> blocks
   const CODE_BLOCK_RE = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
 
+  // First pass: collect langs we need so we can load them in parallel.
+  const needed = new Set<string>();
+  for (const m of html.matchAll(CODE_BLOCK_RE)) {
+    if (m[1] !== "mermaid") needed.add(m[1]);
+  }
+  if (needed.size === 0) return html;
+
+  const highlighter = await getHighlighter();
+  const resolvedByLang = new Map<string, string | null>();
+  await Promise.all(
+    [...needed].map(async (lang) => {
+      resolvedByLang.set(lang, await ensureLang(highlighter, lang));
+    }),
+  );
+
   return html.replace(CODE_BLOCK_RE, (_match, lang: string, code: string) => {
-    // Skip mermaid — it's handled separately
     if (lang === "mermaid") return _match;
 
-    // Decode HTML entities back to raw text for shiki
     const decoded = code
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
@@ -434,11 +465,11 @@ async function highlightCodeBlocks(html: string): Promise<string> {
       .replace(/&quot;/g, '"')
       .replace(/&#39;/g, "'");
 
-    const resolvedLang = loadedLangs.includes(lang) ? lang : "text";
+    const resolved = resolvedByLang.get(lang) ?? "text";
 
     try {
       return highlighter.codeToHtml(decoded, {
-        lang: resolvedLang,
+        lang: resolved,
         theme: "github-dark",
       });
     } catch {
