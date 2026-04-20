@@ -21,15 +21,21 @@ export default function Header() {
   const { toggle, open: sidebarOpen } = useSidebar();
   const { openSearch } = useSearch();
   const [trail, setTrail] = useState<TrailInfo | null>(null);
+  const [roleLoaded, setRoleLoaded] = useState(false);
 
   useEffect(() => {
     fetch("/api/whoami")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.trail) setTrail(data.trail);
+        setRoleLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => setRoleLoaded(true));
   }, []);
+
+  const isNonOwner = trail !== null;
+  const homeHref = isNonOwner ? "/home" : "/dashboard";
+  const homeLabel = isNonOwner ? "Home" : "Dashboard";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-12 flex items-center justify-between px-4 bg-background/95 backdrop-blur-sm border-b border-surface-border">
@@ -57,7 +63,7 @@ export default function Header() {
           </svg>
         </button>
         <Link
-          href="/"
+          href={isNonOwner ? "/home" : "/"}
           className="font-serif text-base font-medium text-foreground hover:text-accent transition-colors"
         >
           Grove
@@ -115,12 +121,72 @@ export default function Header() {
         </svg>
       </button>
 
-      {/* Right: dashboard + logout */}
+      {/* Right: images + home/dashboard + profile + logout */}
       <div className="flex items-center gap-1">
+      {roleLoaded && !isNonOwner && (
+        <Link
+          href="/images"
+          className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
+          aria-label="Images"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="9" cy="9" r="2" />
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          </svg>
+        </Link>
+      )}
+      {roleLoaded && (
+        <Link
+          href={homeHref}
+          className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
+          aria-label={homeLabel}
+        >
+          {isNonOwner ? (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-5h-2v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            </svg>
+          ) : (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          )}
+        </Link>
+      )}
       <Link
-        href="/dashboard"
+        href="/profile"
         className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
-        aria-label="Dashboard"
+        aria-label="Profile"
       >
         <svg
           width="16"
@@ -132,10 +198,8 @@ export default function Header() {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <rect x="3" y="3" width="7" height="7" rx="1" />
-          <rect x="14" y="3" width="7" height="7" rx="1" />
-          <rect x="3" y="14" width="7" height="7" rx="1" />
-          <rect x="14" y="14" width="7" height="7" rx="1" />
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21a8 8 0 0 1 16 0" />
         </svg>
       </Link>
       <button

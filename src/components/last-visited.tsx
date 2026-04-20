@@ -33,9 +33,14 @@ export default function LastVisited() {
         return;
       }
 
-      // No saved path — try to land on a random note
-      // Use Resources/Concepts as the default landing directory
-      router.replace("/Resources/Concepts");
+      // No saved path — role-aware default: trail users land on /home,
+      // owners land on a browsable folder.
+      fetch("/api/whoami")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          router.replace(data?.trail ? "/home" : "/Resources/Concepts");
+        })
+        .catch(() => router.replace("/Resources/Concepts"));
     }
   }, [pathname, router]);
 

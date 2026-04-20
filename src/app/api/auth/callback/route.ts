@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
 
     // Encrypt the API key into the grove_token cookie
     const encrypted = encryptKey(apiKeyToken);
-    // Trail users go to browsable content; regular users go to home
-    const destination = trailId ? "/Resources" : "/";
+    // Trail users land on their non-owner home; owners go to the marketing root
+    const destination = trailId ? "/home" : "/";
     const response = NextResponse.redirect(new URL(destination, request.url));
     response.cookies.set("grove_token", encrypted, {
       httpOnly: true,
