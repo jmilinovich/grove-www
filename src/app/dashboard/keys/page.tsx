@@ -8,7 +8,7 @@ const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 interface KeyMeta {
   id: string;
   name: string;
-  scopes: string[];
+  scopes: string | string[];
   created_at: string;
   last_used_at: string | null;
   expires_at: string | null;

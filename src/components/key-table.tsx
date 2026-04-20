@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 interface KeyMeta {
   id: string;
   name: string;
-  scopes: string[];
+  scopes: string | string[];
   created_at: string;
   last_used_at: string | null;
   expires_at: string | null;
@@ -239,9 +239,9 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
               >
                 <td className="px-4 py-3 text-foreground font-medium">{key.name}</td>
                 <td className="px-4 py-3 hidden sm:table-cell">
-                  {key.scopes.length > 0 ? (
+                  {key.scopes ? (
                     <div className="flex flex-wrap gap-1">
-                      {key.scopes.map((s) => (
+                      {(Array.isArray(key.scopes) ? key.scopes : key.scopes.split(",")).map((s) => (
                         <ScopeBadge key={s} scope={s} />
                       ))}
                     </div>
