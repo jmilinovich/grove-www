@@ -352,7 +352,7 @@ export default async function DashboardPage() {
             </div>
 
             <a
-              href="https://grovemd.betterstack.com"
+              href="https://grovemd.betteruptime.com"
               target="_blank"
               rel="noopener noreferrer"
               className="block text-xs text-moss hover:text-ink transition-colors mt-2 pt-2 border-t border-surface-border"
