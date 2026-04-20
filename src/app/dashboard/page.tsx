@@ -352,12 +352,12 @@ export default async function DashboardPage() {
             </div>
 
             <a
-              href="https://uptime.betterstack.com/team/281327/monitors"
+              href="https://grovemd.betterstack.com"
               target="_blank"
               rel="noopener noreferrer"
               className="block text-xs text-moss hover:text-ink transition-colors mt-2 pt-2 border-t border-surface-border"
             >
-              View on BetterStack →
+              Status page →
             </a>
           </div>
         </div>
