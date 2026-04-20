@@ -199,11 +199,17 @@ export default async function DashboardPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-ink/60">Drift</span>
-              <span className="text-ink font-medium">{pct(stats?.index?.drift)}</span>
+              <span className="text-ink font-medium">
+                {stats?.index?.drift != null ? `${stats.index.drift} note${stats.index.drift === 1 ? "" : "s"}` : "N/A"}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-ink/60">Embedding coverage</span>
-              <span className="text-ink font-medium">{pct(stats?.index?.embedding_coverage)}</span>
+              <span className="text-ink font-medium">
+                {stats?.index?.embedding_coverage != null && stats.index.embedding_coverage >= 0
+                  ? pct(stats.index.embedding_coverage)
+                  : "N/A"}
+              </span>
             </div>
           </div>
         </div>
