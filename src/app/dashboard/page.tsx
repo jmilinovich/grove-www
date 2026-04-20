@@ -42,6 +42,15 @@ interface Metrics {
   health?: string;
 }
 
+interface BetterStackMonitor {
+  id: string;
+  name: string;
+  url: string;
+  status: string;
+  last_checked_at: string;
+  paused: boolean;
+}
+
 async function fetchStats(apiKey: string): Promise<VaultStats | null> {
   try {
     const res = await fetch(`${API_URL}/v1/stats`, {
@@ -65,6 +74,31 @@ async function fetchMetrics(apiKey: string): Promise<Metrics | null> {
     return res.json();
   } catch {
     return null;
+  }
+}
+
+const BETTERSTACK_API = "https://uptime.betterstack.com/api/v2";
+const BETTERSTACK_KEY = process.env.BETTERSTACK_API_KEY ?? "";
+
+async function fetchBetterStack(): Promise<BetterStackMonitor[]> {
+  if (!BETTERSTACK_KEY) return [];
+  try {
+    const res = await fetch(`${BETTERSTACK_API}/monitors`, {
+      headers: { Authorization: `Bearer ${BETTERSTACK_KEY}` },
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.data ?? []).map((m: { id: string; attributes: Record<string, unknown> }) => ({
+      id: m.id,
+      name: m.attributes.pronounceable_name as string,
+      url: m.attributes.url as string,
+      status: m.attributes.status as string,
+      last_checked_at: m.attributes.last_checked_at as string,
+      paused: m.attributes.paused as boolean,
+    }));
+  } catch {
+    return [];
   }
 }
 
@@ -124,10 +158,15 @@ export default async function DashboardPage() {
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) redirect("/login?redirect=/dashboard");
 
-  const [stats, metrics] = await Promise.all([
+  const [stats, metrics, monitors] = await Promise.all([
     fetchStats(apiKey),
     fetchMetrics(apiKey),
+    fetchBetterStack(),
   ]);
+
+  const allUp = monitors.length > 0 && monitors.every((m) => m.status === "up");
+  const anyDown = monitors.some((m) => m.status === "down");
+  const betterStackStatus = monitors.length === 0 ? "unknown" : allUp ? "up" : anyDown ? "down" : "degraded";
 
   const lifecycle = stats?.lifecycle;
   const lifecycleTotal = lifecycle
@@ -276,7 +315,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* System */}
+        {/* System — BetterStack is source of truth */}
         <div className="border border-surface-border bg-surface rounded-lg p-5">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">System</p>
           <div className="space-y-2">
@@ -284,22 +323,42 @@ export default async function DashboardPage() {
               <span
                 className={[
                   "inline-block w-2 h-2 rounded-full",
-                  metrics ? "bg-moss" : "bg-ink/40",
+                  betterStackStatus === "up" ? "bg-moss" : betterStackStatus === "down" ? "bg-harvest" : "bg-ink/40",
                 ].join(" ")}
               />
-              <span className="text-ink/60">Health</span>
+              <span className="text-ink/60">Status</span>
               <span className="text-ink font-medium ml-auto">
-                {metrics ? "online" : "unreachable"}
+                {betterStackStatus === "up" ? "all systems operational" : betterStackStatus === "down" ? "outage detected" : betterStackStatus === "degraded" ? "partially degraded" : "unknown"}
               </span>
             </div>
+
+            {monitors.map((m) => (
+              <div key={m.id} className="flex items-center justify-between text-sm pl-4">
+                <span className="text-ink/60">{m.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className={m.status === "up" ? "text-moss" : "text-harvest"}>{m.status}</span>
+                  <span className="text-ink/40 text-xs">{relativeTime(m.last_checked_at)}</span>
+                </div>
+              </div>
+            ))}
+
             <div className="flex justify-between text-sm">
-              <span className="text-ink/60">Uptime</span>
+              <span className="text-ink/60">Process uptime</span>
               <span className="text-ink">{formatUptime(metrics?.uptime_seconds)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-ink/60">Total requests</span>
               <span className="text-ink">{na(metrics?.total_requests)}</span>
             </div>
+
+            <a
+              href="https://uptime.betterstack.com/team/281327/monitors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-xs text-moss hover:text-ink transition-colors mt-2 pt-2 border-t border-surface-border"
+            >
+              View on BetterStack →
+            </a>
           </div>
         </div>
 
