@@ -9,6 +9,7 @@ const tabs = [
   { label: "Trails", href: "/dashboard/trails" },
   { label: "Users", href: "/dashboard/users" },
   { label: "Usage", href: "/dashboard/usage" },
+  { label: "Graph", href: "/dashboard/graph" },
 ];
 
 export default function DashboardNav() {
