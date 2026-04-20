@@ -12,11 +12,10 @@ export const metadata = {
 interface GraphAnalysis {
   nodes: number;
   edges: number;
-  density: number;
+  avg_links_per_note: number;
+  orphan_count: number;
+  cluster_count: number;
   most_connected: { name: string; path: string; links: number }[];
-  orphans: string[];
-  clusters: { id: number; size: number; members: string[] }[];
-  bridges: { name: string; path: string; score: number }[];
 }
 
 async function fetchGraphData(apiKey: string): Promise<GraphAnalysis | null> {
@@ -45,7 +44,7 @@ export default async function GraphPage() {
         <h1 className="font-serif font-medium text-xl text-ink">Knowledge graph</h1>
         {data && (
           <p className="text-sm text-ink/40 mt-1 font-sans">
-            {data.nodes.toLocaleString()} notes &middot; {data.edges.toLocaleString()} links &middot; {data.clusters.length} clusters
+            {data.nodes.toLocaleString()} notes &middot; {data.edges.toLocaleString()} links &middot; {data.cluster_count} clusters &middot; {data.orphan_count} orphans
           </p>
         )}
       </div>
