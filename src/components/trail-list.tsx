@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useCallback, useEffect } from "react";
 
 interface Trail {
@@ -16,39 +17,6 @@ interface Trail {
   rate_limit_reads: number | null;
   rate_limit_writes: number | null;
   created_at: string;
-}
-
-interface CreateForm {
-  name: string;
-  description: string;
-  allow_tags: string;
-  deny_tags: string;
-  allow_types: string;
-  deny_types: string;
-  allow_paths: string;
-  deny_paths: string;
-  rate_limit_reads: string;
-  rate_limit_writes: string;
-}
-
-const EMPTY_FORM: CreateForm = {
-  name: "",
-  description: "",
-  allow_tags: "",
-  deny_tags: "",
-  allow_types: "",
-  deny_types: "",
-  allow_paths: "",
-  deny_paths: "",
-  rate_limit_reads: "",
-  rate_limit_writes: "",
-};
-
-function parseCsv(val: string): string[] {
-  return val
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
 }
 
 function EnabledBadge({ enabled }: { enabled: boolean }) {
@@ -210,6 +178,12 @@ function TrailCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href={`/dashboard/trails/${encodeURIComponent(trail.id)}`}
+            className="text-xs font-medium text-moss hover:text-moss/60 transition-colors"
+          >
+            Edit
+          </Link>
           <button
             onClick={() => setShowUsage((v) => !v)}
             className="text-xs text-ink/40 hover:text-foreground transition-colors"
@@ -313,117 +287,8 @@ function TrailCard({
   );
 }
 
-function FormField({
-  id,
-  label,
-  hint,
-  value,
-  onChange,
-  type = "text",
-  placeholder,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-  placeholder?: string;
-}) {
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="block text-xs uppercase tracking-[0.1em] text-ink/40 mb-1 font-medium"
-      >
-        {label}
-      </label>
-      {hint && <p className="text-xs text-ink/40 mb-1">{hint}</p>}
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full bg-white border border-ink/15 rounded px-3 py-2 text-sm text-foreground placeholder:text-ink/40 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
-      />
-    </div>
-  );
-}
-
 export default function TrailList({ initialTrails }: { initialTrails: Trail[] }) {
   const [trails, setTrails] = useState(initialTrails);
-  const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
-  const [createLoading, setCreateLoading] = useState(false);
-  const [createError, setCreateError] = useState("");
-  const [newToken, setNewToken] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const setField = useCallback(
-    (field: keyof CreateForm) => (value: string) =>
-      setForm((prev) => ({ ...prev, [field]: value })),
-    []
-  );
-
-  const refreshTrails = useCallback(async () => {
-    const res = await fetch("/api/admin/trails");
-    if (res.ok) {
-      const data = await res.json();
-      setTrails(data.trails ?? []);
-    }
-  }, []);
-
-  const handleCreate = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setCreateError("");
-      setCreateLoading(true);
-
-      try {
-        const res = await fetch("/api/admin/trails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "create",
-            name: form.name.trim(),
-            description: form.description.trim(),
-            allow_tags: parseCsv(form.allow_tags),
-            deny_tags: parseCsv(form.deny_tags),
-            allow_types: parseCsv(form.allow_types),
-            deny_types: parseCsv(form.deny_types),
-            allow_paths: parseCsv(form.allow_paths),
-            deny_paths: parseCsv(form.deny_paths),
-            rate_limit_reads: form.rate_limit_reads
-              ? parseInt(form.rate_limit_reads, 10)
-              : null,
-            rate_limit_writes: form.rate_limit_writes
-              ? parseInt(form.rate_limit_writes, 10)
-              : null,
-          }),
-        });
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({ error: "Create failed" }));
-          setCreateError(data.error ?? "Create failed");
-          return;
-        }
-
-        const data = await res.json();
-        if (data.token) {
-          setNewToken(data.token);
-        }
-        setForm(EMPTY_FORM);
-        await refreshTrails();
-      } catch {
-        setCreateError("Network error");
-      } finally {
-        setCreateLoading(false);
-      }
-    },
-    [form, refreshTrails]
-  );
 
   const handleToggle = useCallback(async (id: string, enabled: boolean) => {
     const res = await fetch("/api/admin/trails", {
@@ -440,210 +305,30 @@ export default function TrailList({ initialTrails }: { initialTrails: Trail[] })
 
   const handleDelete = useCallback(
     async (id: string) => {
-      setDeleteLoading(true);
-      try {
-        const res = await fetch("/api/admin/trails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "delete", id }),
-        });
-        if (res.ok) {
-          setTrails((prev) => prev.filter((t) => t.id !== id));
-        }
-      } finally {
-        setDeleteLoading(false);
+      const res = await fetch("/api/admin/trails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", id }),
+      });
+      if (res.ok) {
+        setTrails((prev) => prev.filter((t) => t.id !== id));
       }
     },
     []
   );
-
-  const handleCopy = useCallback(async () => {
-    if (!newToken) return;
-    await navigator.clipboard.writeText(newToken);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [newToken]);
-
-  const handleDismissToken = useCallback(() => {
-    setNewToken(null);
-    setCopied(false);
-    setShowCreate(false);
-  }, []);
-
-  // suppress unused warning — deleteLoading used as visual indicator
-  void deleteLoading;
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-serif text-title font-medium tracking-[-0.015em]">Trails</h1>
-        {!showCreate && !newToken && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="bg-ink text-cream rounded px-7 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
-          >
-            Create trail
-          </button>
-        )}
-      </div>
-
-      {/* Token reveal */}
-      {newToken && (
-        <div className="mb-6 rounded-lg border border-surface-border bg-surface/50 p-4">
-          <p className="text-sm font-medium text-foreground mb-1">Trail created</p>
-          <p className="text-xs text-harvest mb-3">
-            Consumer API key — save this now, it won&apos;t be shown again.
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 bg-surface font-mono text-sm p-3 rounded break-all">
-              {newToken}
-            </code>
-            <button
-              onClick={handleCopy}
-              className="shrink-0 text-sm text-moss hover:text-moss/60 transition-colors font-medium"
-            >
-              {copied ? "Copied!" : "Copy"}
-            </button>
-          </div>
-          <button
-            onClick={handleDismissToken}
-            className="mt-3 text-xs text-ink/40 hover:text-foreground transition-colors"
-          >
-            Done, I&apos;ve saved it
-          </button>
-        </div>
-      )}
-
-      {/* Create form */}
-      {showCreate && !newToken && (
-        <form
-          onSubmit={handleCreate}
-          className="mb-8 rounded-lg border border-surface-border bg-surface/50 p-5"
+        <Link
+          href="/dashboard/trails/new"
+          className="bg-ink text-cream rounded px-7 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
         >
-          <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-4">
-            New trail
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField
-              id="trail-name"
-              label="Name"
-              value={form.name}
-              onChange={setField("name")}
-              placeholder="e.g. public-recipes"
-            />
-            <FormField
-              id="trail-description"
-              label="Description"
-              value={form.description}
-              onChange={setField("description")}
-              placeholder="Shared recipe notes"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField
-              id="trail-allow-tags"
-              label="Allow tags"
-              hint="Comma-separated"
-              value={form.allow_tags}
-              onChange={setField("allow_tags")}
-              placeholder="recipe, cooking"
-            />
-            <FormField
-              id="trail-deny-tags"
-              label="Deny tags"
-              hint="Comma-separated"
-              value={form.deny_tags}
-              onChange={setField("deny_tags")}
-              placeholder="private, draft"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField
-              id="trail-allow-types"
-              label="Allow types"
-              hint="Comma-separated note types"
-              value={form.allow_types}
-              onChange={setField("allow_types")}
-              placeholder="recipe, concept"
-            />
-            <FormField
-              id="trail-deny-types"
-              label="Deny types"
-              hint="Comma-separated note types"
-              value={form.deny_types}
-              onChange={setField("deny_types")}
-              placeholder="journal, person"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <FormField
-              id="trail-allow-paths"
-              label="Allow paths"
-              hint="Comma-separated path prefixes"
-              value={form.allow_paths}
-              onChange={setField("allow_paths")}
-              placeholder="Resources/Recipes"
-            />
-            <FormField
-              id="trail-deny-paths"
-              label="Deny paths"
-              hint="Comma-separated path prefixes"
-              value={form.deny_paths}
-              onChange={setField("deny_paths")}
-              placeholder="Journal, Areas"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
-            <FormField
-              id="trail-reads"
-              label="Reads / min"
-              type="number"
-              value={form.rate_limit_reads}
-              onChange={setField("rate_limit_reads")}
-              placeholder="60"
-            />
-            <FormField
-              id="trail-writes"
-              label="Writes / min"
-              type="number"
-              value={form.rate_limit_writes}
-              onChange={setField("rate_limit_writes")}
-              placeholder="10"
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="submit"
-              disabled={createLoading || !form.name.trim()}
-              className="bg-ink text-cream rounded px-4 py-2 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {createLoading ? "Creating..." : "Create trail"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowCreate(false);
-                setForm(EMPTY_FORM);
-                setCreateError("");
-              }}
-              className="text-sm text-ink/40 hover:text-foreground transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-
-          {createError && (
-            <p className="text-sm text-harvest mt-2">{createError}</p>
-          )}
-        </form>
-      )}
+          Create trail
+        </Link>
+      </div>
 
       {/* Trail cards */}
       {trails.length === 0 ? (
