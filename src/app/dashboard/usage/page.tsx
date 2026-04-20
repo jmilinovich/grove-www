@@ -14,15 +14,16 @@ const TOOL_NAMES = [
 ] as const;
 
 interface ToolStats {
-  requests: number;
+  count: number;
   errors: number;
-  p50_ms: number;
-  p95_ms: number;
-  p99_ms: number;
+  error_rate: number;
+  latency_p50: number;
+  latency_p95: number;
+  latency_p99: number;
 }
 
 interface SearchStats {
-  queries_last_hour: number;
+  queries_1h: number;
   avg_latency_ms: number;
   zero_result_rate: number;
 }
@@ -146,21 +147,21 @@ export default async function UsagePage() {
                       <tr key={name} className="border-t border-surface-border">
                         <td className="py-3 pr-8 text-ink font-mono text-xs">{name}</td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
-                          {tool.requests.toLocaleString()}
+                          {(tool.count ?? 0).toLocaleString()}
                         </td>
                         <td className="py-3 pr-8 text-right">
-                          <span className={tool.errors > 0 ? "text-harvest" : "text-ink/60"}>
-                            {tool.errors.toLocaleString()}
+                          <span className={(tool.errors ?? 0) > 0 ? "text-harvest" : "text-ink/60"}>
+                            {(tool.errors ?? 0).toLocaleString()}
                           </span>
                         </td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
-                          {formatLatency(tool.p50_ms)}
+                          {formatLatency(tool.latency_p50 ?? 0)}
                         </td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
-                          {formatLatency(tool.p95_ms)}
+                          {formatLatency(tool.latency_p95 ?? 0)}
                         </td>
                         <td className="py-3 text-ink/60 text-right">
-                          {formatLatency(tool.p99_ms)}
+                          {formatLatency(tool.latency_p99 ?? 0)}
                         </td>
                       </tr>
                     );
@@ -171,21 +172,21 @@ export default async function UsagePage() {
                       <tr key={name} className="border-t border-surface-border">
                         <td className="py-3 pr-8 text-ink font-mono text-xs">{name}</td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
-                          {tool.requests.toLocaleString()}
+                          {(tool.count ?? 0).toLocaleString()}
                         </td>
                         <td className="py-3 pr-8 text-right">
-                          <span className={tool.errors > 0 ? "text-harvest" : "text-ink/60"}>
-                            {tool.errors.toLocaleString()}
+                          <span className={(tool.errors ?? 0) > 0 ? "text-harvest" : "text-ink/60"}>
+                            {(tool.errors ?? 0).toLocaleString()}
                           </span>
                         </td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
-                          {formatLatency(tool.p50_ms)}
+                          {formatLatency(tool.latency_p50 ?? 0)}
                         </td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
-                          {formatLatency(tool.p95_ms)}
+                          {formatLatency(tool.latency_p95 ?? 0)}
                         </td>
                         <td className="py-3 text-ink/60 text-right">
-                          {formatLatency(tool.p99_ms)}
+                          {formatLatency(tool.latency_p99 ?? 0)}
                         </td>
                       </tr>
                     ))}
@@ -204,7 +205,7 @@ export default async function UsagePage() {
                 <div className="bg-surface rounded-lg p-6 border border-surface-border">
                   <p className="text-ink/40 font-sans text-xs mb-2">Queries (last hour)</p>
                   <p className="text-2xl font-serif font-medium text-ink">
-                    {(metrics!.search.queries_last_hour ?? 0).toLocaleString()}
+                    {(metrics!.search.queries_1h ?? 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="bg-surface rounded-lg p-6 border border-surface-border">
