@@ -155,19 +155,26 @@ export default async function NotePage({ params }: PageProps) {
   let note;
   let entries: ListEntry[] = [];
 
+  // Try fetching as a note. Transient upstream failures shouldn't kill
+  // the page — fall through to listNotes, which handles directory paths.
   try {
-    // Try fetching as a note first
     note = await fetchNote(vaultPath, apiKey);
-
-    if (!note) {
-      // Not a note — try as a directory listing
-      entries = await listNotes(vaultPath, apiKey);
-    }
   } catch (err) {
     if (err instanceof AuthError) {
       redirect(`/login?redirect=${encodeURIComponent("/" + vaultPath)}`);
     }
-    throw err;
+    console.error(`[...path] fetchNote failed for "${vaultPath}", trying listNotes:`, err);
+  }
+
+  if (!note) {
+    try {
+      entries = await listNotes(vaultPath, apiKey);
+    } catch (err) {
+      if (err instanceof AuthError) {
+        redirect(`/login?redirect=${encodeURIComponent("/" + vaultPath)}`);
+      }
+      throw err;
+    }
   }
 
   if (note) {
