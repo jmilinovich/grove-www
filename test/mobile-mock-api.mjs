@@ -8,6 +8,11 @@ const PORT = Number(process.env.MOCK_API_PORT ?? 3848);
 const now = Date.now();
 const iso = () => new Date().toISOString();
 
+// Per-process mutable state so tests can flip scenarios via POST /mock/config.
+const mockState = {
+  sharesMode: "populated", // "populated" | "empty"
+};
+
 const NOTE = {
   path: "Resources/Concepts/Example.md",
   content:
@@ -30,6 +35,25 @@ function body(res, obj, status = 200) {
 const server = http.createServer((req, res) => {
   const u = new URL(req.url ?? "/", `http://localhost:${PORT}`);
   const p = u.pathname;
+
+  // Test control plane — allow Playwright to mutate per-test scenarios.
+  if (p === "/mock/config" && req.method === "POST") {
+    let raw = "";
+    req.on("data", (chunk) => (raw += chunk));
+    req.on("end", () => {
+      try {
+        const patch = JSON.parse(raw || "{}");
+        Object.assign(mockState, patch);
+        body(res, { ok: true, state: mockState });
+      } catch {
+        body(res, { ok: false, error: "invalid_json" }, 400);
+      }
+    });
+    return;
+  }
+  if (p === "/mock/config" && req.method === "GET") {
+    return body(res, mockState);
+  }
 
   // Auth / identity
   if (p === "/v1/whoami") {
@@ -249,7 +273,47 @@ const server = http.createServer((req, res) => {
     });
   }
   if (p === "/v1/admin/share" && req.method === "GET") {
-    return body(res, { shares: [], next_cursor: null });
+    if (mockState.sharesMode === "empty") {
+      return body(res, { shares: [], next_cursor: null });
+    }
+    const day = 24 * 60 * 60 * 1000;
+    return body(res, {
+      shares: [
+        {
+          id: "sh_active01",
+          note_path: "Resources/Concepts/Example.md",
+          url: "https://grove.md/@test/s/sh_active01",
+          created_by: "u-test",
+          created_at: new Date(now - day).toISOString(),
+          expires_at: new Date(now + 6 * day).toISOString(),
+          max_views: 100,
+          view_count: 3,
+          last_accessed_at: null,
+          revoked_by: null,
+          revoked_at: null,
+          status: "active",
+        },
+        {
+          id: "sh_expired02",
+          note_path: "Resources/Concepts/Another.md",
+          url: "https://grove.md/@test/s/sh_expired02",
+          created_by: "u-test",
+          created_at: new Date(now - 14 * day).toISOString(),
+          expires_at: new Date(now - 7 * day).toISOString(),
+          max_views: 10,
+          view_count: 10,
+          last_accessed_at: new Date(now - 8 * day).toISOString(),
+          revoked_by: null,
+          revoked_at: null,
+          status: "expired",
+        },
+      ],
+      next_cursor: null,
+    });
+  }
+  if (/^\/v1\/admin\/share\/[^/]+$/.test(p) && req.method === "DELETE") {
+    const id = p.split("/").pop();
+    return body(res, { id, revoked_at: iso(), revoked_by: "u-test" });
   }
 
   // Default: empty-but-valid

@@ -17,6 +17,7 @@ export default defineConfig({
       "test/mobile.spec.ts",
       "test/multi-resident.e2e.spec.ts",
       "test/share-modal.spec.ts",
+      "test/dashboard-shares.spec.ts",
     ],
     environment: "node",
   },

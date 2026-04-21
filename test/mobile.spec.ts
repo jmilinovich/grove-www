@@ -48,6 +48,7 @@ const SIGNED_IN_ROUTES: Array<{ path: string; label: string }> = [
   { path: "/dashboard/usage", label: "dashboard/usage" },
   { path: "/dashboard/trails", label: "dashboard/trails" },
   { path: "/dashboard/keys", label: "dashboard/keys" },
+  { path: "/dashboard/shares", label: "dashboard/shares" },
   { path: "/dashboard/users", label: "dashboard/users" },
   { path: "/dashboard/health", label: "dashboard/health" },
   { path: "/images", label: "images" },
