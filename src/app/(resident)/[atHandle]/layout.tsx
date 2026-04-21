@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { getApiKey } from "@/lib/auth";
 import {
   fetchResident,
   parseAtHandle,
@@ -13,10 +15,10 @@ interface LayoutProps {
 
 /**
  * Resident layout — validates the `@handle` segment, resolves the resident
- * profile, and renders a small header chip so nested pages have visible
- * resident context. Children receive the resolved profile via the
- * `children` prop shape; use `fetchResident(handle)` directly if a nested
- * page needs the profile itself.
+ * profile, and (for signed-out visitors) renders a small header chip so
+ * nested pages have visible resident context. For signed-in viewers the
+ * full AppShell chrome from the root layout is already showing the user's
+ * identity + navigation, so ResidentBar would be redundant and is skipped.
  *
  * Handle-history redirect (old handle → current) is intentionally deferred
  * until the resident API exposes the mapping (see PLAN.md P16-5).
@@ -29,9 +31,12 @@ export default async function ResidentLayout({ children, params }: LayoutProps) 
   const resident = await fetchResident(handle);
   if (!resident) notFound();
 
+  const cookieStore = await cookies();
+  const signedIn = Boolean(getApiKey(cookieStore));
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <ResidentBar resident={resident} />
+      {!signedIn && <ResidentBar resident={resident} />}
       {children}
     </div>
   );
