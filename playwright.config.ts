@@ -5,7 +5,7 @@ const MOCK_PORT = Number(process.env.MOCK_API_PORT ?? 3848);
 
 export default defineConfig({
   testDir: "./test",
-  testMatch: "**/mobile.spec.ts",
+  testMatch: ["**/mobile.spec.ts", "**/share-modal.spec.ts"],
   fullyParallel: false,
   workers: 1,
   timeout: 30_000,

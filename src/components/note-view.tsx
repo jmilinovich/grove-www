@@ -5,6 +5,7 @@
 import type { NoteResponse } from "@/lib/grove-api";
 import { renderMarkdown } from "@/lib/markdown";
 import MermaidHydrator from "./mermaid-hydrator";
+import ShareButton from "./share-button";
 import Link from "next/link";
 
 function formatJournalDate(path: string): string {
@@ -51,9 +52,11 @@ function escapeHtml(s: string): string {
 export default async function NoteView({
   note,
   atHandle,
+  role,
 }: {
   note: NoteResponse;
   atHandle?: string;
+  role?: "owner" | "non-owner";
 }) {
   let html: string;
   let renderFailed = false;
@@ -74,14 +77,21 @@ export default async function NoteView({
   return (
     <article className="note-content mx-auto max-w-[680px] w-full">
       <header className="mb-10 pb-8 border-b border-ink/15">
-        <h1 className="text-heading font-serif font-medium text-ink leading-[1.2] tracking-[-0.015em]">
-          {title}
-        </h1>
-        {aliases.length > 0 && (
-          <p className="mt-2 text-sm text-ink/40">
-            {aliases.join(" · ")}
-          </p>
-        )}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-heading font-serif font-medium text-ink leading-[1.2] tracking-[-0.015em]">
+              {title}
+            </h1>
+            {aliases.length > 0 && (
+              <p className="mt-2 text-sm text-ink/40">
+                {aliases.join(" · ")}
+              </p>
+            )}
+          </div>
+          {role === "owner" && atHandle && (
+            <ShareButton notePath={note.path} atHandle={atHandle} />
+          )}
+        </div>
       </header>
 
       {renderFailed && (

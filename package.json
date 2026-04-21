@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "test:mobile": "playwright test test/mobile.spec.ts",
+    "test:mobile": "playwright test",
     "test:e2e": "playwright test --config=playwright.e2e.config.ts"
   },
   "dependencies": {

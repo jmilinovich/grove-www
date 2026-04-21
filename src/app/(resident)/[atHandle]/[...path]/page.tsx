@@ -10,6 +10,7 @@ import {
   type ListEntry,
 } from "@/lib/grove-api";
 import { parseAtHandle } from "@/lib/resident-context";
+import { fetchWhoami, roleFromWhoami } from "@/lib/role";
 import NoteView from "@/components/note-view";
 import MetadataBar from "@/components/metadata-bar";
 import Breadcrumbs from "@/components/breadcrumbs";
@@ -215,6 +216,8 @@ export default async function ScopedNotePage({ params }: PageProps) {
   }
 
   if (note) {
+    const whoami = await fetchWhoami(apiKey);
+    const role = roleFromWhoami(whoami);
     return (
       <div className="max-w-3xl mx-auto px-6 py-8">
         <Breadcrumbs path={vaultPath} atHandle={handle} />
@@ -229,7 +232,7 @@ export default async function ScopedNotePage({ params }: PageProps) {
             </div>
           }
         >
-          <NoteView note={note} atHandle={handle} />
+          <NoteView note={note} atHandle={handle} role={role} />
         </Suspense>
       </div>
     );

@@ -240,6 +240,18 @@ const server = http.createServer((req, res) => {
     return body(res, { hits: [], total: 0 });
   }
 
+  // Share a note (admin)
+  if (p === "/v1/admin/share" && req.method === "POST") {
+    return body(res, {
+      id: "sh_mocktest",
+      url: "https://grove.md/@test/s/sh_mocktest",
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+  }
+  if (p === "/v1/admin/share" && req.method === "GET") {
+    return body(res, { shares: [], next_cursor: null });
+  }
+
   // Default: empty-but-valid
   body(res, {});
 });
