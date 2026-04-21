@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     response.cookies.set("grove_token", encrypted, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
       maxAge: 60 * 60 * 24 * 30,
     });

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     response.cookies.set("grove_token", encrypted, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });
@@ -44,7 +44,7 @@ export async function DELETE() {
   response.cookies.set("grove_token", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "strict",
     path: "/",
     maxAge: 0,
   });

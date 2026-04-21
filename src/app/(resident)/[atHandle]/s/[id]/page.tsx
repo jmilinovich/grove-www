@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { renderMarkdown } from "@/lib/markdown";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
@@ -14,26 +15,51 @@ interface ShareData {
   max_views: number;
 }
 
+type FetchResult =
+  | { kind: "ok"; share: ShareData }
+  | { kind: "gone"; reason: "expired" | "revoked"; expires_at: string | null; revoked_at: string | null }
+  | { kind: "not_found" };
+
 interface PageProps {
   params: Promise<{ atHandle: string; id: string }>;
 }
 
-async function fetchShare(id: string): Promise<ShareData | null> {
+async function fetchShare(id: string): Promise<FetchResult> {
   try {
     const res = await fetch(`${API_URL}/v1/share/${encodeURIComponent(id)}`, {
       cache: "no-store",
     });
-    if (!res.ok) return null;
-    return res.json();
+    if (res.status === 410) {
+      const body = await res.json().catch(() => ({}));
+      const reason = body?.reason === "revoked" ? "revoked" : "expired";
+      return {
+        kind: "gone",
+        reason,
+        expires_at: typeof body?.expires_at === "string" ? body.expires_at : null,
+        revoked_at: typeof body?.revoked_at === "string" ? body.revoked_at : null,
+      };
+    }
+    if (!res.ok) return { kind: "not_found" };
+    const share = (await res.json()) as ShareData;
+    return { kind: "ok", share };
   } catch {
-    return null;
+    return { kind: "not_found" };
   }
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const share = await fetchShare(id);
-  if (!share) return { title: "Link expired — Grove" };
+  const result = await fetchShare(id);
+  if (result.kind === "gone") {
+    return {
+      title: "Expired link · Grove",
+      robots: { index: false, follow: false },
+    };
+  }
+  if (result.kind === "not_found") {
+    return { title: "Link not found · Grove", robots: { index: false, follow: false } };
+  }
+  const share = result.share;
   return {
     title: `${share.title ?? "Shared note"} — Grove`,
     description: `A shared note from Grove, available until ${new Date(share.expires_at).toLocaleDateString()}.`,
@@ -41,9 +67,17 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function ScopedSharePage({ params }: PageProps) {
-  const { id } = await params;
-  const share = await fetchShare(id);
-  if (!share || !share.content) notFound();
+  const { atHandle, id } = await params;
+  const result = await fetchShare(id);
+
+  if (result.kind === "not_found") notFound();
+
+  if (result.kind === "gone") {
+    return <ExpiredPage atHandle={atHandle} reason={result.reason} expiresAt={result.expires_at} />;
+  }
+
+  const share = result.share;
+  if (!share.content) notFound();
 
   const content = share.content.replace(/^---[\s\S]*?---\n*/, "");
   const html = await renderMarkdown(content, {});
@@ -88,6 +122,46 @@ export default async function ScopedSharePage({ params }: PageProps) {
             </Link>
           </p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ExpiredPage({
+  atHandle,
+  reason,
+  expiresAt,
+}: {
+  atHandle: string;
+  reason: "expired" | "revoked";
+  expiresAt: string | null;
+}) {
+  const handlePath = atHandle.startsWith("@") ? `/${atHandle}` : `/@${atHandle}`;
+  const displayHandle = atHandle.startsWith("@") ? atHandle : `@${atHandle}`;
+  const subline =
+    reason === "revoked"
+      ? "This link was revoked."
+      : expiresAt
+        ? `This link expired on ${new Date(expiresAt).toLocaleDateString()}.`
+        : "This link has expired.";
+
+  return (
+    <div className="min-h-screen bg-cream" data-share-status="gone" data-share-reason={reason}>
+      <div className="mx-auto" style={{ maxWidth: 560, padding: "5rem 1.5rem" }}>
+        <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+          Shared note
+        </p>
+        <h1 className="text-2xl font-serif font-medium text-ink tracking-tight mb-2">
+          This link has expired
+        </h1>
+        <p className="text-ink/70 mb-8">{subline}</p>
+        <p className="text-sm text-ink/60">
+          Visit{" "}
+          <Link href={handlePath} className="text-moss hover:underline transition-colors">
+            {displayHandle}
+          </Link>{" "}
+          to see their public notes.
+        </p>
       </div>
     </div>
   );
