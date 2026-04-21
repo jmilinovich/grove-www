@@ -32,7 +32,7 @@ export default async function LifecyclePage() {
   if (!digest) {
     return (
       <div>
-        <h1 className="font-serif font-medium text-xl text-ink mb-8">Garden lifecycle</h1>
+        <h1 className="font-serif font-medium text-title text-ink mb-8">Garden lifecycle</h1>
         <p className="font-sans text-ink/60">
           Lifecycle data unavailable — the server may still be computing it. Try again in a moment.
         </p>
@@ -42,7 +42,7 @@ export default async function LifecyclePage() {
 
   return (
     <div>
-      <h1 className="font-serif font-medium text-xl text-ink mb-8">Garden lifecycle</h1>
+      <h1 className="font-serif font-medium text-title text-ink mb-8">Garden lifecycle</h1>
       <LifecycleView digest={digest} />
     </div>
   );

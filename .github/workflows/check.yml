@@ -3,16 +3,16 @@ name: check
 # Fast merge gate. Runs on every PR and every push to main.
 #
 # What it verifies:
-#   1. `npm run typecheck` — tsc --noEmit
-#   2. `npm run build`     — Next.js production build
-#   3. `npm test`          — vitest unit + integration
-#   4. `npm run test:mobile` — Playwright: no horizontal scroll at 375px
-#   5. `npm audit --audit-level=high` — flag known high/critical vulns
-#   6. gitleaks — scan the push for accidental secrets
+#   1. `npm run lint:drift`  — design-system drift (grep-based, <1s)
+#   2. `npm run typecheck`   — tsc --noEmit
+#   3. `npm run build`       — Next.js production build
+#   4. `npm test`            — vitest unit + integration
+#   5. `npm run test:mobile` — Playwright: no horizontal scroll at 375px
+#   6. `npm audit --audit-level=high` — flag known high/critical vulns
+#   7. gitleaks — scan the push for accidental secrets
 #
-# Design-system drift-lint and visual regression are intentionally NOT here
-# yet — they come in with the design-system extraction PR, which tightens
-# the gate without changing the scaffolding.
+# Visual regression runs in a separate workflow (visual.yml) because
+# cross-OS font rendering needs a deterministic Docker image.
 
 on:
   pull_request:
@@ -38,6 +38,9 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      - name: Lint — design drift
+        run: npm run lint:drift
 
       - name: Typecheck
         run: npm run typecheck

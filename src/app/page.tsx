@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getApiKey } from "@/lib/auth";
+import { buttonClasses } from "@/components/primitives/button";
 import { fetchWhoami, landingPathForRole, roleFromWhoami } from "@/lib/role";
 
 const GITHUB_URL = "https://github.com/jmilinovich/grove";
@@ -18,7 +19,7 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col items-center">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-accent focus:text-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-accent focus:text-background focus:px-4 focus:py-2 focus:text-label focus:font-medium">
         Skip to content
       </a>
       <Nav />
@@ -44,8 +45,8 @@ export default async function Home() {
 
 function Nav() {
   return (
-    <nav className="w-full max-w-5xl mx-auto flex items-center justify-between px-6 py-6 text-sm">
-      <span className="font-serif font-medium tracking-tight text-lg text-ink">
+    <nav className="w-full max-w-5xl mx-auto flex items-center justify-between px-6 py-6 text-label">
+      <span className="font-serif font-medium tracking-tight text-subhead text-ink">
         Grove
       </span>
       <div className="flex items-center gap-6 text-ink/40">
@@ -82,16 +83,10 @@ function Hero() {
         </p>
 
         <div className="mt-10 flex flex-wrap gap-4 fade-up delay-2">
-          <a
-            href={WAITLIST_URL}
-            className="inline-flex items-center bg-ink text-cream px-7 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
-          >
+          <a href={WAITLIST_URL} className={buttonClasses({ variant: "primary", size: "lg" })}>
             Get early access
           </a>
-          <a
-            href={GITHUB_URL}
-            className="inline-flex items-center border border-ink/15 px-7 py-3.5 text-sm text-ink hover:bg-ink/5 transition-colors active:scale-[0.98]"
-          >
+          <a href={GITHUB_URL} className={buttonClasses({ variant: "secondary", size: "lg" })}>
             Self-host &rarr;
           </a>
         </div>
@@ -146,8 +141,8 @@ function HowItWorks() {
         {/* Connect */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-medium">01</span>
-            <span className="text-lg font-medium">Connect your vault</span>
+            <span className="text-moss text-detail font-medium">01</span>
+            <span className="text-subhead font-medium">Connect your vault</span>
           </div>
           <div className="border-l border-surface-border pl-5">
             <p className="text-base text-ink/60 leading-[1.6]">
@@ -162,8 +157,8 @@ function HowItWorks() {
         {/* Read */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-medium">02</span>
-            <span className="text-lg font-medium">Your AI reads your notes</span>
+            <span className="text-moss text-detail font-medium">02</span>
+            <span className="text-subhead font-medium">Your AI reads your notes</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
             <p className="text-base text-ink/60 leading-[1.6]">
@@ -172,11 +167,11 @@ function HowItWorks() {
               the right notes, follows the links between them, and answers
               with your own context.
             </p>
-            <div className="bg-code-bg rounded-lg p-4 text-sm">
+            <div className="bg-code-bg rounded-lg p-4 text-label">
               <p className="text-cream">
                 &quot;What do I know about design systems?&quot;
               </p>
-              <p className="text-cream/40 mt-2 text-xs">
+              <p className="text-cream/40 mt-2 text-detail">
                 <span className="text-moss">found</span>{" "}
                 3 concept notes, 2 journal entries, linked to 14 other
                 ideas in your vault &mdash; 23ms
@@ -188,8 +183,8 @@ function HowItWorks() {
         {/* Write back */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-medium">03</span>
-            <span className="text-lg font-medium">Your AI writes back</span>
+            <span className="text-moss text-detail font-medium">03</span>
+            <span className="text-subhead font-medium">Your AI writes back</span>
           </div>
           <div className="border-l border-surface-border pl-5 space-y-4">
             <p className="text-base text-ink/60 leading-[1.6]">
@@ -198,7 +193,7 @@ function HowItWorks() {
               extracted entities. Every write is validated against your vault&apos;s
               structure and committed to git.
             </p>
-            <div className="bg-code-bg rounded-lg p-4 text-xs text-cream/60 font-mono space-y-4">
+            <div className="bg-code-bg rounded-lg p-4 text-detail text-cream/60 font-mono space-y-4">
               <p>
                 <span className="text-moss">+</span> Concepts/Context Engineering.md
               </p>
@@ -216,8 +211,8 @@ function HowItWorks() {
         {/* Compound */}
         <div>
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-moss text-xs font-medium">04</span>
-            <span className="text-lg font-medium">Knowledge compounds</span>
+            <span className="text-moss text-detail font-medium">04</span>
+            <span className="text-subhead font-medium">Knowledge compounds</span>
           </div>
           <div className="border-l border-surface-border pl-5">
             <p className="text-base text-ink/60 leading-[1.6]">
@@ -246,7 +241,7 @@ function WhatGrows() {
       </h2>
 
       <div className="bg-code-bg rounded-lg p-6 sm:p-8 max-w-2xl mb-6">
-        <pre className="text-xs sm:text-sm text-cream/60 leading-relaxed code-block overflow-x-auto">
+        <pre className="text-detail sm:text-label text-cream/60 leading-relaxed code-block overflow-x-auto">
 {`Your vault
 ├── concepts
 │   ├── Design Systems ──── linked to 42 other notes
@@ -351,55 +346,55 @@ function Deploy() {
       <h2 className="sr-only">Deployment options</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
-        <div className="deploy-card border border-moss/15 bg-moss/5 p-6 flex flex-col gap-3">
-          <p className="text-xs text-moss font-medium uppercase tracking-wider">
+        <div className="deploy-card border border-moss/15 bg-moss/15 p-6 flex flex-col gap-3">
+          <p className="text-detail text-moss font-medium uppercase tracking-wider">
             Hosted
           </p>
-          <p className="text-sm text-muted flex-1">
+          <p className="text-label text-muted flex-1">
             Connect your GitHub repo. Get an MCP endpoint. We handle search,
             embeddings, and infrastructure.
           </p>
           <a
             href={WAITLIST_URL}
-            className="text-sm text-moss hover:text-earth transition-colors font-medium"
+            className="text-label text-moss hover:text-earth transition-colors font-medium"
           >
             Get early access &rarr;
           </a>
         </div>
 
         <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
-          <p className="text-xs text-ink font-medium uppercase tracking-wider">
+          <p className="text-detail text-ink font-medium uppercase tracking-wider">
             Self-hosted
           </p>
-          <p className="text-sm text-muted flex-1">
+          <p className="text-label text-muted flex-1">
             Your server, your data. MIT licensed. Self-hosted embeddings &mdash;
             nothing leaves your infrastructure.
           </p>
           <a
             href={GITHUB_URL}
-            className="text-sm text-muted hover:text-foreground transition-colors"
+            className="text-label text-muted hover:text-foreground transition-colors"
           >
             View on GitHub &rarr;
           </a>
         </div>
 
         <div className="deploy-card border border-surface-border p-6 flex flex-col gap-3">
-          <p className="text-xs text-ink font-medium uppercase tracking-wider">
+          <p className="text-detail text-ink font-medium uppercase tracking-wider">
             Enterprise
           </p>
-          <p className="text-sm text-muted flex-1">
+          <p className="text-label text-muted flex-1">
             On-prem or private cloud. SSO, SLA, dedicated support.
           </p>
           <a
             href="mailto:hello@grove.md"
-            className="text-sm text-muted hover:text-foreground transition-colors"
+            className="text-label text-muted hover:text-foreground transition-colors"
           >
             Contact us &rarr;
           </a>
         </div>
       </div>
 
-      <p className="text-xs text-muted mt-6 max-w-xl">
+      <p className="text-detail text-muted mt-6 max-w-xl">
         Same API, same MCP protocol across all modes.
         Works with Claude, ChatGPT, Cursor, and any MCP client.
       </p>
@@ -415,11 +410,11 @@ function WhyNow() {
       <div className="max-w-2xl">
         <h2 className="sr-only">Why now</h2>
         <blockquote className="border-l-2 border-muted pl-5 text-muted leading-relaxed">
-          <p className="text-lg">
+          <p className="text-subhead">
             &quot;I think there is room here for an incredible new product
             instead of a hacky collection of scripts.&quot;
           </p>
-          <footer className="mt-3 text-sm">
+          <footer className="mt-3 text-label">
             &mdash; Andrej Karpathy, April 2026
           </footer>
         </blockquote>
@@ -470,23 +465,23 @@ function BottomCTA() {
             name="email"
             placeholder="you@example.com"
             required
-            className="flex-1 bg-white border border-ink/15 rounded px-4 py-3 text-sm text-ink placeholder:text-ink/15 focus:border-moss focus:outline-none focus:ring-2 focus:ring-moss/15"
+            className="flex-1 bg-cream border border-ink/15 rounded-md px-6 py-3 text-label text-ink placeholder:text-ink/40 focus:border-moss focus:outline-none"
           />
           <button
             type="submit"
-            className="inline-flex items-center justify-center bg-ink text-cream rounded px-7 py-3 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
+            className={buttonClasses({ variant: "primary", size: "md" })}
           >
             Get early access
           </button>
         </form>
         <a
           href={GITHUB_URL}
-          className="mt-3 inline-flex items-center text-sm text-muted hover:text-foreground transition-colors"
+          className="mt-3 inline-flex items-center text-label text-muted hover:text-foreground transition-colors"
         >
           Or self-host now &rarr;
         </a>
 
-        <p className="mt-6 text-xs text-muted">
+        <p className="mt-6 text-detail text-muted">
           Open source &middot; MIT licensed &middot; Privacy-first &middot; Git-native
         </p>
       </div>
@@ -516,9 +511,9 @@ function TheTools() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
         {tools.map((tool) => (
           <div key={tool.name} className="space-y-4">
-            <p className="text-sm font-medium text-moss font-mono">{tool.name}</p>
+            <p className="text-label font-medium text-moss font-mono">{tool.name}</p>
             <p className="text-base text-ink/60 leading-[1.6]">{tool.desc}</p>
-            <div className="bg-code-bg rounded-lg p-3 text-xs font-mono text-cream/40">
+            <div className="bg-code-bg rounded-lg p-3 text-detail font-mono text-cream/40">
               {tool.example}
             </div>
           </div>
@@ -538,9 +533,9 @@ function Comparison() {
         24 Obsidian MCP servers. All local-only.
       </h2>
       <div className="max-w-2xl overflow-x-auto">
-        <table className="w-full text-sm text-left">
+        <table className="w-full text-label text-left">
           <thead>
-            <tr className="border-b border-surface-border text-muted text-xs uppercase tracking-wider">
+            <tr className="border-b border-surface-border text-muted text-detail uppercase tracking-wider">
               <th className="py-3 pr-6"></th>
               <th className="py-3 pr-6">Others</th>
               <th className="py-3 text-moss">Grove</th>
@@ -588,8 +583,8 @@ function Comparison() {
 
 function Footer() {
   return (
-    <footer className="w-full max-w-5xl mx-auto px-6 py-8 border-t border-surface-border flex items-center justify-between text-xs text-ink/40">
-      <span className="font-serif font-medium text-sm text-ink/60">
+    <footer className="w-full max-w-5xl mx-auto px-6 py-8 border-t border-surface-border flex items-center justify-between text-detail text-ink/40">
+      <span className="font-serif font-medium text-label text-ink/60">
         Grove
       </span>
       <div className="flex gap-6">

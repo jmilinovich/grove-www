@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /.next-mobile-test/
+/.next-visual-test/
 /.next-e2e-test/
 /out/
 

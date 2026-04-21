@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { buttonClasses } from "@/components/primitives/button";
 import {
   fetchResident,
   parseAtHandle,
@@ -37,21 +38,21 @@ export default async function ResidentProfilePage({ params }: PageProps) {
     <div className="flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+          <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
             Resident
           </p>
-          <h1 className="text-2xl font-serif font-medium text-ink tracking-tight">
+          <h1 className="text-heading font-serif font-medium text-ink tracking-tight">
             {displayName}
           </h1>
-          <p className="text-sm text-ink/60 mt-1 font-mono">
+          <p className="text-label text-ink/60 mt-1 font-mono">
             @{resident.handle}
           </p>
           {resident.bio && (
-            <p className="text-sm text-ink/70 mt-4 leading-relaxed whitespace-pre-wrap">
+            <p className="text-label text-ink/60 mt-4 leading-relaxed whitespace-pre-wrap">
               {resident.bio}
             </p>
           )}
-          <p className="text-xs text-ink/40 mt-4">
+          <p className="text-detail text-ink/40 mt-4">
             {resident.note_count}{" "}
             {resident.note_count === 1 ? "note" : "notes"}
             {resident.public_trail_slugs.length > 0 && (
@@ -68,7 +69,7 @@ export default async function ResidentProfilePage({ params }: PageProps) {
 
         {resident.public_trail_slugs.length > 0 && (
           <div className="mb-8">
-            <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+            <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
               Public trails
             </p>
             <ul className="space-y-1">
@@ -76,7 +77,7 @@ export default async function ResidentProfilePage({ params }: PageProps) {
                 <li key={slug}>
                   <Link
                     href={`/@${resident.handle}/trails/${encodeURIComponent(slug)}`}
-                    className="text-sm text-moss hover:underline transition-colors"
+                    className="text-label text-moss hover:underline transition-colors"
                   >
                     {slug}
                   </Link>
@@ -88,12 +89,12 @@ export default async function ResidentProfilePage({ params }: PageProps) {
 
         <Link
           href={`/login?redirect=${encodeURIComponent(`/@${resident.handle}`)}`}
-          className="block w-full bg-ink text-cream rounded px-4 py-3.5 text-sm font-medium text-center hover:bg-earth transition-colors active:scale-[0.98]"
+          className={buttonClasses({ variant: "primary", size: "lg", fullWidth: true })}
         >
           Sign in to Grove
         </Link>
 
-        <p className="text-xs text-ink/40 mt-8 text-center">
+        <p className="text-detail text-ink/40 mt-8 text-center">
           <Link href="/" className="text-moss hover:underline transition-colors">
             grove.md
           </Link>

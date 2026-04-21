@@ -44,7 +44,7 @@ export default async function ResidentLayout({ children, params }: LayoutProps) 
 
 function ResidentBar({ resident }: { resident: ResidentProfile }) {
   return (
-    <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 border-b border-surface-border bg-background/95 backdrop-blur-sm text-xs text-muted">
+    <div className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 border-b border-surface-border bg-background text-detail text-muted">
       <Link
         href={`/@${resident.handle}`}
         className="inline-flex items-center gap-2 font-mono text-foreground hover:text-accent transition-colors"

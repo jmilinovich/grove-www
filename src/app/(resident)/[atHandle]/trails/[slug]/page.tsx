@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { buttonClasses } from "@/components/primitives/button";
 import CopyButton from "@/app/trails/[slug]/copy-button";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
@@ -68,49 +69,49 @@ export default async function ScopedTrailPage({ params }: PageProps) {
     <div className="min-h-screen flex items-center justify-center px-6 bg-cream">
       <div className="w-full max-w-md">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+          <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
             Shared trail
           </p>
-          <h1 className="text-2xl font-serif font-medium text-ink tracking-tight">
+          <h1 className="text-heading font-serif font-medium text-ink tracking-tight">
             {trail.name}
           </h1>
           {trail.description && (
-            <p className="text-sm text-ink/60 mt-2 leading-relaxed">
+            <p className="text-label text-ink/60 mt-2 leading-relaxed">
               {trail.description}
             </p>
           )}
-          <p className="text-xs text-ink/40 mt-3">
+          <p className="text-detail text-ink/40 mt-3">
             {trail.note_count} {trail.note_count === 1 ? "note" : "notes"}
           </p>
         </div>
 
         <Link
           href={loginHref}
-          className="block w-full bg-ink text-cream rounded px-4 py-3.5 text-sm font-medium text-center hover:bg-earth transition-colors active:scale-[0.98]"
+          className={buttonClasses({ variant: "primary", size: "lg", fullWidth: true })}
         >
           Sign in to browse
         </Link>
 
         <div className="mt-8">
-          <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+          <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
             Connect via MCP
           </p>
           <div className="relative">
-            <pre className="bg-code-bg text-code-fg rounded-lg p-4 text-xs font-mono overflow-x-auto leading-relaxed">
+            <pre className="bg-code-bg text-code-fg rounded-lg p-4 text-detail font-mono overflow-x-auto leading-relaxed">
               {mcpConfig}
             </pre>
             <CopyButton text={mcpConfig} />
           </div>
-          <p className="text-xs text-ink/40 mt-2">
+          <p className="text-detail text-ink/40 mt-2">
             Replace{" "}
-            <code className="bg-surface border border-surface-border rounded px-1 py-0.5 text-detail">
+            <code className="bg-surface border border-surface-border rounded-md px-1 py-0.5 text-detail">
               &lt;your-api-key&gt;
             </code>{" "}
             with the key from your invite email.
           </p>
         </div>
 
-        <p className="text-xs text-ink/40 mt-8 text-center">
+        <p className="text-detail text-ink/40 mt-8 text-center">
           <Link href="/" className="text-moss hover:underline transition-colors">
             grove.md
           </Link>

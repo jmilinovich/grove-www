@@ -54,8 +54,8 @@ function noteHref(row: ShareRow): string | null {
 
 function statusBadge(status: ShareRow["status"]): string {
   if (status === "active") return "bg-moss/15 text-moss";
-  if (status === "expired") return "bg-ink/10 text-ink/50";
-  return "bg-harvest/15 text-harvest/80";
+  if (status === "expired") return "bg-ink/15 text-ink/40";
+  return "bg-harvest/15 text-harvest/60";
 }
 
 function shortId(id: string): string {
@@ -191,14 +191,14 @@ export default function SharesTable({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by note path"
               aria-label="Search shares by note path"
-              className="w-full bg-white border border-ink/15 rounded px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+              className="w-full bg-cream border border-ink/15 rounded-md px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:border-moss transition-colors"
             />
           </div>
 
           <div className="overflow-x-auto rounded-lg border border-surface-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-surface-border bg-surface/50">
+                <tr className="border-b border-surface-border bg-surface/60">
                   <SortHeader
                     label="Note"
                     active={sortKey === "note_path"}
@@ -262,7 +262,7 @@ export default function SharesTable({
                       data-status={row.status}
                       className={[
                         "border-b border-surface-border last:border-b-0 transition-colors",
-                        muted ? "text-ink/40 bg-surface/30" : "hover:bg-surface/30 text-foreground",
+                        muted ? "text-ink/40 bg-surface/40" : "hover:bg-surface/40 text-foreground",
                       ].join(" ")}
                     >
                       <td className="px-4 py-3 font-medium max-w-[14rem] truncate">
@@ -284,7 +284,7 @@ export default function SharesTable({
                       <td className="px-4 py-3">
                         <span
                           className={[
-                            "inline-flex items-center text-xs px-2 py-0.5 rounded",
+                            "inline-flex items-center text-xs px-2 py-0.5 rounded-md",
                             statusBadge(row.status),
                           ].join(" ")}
                         >
@@ -355,7 +355,7 @@ export default function SharesTable({
         <div
           role="alert"
           data-testid="shares-toast"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-ink text-cream text-sm px-4 py-2 rounded-lg shadow-lg"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-ink text-cream text-sm px-4 py-2 rounded-lg "
         >
           {toast}
         </div>

@@ -30,7 +30,7 @@ export default function DashboardNav() {
             key={tab.href}
             href={tab.href}
             className={[
-              "px-4 py-2.5 text-sm font-medium transition-colors relative",
+              "px-4 py-2.5 text-label font-medium transition-colors relative",
               isActive
                 ? "text-ink border-b-2 border-moss -mb-px"
                 : "text-ink/40 hover:text-ink/60",

@@ -21,7 +21,7 @@ export default function Breadcrumbs({
   const prefix = atHandle ? `/@${atHandle}` : "";
 
   return (
-    <nav aria-label="Breadcrumb" className="text-sm text-ink/40 mb-4">
+    <nav aria-label="Breadcrumb" className="text-label text-ink/40 mb-4">
       <ol className="flex flex-wrap items-center gap-1">
         {segments.map((segment, i) => {
           const isLast = i === segments.length - 1;

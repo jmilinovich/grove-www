@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { ChevronRight, Folder } from "lucide-react";
 import { useSidebar } from "./sidebar-provider";
 
 interface TreeEntry {
@@ -13,38 +14,15 @@ interface TreeEntry {
 }
 
 function FolderIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-    </svg>
-  );
+  return <Folder size={14} className={className} />;
 }
 
 function ChevronIcon({ expanded, className }: { expanded: boolean; className?: string }) {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <ChevronRight
+      size={12}
       className={`transition-transform duration-150 ${expanded ? "rotate-90" : ""} ${className ?? ""}`}
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
+    />
   );
 }
 
@@ -141,7 +119,7 @@ function TreeNode({
             </button>
             <Link
               href={scopedPath}
-              className={`flex items-center gap-2 flex-1 py-1.5 text-sm rounded-md transition-colors truncate ${
+              className={`flex items-center gap-2 flex-1 py-1.5 text-label rounded-md transition-colors truncate ${
                 isActive
                   ? "text-foreground font-medium"
                   : "text-muted-light hover:text-foreground"
@@ -154,7 +132,7 @@ function TreeNode({
         ) : (
           <Link
             href={scopedPath}
-            className={`flex items-center gap-2 flex-1 py-1.5 pl-5 text-sm rounded-md transition-colors truncate ${
+            className={`flex items-center gap-2 flex-1 py-1.5 pl-5 text-label rounded-md transition-colors truncate ${
               isActive
                 ? "text-foreground font-medium"
                 : "text-muted-light hover:text-foreground"
@@ -175,7 +153,7 @@ function TreeNode({
 
       {loading && (
         <div
-          className="py-1.5 text-xs text-muted"
+          className="py-1.5 text-detail text-muted"
           style={{ paddingLeft: `${(depth + 1) * 12 + 28}px` }}
         >
           Loading...
@@ -270,16 +248,16 @@ export default function Sidebar() {
       >
         <div className="w-64 h-full overflow-y-auto bg-background border-r border-surface-border px-2 py-4">
           {firstVisit && (
-            <p className="px-2 pb-3 text-xs text-muted">
+            <p className="px-2 pb-3 text-detail text-muted">
               Your table of contents.
             </p>
           )}
 
           <nav>
             {topLevelFolders === null ? (
-              <div className="px-2 py-2 text-xs text-muted">Loading...</div>
+              <div className="px-2 py-2 text-detail text-muted">Loading...</div>
             ) : topLevelFolders.length === 0 ? (
-              <div className="px-2 py-2 text-xs text-muted">No accessible folders.</div>
+              <div className="px-2 py-2 text-detail text-muted">No accessible folders.</div>
             ) : (
               <ul className="space-y-0.5">
                 {topLevelFolders.map((entry) => (

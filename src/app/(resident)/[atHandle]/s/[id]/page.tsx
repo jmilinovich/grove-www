@@ -92,17 +92,17 @@ export default async function ScopedSharePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-cream">
-      <div className="mx-auto" style={{ maxWidth: 680, padding: "3rem 1.5rem" }}>
+      <div className="mx-auto max-w-[680px] px-6 py-12">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+          <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
             Shared note
             {isExpiringSoon && (
-              <span className="ml-2 text-amber-600">
+              <span className="ml-2 text-harvest">
                 — expires {expiresDate.toLocaleDateString()}
               </span>
             )}
           </p>
-          <h1 className="text-2xl font-serif font-medium text-ink tracking-tight">
+          <h1 className="text-heading font-serif font-medium text-ink tracking-tight">
             {title}
           </h1>
         </div>
@@ -114,8 +114,8 @@ export default async function ScopedSharePage({ params }: PageProps) {
           />
         </article>
 
-        <div className="mt-12 pt-6 border-t border-ink/10">
-          <p className="text-xs text-ink/40 text-center">
+        <div className="mt-12 pt-6 border-t border-ink/15">
+          <p className="text-detail text-ink/40 text-center">
             Shared via{" "}
             <Link href="/" className="text-moss hover:underline transition-colors">
               grove.md
@@ -147,14 +147,14 @@ function ExpiredPage({
 
   return (
     <div className="min-h-screen bg-cream" data-share-status="gone" data-share-reason={reason}>
-      <div className="mx-auto" style={{ maxWidth: 560, padding: "5rem 1.5rem" }}>
-        <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+      <div className="mx-auto max-w-[560px] px-6 py-20">
+        <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
           Shared note
         </p>
-        <h1 className="text-2xl font-serif font-medium text-ink tracking-tight mb-2">
+        <h1 className="text-heading font-serif font-medium text-ink tracking-tight mb-2">
           This link has expired
         </h1>
-        <p className="text-ink/70 mb-8">{subline}</p>
+        <p className="text-ink/60 mb-8">{subline}</p>
         <p className="text-sm text-ink/60">
           Visit{" "}
           <Link href={handlePath} className="text-moss hover:underline transition-colors">

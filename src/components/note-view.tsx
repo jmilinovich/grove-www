@@ -7,6 +7,7 @@ import { renderMarkdown } from "@/lib/markdown";
 import MermaidHydrator from "./mermaid-hydrator";
 import ShareButton from "./share-button";
 import Link from "next/link";
+import { Link2 } from "lucide-react";
 
 function formatJournalDate(path: string): string {
   // Journal paths: Journal/YYYY/YYYY-MM-DD.md
@@ -83,7 +84,7 @@ export default async function NoteView({
               {title}
             </h1>
             {aliases.length > 0 && (
-              <p className="mt-2 text-sm text-ink/40">
+              <p className="mt-2 text-label text-ink/40">
                 {aliases.join(" · ")}
               </p>
             )}
@@ -95,7 +96,7 @@ export default async function NoteView({
       </header>
 
       {renderFailed && (
-        <div className="mb-6 rounded border border-ink/15 bg-ink/5 px-4 py-3 text-sm text-ink/60">
+        <div className="mb-6 rounded-md border border-ink/15 bg-ink/15 px-6 py-3 text-label text-ink/60">
           Couldn&apos;t render this note — showing raw content.
         </div>
       )}
@@ -119,27 +120,13 @@ export default async function NoteView({
                 <li key={bl}>
                   <Link
                     href={href}
-                    className="group flex items-center gap-2 rounded-lg px-3 py-2.5 -mx-3 hover:bg-ink/5 transition-colors"
+                    className="group flex items-center gap-2 rounded-lg px-3 py-2.5 -mx-3 hover:bg-ink/15 transition-colors"
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="shrink-0 text-ink/15"
-                    >
-                      <path d="M9 17H7A5 5 0 0 1 7 7h2" />
-                      <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
-                      <line x1="8" y1="12" x2="16" y2="12" />
-                    </svg>
-                    <span className="text-sm text-ink/60 group-hover:text-ink transition-colors">
+                    <Link2 size={14} className="shrink-0 text-ink/15" />
+                    <span className="text-label text-ink/60 group-hover:text-ink transition-colors">
                       {name}
                     </span>
-                    <span className="text-xs text-ink/15 ml-auto hidden sm:inline">
+                    <span className="text-detail text-ink/15 ml-auto hidden sm:inline">
                       {bl.split("/").slice(0, -1).join("/")}
                     </span>
                   </Link>

@@ -115,7 +115,7 @@ Your vault never leaves your infrastructure — hosted or self-hosted.
 1. **Hook** — "your knowledge, everywhere your AI is." + the phone problem in one sentence. Primary CTA: "Get started" (hosted). Secondary: "Self-host →"
 2. **The Demo** — A real interaction. Show Claude on a phone finding something from the vault. Show a write-back. Show the git commit. Make it feel alive.
 3. **The Story** — Why this exists. Personal, first-person. Tightened from the README.
-4. **How It Works** — Three steps: Connect your vault → Your AI remembers → Knowledge compounds. Simple, not architecture-diagram-first.
+4. **How it works** — Three steps: Connect your vault → Your AI remembers → Knowledge compounds. Simple, not architecture-diagram-first.
 5. **The 6 Tools** — Quick, scannable. Each with a real example query/response, not just description.
 6. **Choose Your Deployment** — The mem0-style three-option selector. Hosted / Self-Hosted / Enterprise. Same API, same behavior. No tradeoffs.
 7. **Privacy & Security** — Self-hosted embeddings. Git-backed. Every write is a commit. Your data never leaves. This matters for all three deployment modes.
@@ -147,7 +147,7 @@ Your vault never leaves your infrastructure — hosted or self-hosted.
 
 ### Automated Scorecard (250 pts)
 
-Tests for system COHERENCE, not feature PRESENCE. Violation-based: a clean system scores high by having zero violations. Current state: ~147/250. Hitting 200+ means genuinely coherent. 250 means world-class.
+Tests for system COHERENCE, not feature PRESENCE. Violation-based: a clean system scores high by having zero violations. Current state: ~147/250. Hitting 200+ means genuinely coherent. 250 means zero drift.
 
 ```bash
 bash scripts/score.sh          # human-readable

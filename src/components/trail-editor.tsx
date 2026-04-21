@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "./primitives/button";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -109,15 +110,15 @@ function ChipButton({
 }) {
   const styles = {
     unset: "bg-surface text-ink/60 border-surface-border hover:bg-surface/60",
-    allow: "bg-moss/20 text-moss border-moss/30",
-    deny: "bg-harvest/10 text-harvest border-harvest/30 line-through",
+    allow: "bg-moss/15 text-moss border-moss/40",
+    deny: "bg-harvest/15 text-harvest border-harvest/40 line-through",
   }[mode];
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center rounded border px-2 py-1 text-xs font-medium transition-colors ${styles}`}
+      className={`inline-flex items-center rounded-md border px-2 py-1 text-detail font-medium transition-colors ${styles}`}
     >
       {label}
     </button>
@@ -138,8 +139,8 @@ function PathTreeRow({
   const indent = node.depth * 16;
   const styles = {
     unset: "text-ink/60 hover:bg-surface/60",
-    allow: "bg-moss/10 text-moss",
-    deny: "bg-harvest/10 text-harvest line-through",
+    allow: "bg-moss/15 text-moss",
+    deny: "bg-harvest/15 text-harvest line-through",
   }[mode];
 
   const marker = mode === "allow" ? "+" : mode === "deny" ? "−" : "·";
@@ -148,10 +149,10 @@ function PathTreeRow({
     <button
       type="button"
       onClick={onCycle}
-      className={`w-full text-left flex items-center gap-2 px-2 py-1 rounded text-sm transition-colors font-mono ${styles}`}
+      className={`w-full text-left flex items-center gap-2 px-2 py-1 rounded-md text-label transition-colors font-mono ${styles}`}
       style={{ paddingLeft: 8 + indent }}
     >
-      <span className="w-3 text-center text-xs opacity-60">{marker}</span>
+      <span className="w-3 text-center text-detail opacity-60">{marker}</span>
       <span>{node.name}</span>
     </button>
   );
@@ -426,27 +427,27 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
         <h1 className="font-serif text-title font-medium tracking-[-0.015em] mb-4">
           Trail created
         </h1>
-        <div className="rounded-lg border border-surface-border bg-surface/50 p-4 mb-4">
-          <p className="text-sm font-medium text-foreground mb-1">
+        <div className="rounded-lg border border-surface-border bg-surface/60 p-6 mb-4">
+          <p className="text-label font-medium text-foreground mb-1">
             Consumer API key
           </p>
-          <p className="text-xs text-harvest mb-3">
+          <p className="text-detail text-harvest mb-3">
             Save this now — it won&apos;t be shown again.
           </p>
-          <code className="block bg-surface font-mono text-sm p-3 rounded break-all mb-3">
+          <code className="block bg-surface font-mono text-label p-3 rounded-md break-all mb-3">
             {newToken}
           </code>
           <button
             onClick={() => {
               navigator.clipboard.writeText(newToken);
             }}
-            className="text-sm text-moss hover:text-moss/60 transition-colors font-medium mr-4"
+            className="text-label text-moss hover:text-moss/60 transition-colors font-medium mr-4"
           >
             Copy token
           </button>
           <button
             onClick={() => router.push("/dashboard/trails")}
-            className="text-sm text-ink/60 hover:text-ink transition-colors"
+            className="text-label text-ink/60 hover:text-ink transition-colors"
           >
             Done
           </button>
@@ -462,7 +463,7 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
         <h1 className="font-serif text-title font-medium tracking-[-0.015em] mb-1">
           {isCreate ? "Create trail" : "Edit trail"}
         </h1>
-        <p className="text-sm text-ink/60 mb-6">
+        <p className="text-label text-ink/60 mb-6">
           Shape the slice of your vault this trail exposes. Changes preview live.
         </p>
 
@@ -480,9 +481,9 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
         {/* Paths */}
         <Section title="Paths" hint="Click a folder to cycle: allow → deny → unset.">
           {tree.length === 0 ? (
-            <p className="text-sm text-ink/40">Loading folders…</p>
+            <p className="text-label text-ink/40">Loading folders…</p>
           ) : (
-            <div className="rounded-md border border-surface-border bg-surface/30 max-h-80 overflow-y-auto p-1">
+            <div className="rounded-md border border-surface-border bg-surface/40 max-h-80 overflow-y-auto p-1">
               {tree.map((node) => (
                 <PathTreeRow
                   key={node.path}
@@ -498,7 +499,7 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
         {/* Types */}
         <Section title="Types" hint="Click a type to cycle its state.">
           {NOTE_TYPES.length === 0 ? (
-            <p className="text-sm text-ink/40">No types found in vault.</p>
+            <p className="text-label text-ink/40">No types found in vault.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {NOTE_TYPES.map((t) => (
@@ -537,13 +538,13 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
                 }
               }}
               placeholder="Add a tag that doesn't exist yet"
-              className="flex-1 bg-white border border-ink/15 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+              className="flex-1 bg-cream border border-ink/15 rounded-md px-3 py-1.5 text-label focus:outline-none focus:border-moss transition-colors"
             />
             <button
               type="button"
               onClick={addNewTag}
               disabled={!newTag.trim()}
-              className="text-xs text-moss hover:text-moss/60 transition-colors font-medium disabled:opacity-30"
+              className="text-detail text-moss hover:text-moss/60 transition-colors font-medium disabled:opacity-30"
             >
               Add
             </button>
@@ -572,53 +573,55 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
 
         {/* Save */}
         <div className="mt-8 flex items-center gap-3">
-          <button
+          <Button
             type="submit"
-            disabled={saving || !name.trim()}
-            className="bg-ink text-cream rounded px-5 py-2.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50"
+            disabled={!name.trim()}
+            loading={saving}
+            loadingLabel="Saving…"
+            size="md"
           >
-            {saving ? "Saving…" : isCreate ? "Create trail" : "Save changes"}
-          </button>
+            {isCreate ? "Create trail" : "Save changes"}
+          </Button>
           <button
             type="button"
             onClick={() => router.push("/dashboard/trails")}
-            className="text-sm text-ink/60 hover:text-ink transition-colors"
+            className="text-label text-ink/60 hover:text-ink transition-colors"
           >
             Cancel
           </button>
-          {saveError && <span className="text-sm text-harvest">{saveError}</span>}
+          {saveError && <span className="text-label text-harvest">{saveError}</span>}
         </div>
       </div>
 
       {/* ── RIGHT: preview panel ── */}
       <aside className="lg:sticky lg:top-6 self-start">
-        <div className="rounded-lg border border-surface-border bg-surface/30 p-4">
-          <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-3">
+        <div className="rounded-lg border border-surface-border bg-surface/40 p-6">
+          <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-medium mb-3">
             Scope preview
           </p>
 
           {previewError ? (
-            <p className="text-sm text-harvest">{previewError}</p>
+            <p className="text-label text-harvest">{previewError}</p>
           ) : !preview ? (
-            <p className="text-sm text-ink/40">Calculating…</p>
+            <p className="text-label text-ink/40">Calculating…</p>
           ) : (
             <>
-              <p className="text-2xl font-serif font-medium text-foreground">
+              <p className="text-heading font-serif font-medium text-foreground">
                 {preview.match_count.toLocaleString()}
                 <span className="text-base text-ink/40 font-sans font-normal ml-1">
                   / {preview.total_notes.toLocaleString()} notes
                 </span>
               </p>
-              <p className="text-xs text-ink/60 mt-1 mb-4">
+              <p className="text-detail text-ink/60 mt-1 mb-4">
                 {previewLoading ? "Refreshing…" : "match this scope"}
               </p>
 
               {preview.samples.length > 0 ? (
                 <>
-                  <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-2">
+                  <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-medium mb-2">
                     Sample notes
                   </p>
-                  <ul className="space-y-1 text-xs">
+                  <ul className="space-y-1 text-detail">
                     {preview.samples.map((s) => (
                       <li key={s.path} className="truncate">
                         <code className="text-ink/60 font-mono">{s.path}</code>
@@ -627,18 +630,18 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
                   </ul>
                 </>
               ) : (
-                <p className="text-xs text-ink/40">No notes match this scope.</p>
+                <p className="text-detail text-ink/40">No notes match this scope.</p>
               )}
             </>
           )}
         </div>
 
         {/* Test mode */}
-        <div className="rounded-lg border border-surface-border bg-surface/30 p-4 mt-4">
-          <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-2">
+        <div className="rounded-lg border border-surface-border bg-surface/40 p-6 mt-4">
+          <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-medium mb-2">
             Test a note
           </p>
-          <p className="text-xs text-ink/60 mb-3">
+          <p className="text-detail text-ink/60 mb-3">
             Paste a vault path to see whether it&apos;s visible under this scope.
           </p>
           <div className="flex items-center gap-2">
@@ -653,29 +656,29 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
                 }
               }}
               placeholder="Resources/Concepts/RAG.md"
-              className="flex-1 bg-white border border-ink/15 rounded px-2 py-1.5 text-xs font-mono focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15"
+              className="flex-1 bg-cream border border-ink/15 rounded-md px-2 py-1.5 text-detail font-mono focus:outline-none focus:border-moss"
             />
             <button
               type="button"
               onClick={runTest}
               disabled={!testPath.trim()}
-              className="text-xs text-moss hover:text-moss/60 transition-colors font-medium disabled:opacity-30"
+              className="text-detail text-moss hover:text-moss/60 transition-colors font-medium disabled:opacity-30"
             >
               Test
             </button>
           </div>
 
           {testError && (
-            <p className="text-xs text-harvest mt-2">{testError}</p>
+            <p className="text-detail text-harvest mt-2">{testError}</p>
           )}
           {testResult && (
-            <div className="mt-3 rounded bg-surface p-2.5">
+            <div className="mt-3 rounded-md bg-surface p-2.5">
               <p
-                className={`text-xs font-medium ${testResult.visible ? "text-moss" : "text-harvest"}`}
+                className={`text-detail font-medium ${testResult.visible ? "text-moss" : "text-harvest"}`}
               >
                 {testResult.visible ? "Visible" : "Hidden"}
               </p>
-              <p className="text-xs text-ink/60 mt-1">{testResult.reason}</p>
+              <p className="text-detail text-ink/60 mt-1">{testResult.reason}</p>
             </div>
           )}
         </div>
@@ -701,7 +704,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs uppercase tracking-[0.1em] text-ink/40 mb-1 font-medium">
+      <label className="block text-detail uppercase tracking-[0.1em] text-ink/40 mb-1 font-medium">
         {label}
       </label>
       <input
@@ -709,7 +712,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-white border border-ink/15 rounded px-3 py-2 text-sm focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+        className="w-full bg-cream border border-ink/15 rounded-md px-3 py-2 text-label focus:outline-none focus:border-moss transition-colors"
       />
     </div>
   );
@@ -727,8 +730,8 @@ function Section({
   return (
     <section className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <h2 className="text-sm font-medium text-foreground">{title}</h2>
-        {hint && <p className="text-xs text-ink/40">{hint}</p>}
+        <h2 className="text-label font-medium text-foreground">{title}</h2>
+        {hint && <p className="text-detail text-ink/40">{hint}</p>}
       </div>
       {children}
     </section>

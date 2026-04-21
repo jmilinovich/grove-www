@@ -38,7 +38,9 @@
     ".next-mobile-test/types/**/*.ts",
     ".next-mobile-test/dev/types/**/*.ts",
     ".next-e2e-test/types/**/*.ts",
-    ".next-e2e-test/dev/types/**/*.ts"
+    ".next-e2e-test/dev/types/**/*.ts",
+    ".next-visual-test/types/**/*.ts",
+    ".next-visual-test/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

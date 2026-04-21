@@ -9,12 +9,17 @@
     "test": "vitest run",
     "test:mobile": "playwright test",
     "test:e2e": "playwright test --config=playwright.e2e.config.ts",
+    "test:visual": "playwright test --config=playwright.visual.config.ts",
+    "test:visual:update": "playwright test --config=playwright.visual.config.ts --update-snapshots",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm test"
+    "lint:drift": "bash scripts/drift-check.sh",
+    "check": "npm run lint:drift && npm run typecheck && npm run test",
+    "check:full": "npm run check && npm run test:mobile && npm run test:visual"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "d3": "^7.9.0",
+    "lucide-react": "^1.8.0",
     "mermaid": "^11.14.0",
     "next": "^16.2.4",
     "react": "19.2.4",

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 import { useSearch } from "./search-provider";
 
 interface SearchResult {
@@ -123,7 +124,7 @@ export default function CommandPalette() {
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-ink/40"
         onClick={() => {
           closeSearch();
           resetState();
@@ -131,29 +132,16 @@ export default function CommandPalette() {
       />
 
       {/* Palette */}
-      <div className="relative w-full max-w-lg mx-4 rounded-xl border border-surface-border bg-white shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg mx-4 rounded-lg border border-surface-border bg-cream overflow-hidden">
         <div className="flex items-center gap-3 border-b border-surface-border px-4 py-3">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="shrink-0 text-muted"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          <Search size={16} className="shrink-0 text-muted" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onInputKeyDown}
             placeholder="Search notes..."
-            className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted"
+            className="flex-1 bg-transparent text-foreground text-label outline-none placeholder:text-muted"
             spellCheck={false}
           />
           {loading && (
@@ -174,10 +162,10 @@ export default function CommandPalette() {
                   onClick={() => navigateTo(result.path)}
                   onMouseEnter={() => setSelectedIndex(i)}
                 >
-                  <span className="text-sm font-medium truncate">
+                  <span className="text-label font-medium truncate">
                     {result.title}
                   </span>
-                  <span className="text-xs text-muted truncate">
+                  <span className="text-detail text-muted truncate">
                     {result.path}
                   </span>
                 </button>
@@ -187,13 +175,13 @@ export default function CommandPalette() {
         )}
 
         {query.trim() && !loading && results.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-muted">
+          <div className="px-4 py-8 text-center text-label text-muted">
             No results found
           </div>
         )}
 
         {error && !loading && (
-          <div className="px-4 py-8 text-center text-sm text-muted">
+          <div className="px-4 py-8 text-center text-label text-muted">
             {error}
           </div>
         )}

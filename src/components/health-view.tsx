@@ -120,7 +120,7 @@ function Sparkline({ history }: { history: HealthSnapshot[] }) {
 
   if (history.length === 0) {
     return (
-      <div className="h-14 flex items-center justify-center text-ink/40 text-xs font-sans">
+      <div className="h-14 flex items-center justify-center text-ink/40 text-detail font-sans">
         No history yet
       </div>
     );
@@ -168,12 +168,12 @@ function MetricCard({
         ? "text-harvest"
         : "text-ink";
   return (
-    <div className="bg-surface rounded-lg p-5 border border-surface-border">
-      <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-3 font-sans text-xs">
+    <div className="bg-surface rounded-lg p-6 border border-surface-border">
+      <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-3 font-sans text-detail">
         {label}
       </p>
-      <p className={`font-serif font-medium text-2xl ${valueClass}`}>{value}</p>
-      {sub && <p className="text-ink/40 text-xs font-sans mt-1">{sub}</p>}
+      <p className={`font-serif font-medium text-heading ${valueClass}`}>{value}</p>
+      {sub && <p className="text-ink/40 text-detail font-sans mt-1">{sub}</p>}
     </div>
   );
 }
@@ -195,18 +195,18 @@ function FlagRow({
   };
 
   return (
-    <div className="flex items-start justify-between gap-4 px-5 py-4">
+    <div className="flex items-start justify-between gap-4 px-6 py-4">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 mb-1">
-          <span className="inline-flex items-center bg-harvest/15 text-harvest text-xs px-2 py-0.5 rounded font-sans">
+          <span className="inline-flex items-center bg-harvest/15 text-harvest text-detail px-2 py-0.5 rounded-md font-sans">
             {meta.label}
           </span>
-          <span className="text-ink/40 text-xs font-sans">
+          <span className="text-ink/40 text-detail font-sans">
             {relativeDate(flag.created_at)}
           </span>
         </div>
         {meta.description && (
-          <p className="text-ink/60 text-xs font-sans mb-2">{meta.description}</p>
+          <p className="text-ink/60 text-detail font-sans mb-2">{meta.description}</p>
         )}
         <div className="space-y-1">
           {flag.source_path && (
@@ -214,7 +214,7 @@ function FlagRow({
               href={noteUrl(flag.source_path)}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-sm text-ink/80 hover:text-ink hover:underline truncate font-sans"
+              className="block text-label text-ink/60 hover:text-ink hover:underline truncate font-sans"
             >
               {flag.source_path}
             </a>
@@ -224,7 +224,7 @@ function FlagRow({
               href={noteUrl(flag.target_path)}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-sm text-ink/80 hover:text-ink hover:underline truncate font-sans"
+              className="block text-label text-ink/60 hover:text-ink hover:underline truncate font-sans"
             >
               ↔ {flag.target_path}
             </a>
@@ -234,7 +234,7 @@ function FlagRow({
       <button
         onClick={() => onDismiss(flag.id)}
         disabled={busy}
-        className="text-xs text-ink/40 hover:text-ink font-sans px-2 py-1 rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+        className="text-detail text-ink/40 hover:text-ink font-sans px-2 py-1 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
       >
         {busy ? "Dismissing…" : "Dismiss"}
       </button>
@@ -291,16 +291,16 @@ export default function HealthView({
       {/* Score + sparkline */}
       <div className="bg-surface rounded-lg border border-surface-border p-6 flex items-end gap-8">
         <div className="flex-shrink-0">
-          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-3 font-sans text-xs">
+          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-3 font-sans text-detail">
             Health score
           </p>
           <div className="flex items-baseline gap-3">
             <p className={`font-serif font-medium text-6xl ${scoreTone(current.score)}`}>
               {current.score}
             </p>
-            <p className="text-ink/40 font-serif text-2xl">/ 100</p>
+            <p className="text-ink/40 font-serif text-heading">/ 100</p>
           </div>
-          <p className="text-ink/40 text-xs font-sans mt-2">
+          <p className="text-ink/40 text-detail font-sans mt-2">
             Measured {relativeDate(current.measured_at)}
             {prior && delta !== 0 && (
               <>
@@ -314,7 +314,7 @@ export default function HealthView({
           </p>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-3 font-sans text-xs">
+          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-3 font-sans text-detail">
             30-day trend
           </p>
           <Sparkline history={history} />
@@ -323,7 +323,7 @@ export default function HealthView({
 
       {/* Metric cards */}
       <div>
-        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
+        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-detail">
           Metrics
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -370,7 +370,7 @@ export default function HealthView({
 
       {/* Secondary metrics */}
       <div>
-        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
+        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-detail">
           Graph shape
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -401,23 +401,23 @@ export default function HealthView({
       {/* Flags */}
       <div>
         <div className="flex items-baseline justify-between mb-4">
-          <p className="text-ink/40 text-label tracking-[0.15em] uppercase font-sans text-xs">
+          <p className="text-ink/40 text-label tracking-[0.15em] uppercase font-sans text-detail">
             Flags to review
           </p>
           {flags.length > 0 && (
-            <p className="text-ink/40 text-xs font-sans">
+            <p className="text-ink/40 text-detail font-sans">
               {flags.length} pending
             </p>
           )}
         </div>
 
         {error && (
-          <p className="mb-3 text-xs text-harvest font-sans">{error}</p>
+          <p className="mb-3 text-detail text-harvest font-sans">{error}</p>
         )}
 
         {flags.length === 0 ? (
           <div className="border border-surface-border bg-surface rounded-lg p-8 text-center">
-            <p className="text-ink/60 font-sans text-sm">
+            <p className="text-ink/60 font-sans text-label">
               No open flags. Auto-healing handled what it could; the rest is clean.
             </p>
           </div>
@@ -434,7 +434,7 @@ export default function HealthView({
           </div>
         )}
 
-        <p className="text-ink/40 text-xs font-sans mt-3">
+        <p className="text-ink/40 text-detail font-sans mt-3">
           Auto-healed fixes (broken links to renamed notes, stale embeddings, missing tags) are logged server-side and don&apos;t appear here — only issues that need human review do.
         </p>
       </div>

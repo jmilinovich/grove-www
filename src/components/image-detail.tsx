@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import type { ListEntry } from "@/lib/grove-api";
 
 interface NoteDetail {
@@ -79,31 +80,19 @@ export default function ImageDetail({ image, onClose }: Props) {
       <button
         aria-label="Close"
         onClick={onClose}
-        className="flex-1 bg-ink/40 backdrop-blur-sm"
+        className="flex-1 bg-ink/40"
       />
 
       {/* Panel */}
-      <aside className="w-full max-w-xl h-full bg-background border-l border-surface-border overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-surface-border px-6 py-3 flex items-center justify-between z-10">
-          <p className="text-xs uppercase tracking-[0.15em] text-ink/40">Image</p>
+      <aside className="w-full max-w-xl h-full bg-background border-l border-surface-border overflow-y-auto">
+        <div className="sticky top-0 bg-background border-b border-surface-border px-6 py-3 flex items-center justify-between z-10">
+          <p className="text-detail uppercase tracking-[0.15em] text-ink/40">Image</p>
           <button
             onClick={onClose}
             className="flex items-center justify-center w-8 h-8 rounded-md text-ink/60 hover:text-ink hover:bg-surface transition-colors"
             aria-label="Close panel"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <X size={16} />
           </button>
         </div>
 
@@ -128,12 +117,12 @@ export default function ImageDetail({ image, onClose }: Props) {
 
           {/* Title + link to note */}
           <div>
-            <h2 className="font-serif font-medium text-lg text-ink leading-tight">
+            <h2 className="font-serif font-medium text-subhead text-ink leading-tight">
               {image.name}
             </h2>
             <Link
               href={notePath}
-              className="inline-block mt-2 text-xs text-moss hover:text-earth transition-colors"
+              className="inline-block mt-2 text-detail text-moss hover:text-earth transition-colors"
             >
               Open note →
             </Link>
@@ -142,12 +131,12 @@ export default function ImageDetail({ image, onClose }: Props) {
           {/* Tags */}
           {image.tags && image.tags.length > 0 && (
             <div>
-              <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-2">Tags</p>
+              <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-2">Tags</p>
               <div className="flex flex-wrap gap-1.5">
                 {image.tags.map((t) => (
                   <span
                     key={t}
-                    className="px-2.5 py-1 rounded-full border border-surface-border text-xs text-ink/60"
+                    className="px-2.5 py-1 rounded-full border border-surface-border text-detail text-ink/60"
                   >
                     #{t}
                   </span>
@@ -159,16 +148,16 @@ export default function ImageDetail({ image, onClose }: Props) {
           {/* Description */}
           {description && (
             <div>
-              <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-2">Description</p>
-              <p className="text-sm text-ink/80 leading-relaxed">{description}</p>
+              <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-2">Description</p>
+              <p className="text-label text-ink/60 leading-relaxed">{description}</p>
             </div>
           )}
 
           {/* OCR */}
           {ocr && (
             <div>
-              <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-2">Text in image</p>
-              <pre className="text-xs text-ink/60 leading-relaxed whitespace-pre-wrap font-mono bg-surface rounded-md p-3 border border-surface-border">
+              <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-2">Text in image</p>
+              <pre className="text-detail text-ink/60 leading-relaxed whitespace-pre-wrap font-mono bg-surface rounded-md p-3 border border-surface-border">
                 {ocr}
               </pre>
             </div>
@@ -176,34 +165,34 @@ export default function ImageDetail({ image, onClose }: Props) {
 
           {/* Metadata */}
           <div>
-            <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-2">Details</p>
-            <dl className="text-xs space-y-1">
+            <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-2">Details</p>
+            <dl className="text-detail space-y-1">
               {image.dimensions && (
                 <div className="flex justify-between">
-                  <dt className="text-ink/50">Dimensions</dt>
-                  <dd className="text-ink/80">
+                  <dt className="text-ink/60">Dimensions</dt>
+                  <dd className="text-ink/60">
                     {image.dimensions.width} × {image.dimensions.height}
                   </dd>
                 </div>
               )}
               {uploaded && (
                 <div className="flex justify-between">
-                  <dt className="text-ink/50">Uploaded</dt>
-                  <dd className="text-ink/80">{new Date(uploaded).toLocaleDateString()}</dd>
+                  <dt className="text-ink/60">Uploaded</dt>
+                  <dd className="text-ink/60">{new Date(uploaded).toLocaleDateString()}</dd>
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-ink/50">Path</dt>
-                <dd className="text-ink/80 font-mono truncate ml-2">{image.path}</dd>
+                <dt className="text-ink/60">Path</dt>
+                <dd className="text-ink/60 font-mono truncate ml-2">{image.path}</dd>
               </div>
             </dl>
           </div>
 
           {/* Backlinks */}
           <div>
-            <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-2">Referenced by</p>
+            <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-2">Referenced by</p>
             {loading ? (
-              <p className="text-xs text-ink/40">Loading…</p>
+              <p className="text-detail text-ink/40">Loading…</p>
             ) : detail && detail.backlinks.length > 0 ? (
               <ul className="space-y-1">
                 {detail.backlinks.map((bl) => {
@@ -213,7 +202,7 @@ export default function ImageDetail({ image, onClose }: Props) {
                     <li key={bl}>
                       <Link
                         href={href}
-                        className="text-sm text-moss hover:text-earth transition-colors"
+                        className="text-label text-moss hover:text-earth transition-colors"
                       >
                         {name}
                       </Link>
@@ -222,7 +211,7 @@ export default function ImageDetail({ image, onClose }: Props) {
                 })}
               </ul>
             ) : (
-              <p className="text-xs text-ink/40">No backlinks yet.</p>
+              <p className="text-detail text-ink/40">No backlinks yet.</p>
             )}
           </div>
         </div>

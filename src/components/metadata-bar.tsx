@@ -9,10 +9,10 @@ const TYPE_COLORS: Record<string, string> = {
   project: "bg-ink/15 text-earth border-ink/15",
   company: "bg-harvest/15 text-earth border-harvest/15",
   place: "bg-moss/15 text-earth border-moss/15",
-  journal: "bg-ink/5 text-ink/60 border-ink/15",
+  journal: "bg-ink/15 text-ink/60 border-ink/15",
 };
 
-const DEFAULT_TYPE_COLOR = "bg-ink/5 text-ink/60 border-ink/15";
+const DEFAULT_TYPE_COLOR = "bg-ink/15 text-ink/60 border-ink/15";
 
 function relativeDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -49,7 +49,7 @@ export default function MetadataBar({
   const overflowCount = tags.length - MAX_VISIBLE_TAGS;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs mb-6">
+    <div className="flex flex-wrap items-center gap-2 text-detail mb-6">
       {type && (
         <span
           className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-medium ${TYPE_COLORS[type] || DEFAULT_TYPE_COLOR}`}
@@ -61,7 +61,7 @@ export default function MetadataBar({
       {visibleTags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center rounded-full border border-ink/15 bg-ink/5 px-2 py-0.5 text-ink/60"
+          className="inline-flex items-center rounded-full border border-ink/15 bg-ink/15 px-2 py-0.5 text-ink/60"
         >
           {tag}
         </span>

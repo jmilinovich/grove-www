@@ -203,7 +203,7 @@ export default function ShareModal({
           sm:-translate-x-1/2 sm:-translate-y-1/2
           sm:max-w-[420px] sm:w-[calc(100vw-2rem)] sm:rounded-lg
           sm:border sm:border-ink/15
-          shadow-xl
+          
         "
       >
         <div className="p-6">
@@ -229,7 +229,7 @@ export default function ShareModal({
                   value={ttlDays}
                   disabled={isLoading}
                   onChange={(e) => setTtlDays(Number(e.target.value))}
-                  className="w-full bg-white border border-ink/15 rounded px-3 py-2 text-sm text-ink focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors disabled:opacity-60"
+                  className="w-full bg-cream border border-ink/15 rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:border-moss transition-colors disabled:opacity-60"
                 >
                   {TTL_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -254,7 +254,7 @@ export default function ShareModal({
                     const v = e.target.value;
                     setMaxViews(v === "unlimited" ? null : Number(v));
                   }}
-                  className="w-full bg-white border border-ink/15 rounded px-3 py-2 text-sm text-ink focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors disabled:opacity-60"
+                  className="w-full bg-cream border border-ink/15 rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:border-moss transition-colors disabled:opacity-60"
                 >
                   {MAX_VIEWS_OPTIONS.map((o) => (
                     <option
@@ -291,7 +291,7 @@ export default function ShareModal({
                   type="button"
                   onClick={handleGenerate}
                   disabled={isLoading}
-                  className="bg-ink text-cream rounded px-4 py-2 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="bg-ink text-cream rounded-md px-4 py-2 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isLoading ? "Generating…" : "Generate"}
                 </button>
@@ -318,7 +318,7 @@ export default function ShareModal({
                   readOnly
                   value={share.url}
                   onFocus={(e) => e.currentTarget.select()}
-                  className="flex-1 bg-surface font-mono text-xs text-ink/60 border border-ink/15 rounded px-3 py-2 focus:outline-none focus:border-moss"
+                  className="flex-1 bg-surface font-mono text-xs text-ink/60 border border-ink/15 rounded-md px-3 py-2 focus:outline-none focus:border-moss"
                 />
                 <button
                   type="button"
@@ -344,7 +344,7 @@ export default function ShareModal({
                   ref={doneButtonRef}
                   type="button"
                   onClick={onClose}
-                  className="bg-ink text-cream rounded px-4 py-2 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
+                  className="bg-ink text-cream rounded-md px-4 py-2 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
                 >
                   Done
                 </button>

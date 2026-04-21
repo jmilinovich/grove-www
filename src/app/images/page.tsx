@@ -25,8 +25,8 @@ export default async function ImagesPage() {
   return (
     <div className="px-4 sm:px-6 py-8 max-w-7xl mx-auto">
       <header className="mb-8">
-        <h1 className="font-serif font-medium text-xl text-ink">Images</h1>
-        <p className="mt-1 text-sm text-ink/60">
+        <h1 className="font-serif font-medium text-title text-ink">Images</h1>
+        <p className="mt-1 text-label text-ink/60">
           {images.length === 0
             ? "No images in your vault yet."
             : `${images.length} ${images.length === 1 ? "image" : "images"} in your vault.`}
