@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { Button } from "./primitives/button";
 
 interface KeyMeta {
   id: string;
@@ -27,7 +28,7 @@ function relativeTime(iso: string | null): string {
 
 function ScopeBadge({ scope }: { scope: string }) {
   return (
-    <span className="inline-flex items-center bg-moss/15 text-moss text-xs px-2 py-0.5 rounded">
+    <span className="inline-flex items-center bg-moss/15 text-moss text-detail px-2 py-0.5 rounded-md">
       {scope}
     </span>
   );
@@ -124,34 +125,31 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-serif text-title font-medium tracking-[-0.015em]">API Keys</h1>
         {!showCreate && !newToken && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="bg-ink text-cream rounded px-7 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
-          >
+          <Button onClick={() => setShowCreate(true)} size="lg">
             Create key
-          </button>
+          </Button>
         )}
       </div>
 
       {/* New token reveal */}
       {newToken && (
-        <div className="mb-6 rounded-lg border border-surface-border bg-surface/50 p-4">
-          <p className="text-sm font-medium text-foreground mb-1">Key created</p>
-          <p className="text-xs text-harvest mb-3">Save this now — it won&apos;t be shown again.</p>
+        <div className="mb-6 rounded-lg border border-surface-border bg-surface/60 p-6">
+          <p className="text-label font-medium text-foreground mb-1">Key created</p>
+          <p className="text-detail text-harvest mb-3">Save this now — it won&apos;t be shown again.</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 bg-surface font-mono text-sm p-3 rounded break-all">
+            <code className="flex-1 bg-surface font-mono text-label p-3 rounded-md break-all">
               {newToken}
             </code>
             <button
               onClick={handleCopy}
-              className="shrink-0 text-sm text-moss hover:text-moss/60 transition-colors font-medium"
+              className="shrink-0 text-label text-moss hover:text-moss/60 transition-colors font-medium"
             >
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
           <button
             onClick={handleDismissToken}
-            className="mt-3 text-xs text-muted hover:text-foreground transition-colors"
+            className="mt-3 text-detail text-muted hover:text-foreground transition-colors"
           >
             Done, I&apos;ve saved it
           </button>
@@ -162,13 +160,13 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
       {showCreate && !newToken && (
         <form
           onSubmit={handleCreate}
-          className="mb-6 rounded-lg border border-surface-border bg-surface/50 p-4"
+          className="mb-6 rounded-lg border border-surface-border bg-surface/60 p-6"
         >
           <div className="flex items-end gap-3">
             <div className="flex-1">
               <label
                 htmlFor="key-name"
-                className="block text-xs uppercase tracking-[0.1em] text-muted mb-1"
+                className="block text-detail uppercase tracking-[0.1em] text-muted mb-1"
               >
                 Key name
               </label>
@@ -180,16 +178,19 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
                 placeholder="e.g. claude-desktop"
                 required
                 autoFocus
-                className="w-full bg-white border border-ink/15 rounded px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+                className="w-full bg-cream border border-ink/15 rounded-md px-3 py-2 text-label text-foreground placeholder:text-muted focus:outline-none focus:border-moss transition-colors"
               />
             </div>
-            <button
+            <Button
               type="submit"
-              disabled={createLoading || !createName.trim()}
-              className="bg-ink text-cream rounded px-4 py-2 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              disabled={!createName.trim()}
+              loading={createLoading}
+              loadingLabel="Creating…"
+              size="sm"
+              className="whitespace-nowrap"
             >
-              {createLoading ? "Creating..." : "Create"}
-            </button>
+              Create
+            </Button>
             <button
               type="button"
               onClick={() => {
@@ -197,36 +198,36 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
                 setCreateName("");
                 setCreateError("");
               }}
-              className="text-sm text-muted hover:text-foreground transition-colors whitespace-nowrap"
+              className="text-label text-muted hover:text-foreground transition-colors whitespace-nowrap"
             >
               Cancel
             </button>
           </div>
-          {createError && <p className="text-sm text-harvest mt-2">{createError}</p>}
+          {createError && <p className="text-label text-harvest mt-2">{createError}</p>}
         </form>
       )}
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-surface-border">
-        <table className="w-full text-sm">
+        <table className="w-full text-label">
           <thead>
-            <tr className="border-b border-surface-border bg-surface/50">
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium">
+            <tr className="border-b border-surface-border bg-surface/60">
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium">
                 Name
               </th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium hidden sm:table-cell">
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium hidden sm:table-cell">
                 Scopes
               </th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">
                 Created
               </th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">
                 Last used
               </th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium hidden lg:table-cell">
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium hidden lg:table-cell">
                 Expires
               </th>
-              <th className="text-right px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium">
+              <th className="text-right px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium">
                 Actions
               </th>
             </tr>
@@ -235,10 +236,10 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
             {keys.map((key) => (
               <tr
                 key={key.id}
-                className="border-b border-surface-border last:border-b-0 hover:bg-surface/30 transition-colors"
+                className="border-b border-surface-border last:border-b-0 hover:bg-surface/40 transition-colors"
               >
-                <td className="px-4 py-3 text-foreground font-medium">{key.name}</td>
-                <td className="px-4 py-3 hidden sm:table-cell">
+                <td className="px-6 py-3 text-foreground font-medium">{key.name}</td>
+                <td className="px-6 py-3 hidden sm:table-cell">
                   {key.scopes ? (
                     <div className="flex flex-wrap gap-1">
                       {(Array.isArray(key.scopes) ? key.scopes : key.scopes.split(",")).map((s) => (
@@ -249,29 +250,29 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
                     <span className="text-muted">&mdash;</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-muted hidden md:table-cell">
+                <td className="px-6 py-3 text-muted hidden md:table-cell">
                   {relativeTime(key.created_at)}
                 </td>
-                <td className="px-4 py-3 text-muted hidden md:table-cell">
+                <td className="px-6 py-3 text-muted hidden md:table-cell">
                   {relativeTime(key.last_used_at)}
                 </td>
-                <td className="px-4 py-3 text-muted hidden lg:table-cell">
+                <td className="px-6 py-3 text-muted hidden lg:table-cell">
                   {key.expires_at ? relativeTime(key.expires_at) : "Never"}
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-6 py-3 text-right">
                   {confirmRevoke === key.id ? (
                     <span className="inline-flex items-center gap-2">
-                      <span className="text-xs text-muted">Sure?</span>
+                      <span className="text-detail text-muted">Sure?</span>
                       <button
                         onClick={() => handleRevoke(key.id)}
                         disabled={revokeLoading}
-                        className="text-xs text-harvest font-medium hover:underline disabled:opacity-50"
+                        className="text-detail text-harvest font-medium hover:underline disabled:opacity-50"
                       >
                         Revoke
                       </button>
                       <button
                         onClick={() => setConfirmRevoke(null)}
-                        className="text-xs text-muted hover:text-foreground"
+                        className="text-detail text-muted hover:text-foreground"
                       >
                         No
                       </button>
@@ -279,7 +280,7 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
                   ) : (
                     <button
                       onClick={() => setConfirmRevoke(key.id)}
-                      className="text-xs text-harvest hover:text-harvest/60 transition-colors"
+                      className="text-detail text-harvest hover:text-harvest/60 transition-colors"
                     >
                       Revoke
                     </button>
@@ -289,7 +290,7 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
             ))}
             {keys.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted">
+                <td colSpan={6} className="px-6 py-8 text-center text-muted">
                   No API keys. Create one to get started.
                 </td>
               </tr>

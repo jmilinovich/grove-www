@@ -29,8 +29,12 @@ export default function SidebarProvider({ children }: { children: React.ReactNod
   useEffect(() => {
     const visited = localStorage.getItem(FIRST_VISIT_KEY);
     if (!visited) {
-      // First visit — show sidebar open
-      setOpen(true);
+      // First visit — show sidebar open on desktop (it's a teaching cue).
+      // On mobile it would cover the content and its dim overlay would
+      // intercept the first tap; keep it closed until explicitly opened.
+      const isDesktop =
+        typeof window !== "undefined" && window.innerWidth >= 1024;
+      setOpen(isDesktop);
       localStorage.setItem(FIRST_VISIT_KEY, "1");
     } else {
       const stored = localStorage.getItem(STORAGE_KEY);

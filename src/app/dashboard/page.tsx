@@ -181,43 +181,43 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="font-serif font-medium text-xl text-ink mb-8">Vault overview</h1>
+      <h1 className="font-serif font-medium text-title text-ink mb-8">Vault overview</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {/* Notes */}
-        <div className="border border-surface-border bg-surface rounded-lg p-5">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">Notes</p>
-          <p className="font-serif font-medium text-2xl text-ink mb-3">
+          <p className="font-serif font-medium text-heading text-ink mb-3">
             {na(stats?.vault?.total_notes)}
           </p>
           {topTypes.length > 0 ? (
             <ul className="space-y-1">
               {topTypes.map(([type, count]) => (
-                <li key={type} className="flex justify-between text-sm">
+                <li key={type} className="flex justify-between text-label">
                   <span className="text-ink/60 capitalize">{type}</span>
                   <span className="text-ink font-medium">{count}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-ink/40">No type data</p>
+            <p className="text-label text-ink/40">No type data</p>
           )}
         </div>
 
         {/* Freshness */}
-        <div className="border border-surface-border bg-surface rounded-lg p-5">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">Freshness</p>
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Velocity (7d)</span>
               <span className="text-ink font-medium">{na(stats?.freshness?.velocity_7d)}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Today</span>
               <span className="text-ink font-medium">{na(stats?.freshness?.today)}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Stale (90d+)</span>
               <span className="text-ink font-medium">{na(stats?.freshness?.stale_90d)}</span>
             </div>
@@ -225,10 +225,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Search index */}
-        <div className="border border-surface-border bg-surface rounded-lg p-5">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">Search index</p>
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Indexed / Total</span>
               <span className="text-ink font-medium">
                 {stats?.index
@@ -236,13 +236,13 @@ export default async function DashboardPage() {
                   : "N/A"}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Drift</span>
               <span className="text-ink font-medium">
                 {stats?.index?.drift != null ? `${stats.index.drift} note${stats.index.drift === 1 ? "" : "s"}` : "N/A"}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Embedding coverage</span>
               <span className="text-ink font-medium">
                 {stats?.index?.embedding_coverage != null && stats.index.embedding_coverage >= 0
@@ -254,7 +254,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Lifecycle */}
-        <div className="border border-surface-border bg-surface rounded-lg p-5">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">Lifecycle</p>
           {lifecycle && lifecycleTotal > 0 ? (
             <>
@@ -278,7 +278,7 @@ export default async function DashboardPage() {
                   const count = lifecycle[stage] ?? 0;
                   if (count === 0) return null;
                   return (
-                    <li key={stage} className="flex justify-between text-sm">
+                    <li key={stage} className="flex justify-between text-label">
                       <span className="text-ink/60">{LIFECYCLE_LABELS[stage]}</span>
                       <span className="text-ink font-medium">{count}</span>
                     </li>
@@ -287,23 +287,23 @@ export default async function DashboardPage() {
               </ul>
             </>
           ) : (
-            <p className="text-sm text-ink/40">No lifecycle data</p>
+            <p className="text-label text-ink/40">No lifecycle data</p>
           )}
         </div>
 
         {/* Git */}
-        <div className="border border-surface-border bg-surface rounded-lg p-5">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">Git</p>
           {stats?.git ? (
             <div className="space-y-2">
-              <p className="text-sm text-ink font-medium truncate" title={stats.git.last_commit_msg}>
+              <p className="text-label text-ink font-medium truncate" title={stats.git.last_commit_msg}>
                 {stats.git.last_commit_msg ?? "N/A"}
               </p>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-label">
                 <span className="text-ink/60">Last commit</span>
                 <span className="text-ink">{relativeTime(stats.git.last_commit_at)}</span>
               </div>
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-label">
                 <span className="text-ink/60">Uncommitted</span>
                 <span className={stats.git.uncommitted_changes ? "text-harvest font-medium" : "text-ink"}>
                   {na(stats.git.uncommitted_changes)}
@@ -311,15 +311,15 @@ export default async function DashboardPage() {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-ink/40">No git data</p>
+            <p className="text-label text-ink/40">No git data</p>
           )}
         </div>
 
         {/* System — BetterStack is source of truth */}
-        <div className="border border-surface-border bg-surface rounded-lg p-5">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">System</p>
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-label">
               <span
                 className={[
                   "inline-block w-2 h-2 rounded-full",
@@ -333,20 +333,20 @@ export default async function DashboardPage() {
             </div>
 
             {monitors.map((m) => (
-              <div key={m.id} className="flex items-center justify-between text-sm pl-4">
+              <div key={m.id} className="flex items-center justify-between text-label pl-4">
                 <span className="text-ink/60">{m.name}</span>
                 <div className="flex items-center gap-2">
                   <span className={m.status === "up" ? "text-moss" : "text-harvest"}>{m.status}</span>
-                  <span className="text-ink/40 text-xs">{relativeTime(m.last_checked_at)}</span>
+                  <span className="text-ink/40 text-detail">{relativeTime(m.last_checked_at)}</span>
                 </div>
               </div>
             ))}
 
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Process uptime</span>
               <span className="text-ink">{formatUptime(metrics?.uptime_seconds)}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-label">
               <span className="text-ink/60">Total requests</span>
               <span className="text-ink">{na(metrics?.total_requests)}</span>
             </div>
@@ -355,7 +355,7 @@ export default async function DashboardPage() {
               href="https://grovemd.betteruptime.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-xs text-moss hover:text-ink transition-colors mt-2 pt-2 border-t border-surface-border"
+              className="block text-detail text-moss hover:text-ink transition-colors mt-2 pt-2 border-t border-surface-border"
             >
               Status page →
             </a>

@@ -115,10 +115,10 @@ function StageCard({
   return (
     <div
       className={[
-        "border rounded-lg p-5 transition-colors",
+        "border rounded-lg p-6 transition-colors",
         isSelected
           ? "border-ink/40 bg-surface"
-          : "border-surface-border bg-surface hover:border-ink/20 cursor-pointer",
+          : "border-surface-border bg-surface hover:border-ink/15 cursor-pointer",
       ].join(" ")}
       onClick={!isSelected ? onClick : undefined}
     >
@@ -126,15 +126,15 @@ function StageCard({
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className={`w-3 h-3 rounded-full flex-shrink-0 ${meta.barClass}`} />
-          <h2 className="font-serif font-medium text-lg text-ink">{meta.label}</h2>
+          <h2 className="font-serif font-medium text-subhead text-ink">{meta.label}</h2>
         </div>
         <div className="text-right">
-          <span className="font-serif font-medium text-2xl text-ink">{count}</span>
-          <span className="text-ink/40 text-sm ml-1">{pct}%</span>
+          <span className="font-serif font-medium text-heading text-ink">{count}</span>
+          <span className="text-ink/40 text-label ml-1">{pct}%</span>
         </div>
       </div>
 
-      <p className="text-ink/60 text-sm font-sans mb-4 leading-relaxed">{meta.description}</p>
+      <p className="text-ink/60 text-label font-sans mb-4 leading-relaxed">{meta.description}</p>
 
       {/* Notes list */}
       {notes.length > 0 ? (
@@ -149,11 +149,11 @@ function StageCard({
                 href={noteUrl(note.path)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-ink/80 hover:text-ink hover:underline truncate flex-1 font-sans"
+                className="text-label text-ink/60 hover:text-ink hover:underline truncate flex-1 font-sans"
               >
                 {note.name}
               </a>
-              <span className="text-ink/40 text-xs font-sans flex-shrink-0">
+              <span className="text-ink/40 text-detail font-sans flex-shrink-0">
                 {relativeDate(note.created ?? note.last_modified)}
               </span>
             </div>
@@ -165,14 +165,14 @@ function StageCard({
                 e.stopPropagation();
                 setExpanded((x) => !x);
               }}
-              className="mt-2 text-xs text-ink/40 hover:text-ink/60 font-sans transition-colors"
+              className="mt-2 text-detail text-ink/40 hover:text-ink/60 font-sans transition-colors"
             >
               {expanded ? "Show less" : `Show all ${notes.length}`}
             </button>
           )}
         </div>
       ) : count > 0 && stage === "mature" ? (
-        <p className="text-sm text-ink/40 font-sans">
+        <p className="text-label text-ink/40 font-sans">
           {count} mature {count === 1 ? "note" : "notes"} — well-connected and stable.
         </p>
       ) : null}
@@ -191,7 +191,7 @@ export default function LifecycleView({ digest }: { digest: GardenDigest }) {
     <div className="space-y-8">
       {/* Hero bar */}
       <div>
-        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 text-xs font-sans">
+        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 text-detail font-sans">
           Garden lifecycle
         </p>
         <div className="flex h-4 rounded-full overflow-hidden gap-px">
@@ -235,7 +235,7 @@ export default function LifecycleView({ digest }: { digest: GardenDigest }) {
                   setSelectedStage((s) => (s === stage ? null : stage))
                 }
                 className={[
-                  "flex items-center gap-1.5 text-xs font-sans transition-opacity",
+                  "flex items-center gap-1.5 text-detail font-sans transition-opacity",
                   selectedStage && selectedStage !== stage
                     ? "opacity-40"
                     : "opacity-100",
@@ -252,26 +252,26 @@ export default function LifecycleView({ digest }: { digest: GardenDigest }) {
 
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="border border-surface-border bg-surface rounded-lg p-4">
-          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-2 text-xs font-sans">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
+          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-2 text-detail font-sans">
             Total classified
           </p>
-          <p className="font-serif font-medium text-2xl text-ink">{total}</p>
+          <p className="font-serif font-medium text-heading text-ink">{total}</p>
         </div>
-        <div className="border border-surface-border bg-surface rounded-lg p-4">
-          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-2 text-xs font-sans">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
+          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-2 text-detail font-sans">
             Active (seeds–growing)
           </p>
-          <p className="font-serif font-medium text-2xl text-ink">
+          <p className="font-serif font-medium text-heading text-ink">
             {digest.seeds.count + digest.sprouts.count + digest.growing.count}
           </p>
         </div>
-        <div className="border border-surface-border bg-surface rounded-lg p-4">
-          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-2 text-xs font-sans">
+        <div className="border border-surface-border bg-surface rounded-lg p-6">
+          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-2 text-detail font-sans">
             Needs attention
           </p>
           <p className={[
-            "font-serif font-medium text-2xl",
+            "font-serif font-medium text-heading",
             digest.withering.count > 0 ? "text-harvest" : "text-ink",
           ].join(" ")}>
             {digest.withering.count}
@@ -281,7 +281,7 @@ export default function LifecycleView({ digest }: { digest: GardenDigest }) {
 
       {/* Stage cards */}
       <div>
-        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 text-xs font-sans">
+        <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 text-detail font-sans">
           By stage
         </p>
         <div className="space-y-4">
@@ -319,24 +319,24 @@ export default function LifecycleView({ digest }: { digest: GardenDigest }) {
       {/* Recently active */}
       {digest.recently_active.length > 0 && (
         <div>
-          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 text-xs font-sans">
+          <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 text-detail font-sans">
             Recently active
           </p>
           <div className="border border-surface-border bg-surface rounded-lg divide-y divide-surface-border">
             {digest.recently_active.map((note) => (
               <div
                 key={note.path}
-                className="flex items-center justify-between px-5 py-3 gap-4"
+                className="flex items-center justify-between px-6 py-3 gap-4"
               >
                 <a
                   href={noteUrl(note.path)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-ink/80 hover:text-ink hover:underline truncate font-sans"
+                  className="text-label text-ink/60 hover:text-ink hover:underline truncate font-sans"
                 >
                   {note.name}
                 </a>
-                <span className="text-ink/40 text-xs font-sans flex-shrink-0">
+                <span className="text-ink/40 text-detail font-sans flex-shrink-0">
                   {relativeDate(note.modified)}
                 </span>
               </div>

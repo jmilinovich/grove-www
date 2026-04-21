@@ -41,9 +41,9 @@ export default async function GraphPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-serif font-medium text-xl text-ink">Knowledge graph</h1>
+        <h1 className="font-serif font-medium text-title text-ink">Knowledge graph</h1>
         {data && (
-          <p className="text-sm text-ink/40 mt-1 font-sans">
+          <p className="text-label text-ink/40 mt-1 font-sans">
             {data.nodes.toLocaleString()} notes &middot; {data.edges.toLocaleString()} links &middot; {data.cluster_count} clusters &middot; {data.orphan_count} orphans
           </p>
         )}
@@ -51,7 +51,7 @@ export default async function GraphPage() {
 
       {!data ? (
         <div className="border border-surface-border bg-surface rounded-lg p-10 text-center">
-          <p className="text-ink/40 font-sans text-sm">Graph data unavailable — stats may still be computing.</p>
+          <p className="text-ink/40 font-sans text-label">Graph data unavailable — stats may still be computing.</p>
         </div>
       ) : (
         <GraphExplorer data={data} />

@@ -15,6 +15,7 @@ export default defineConfig({
     exclude: [
       "**/node_modules/**",
       "test/mobile.spec.ts",
+      "test/visual.spec.ts",
       "test/multi-resident.e2e.spec.ts",
       "test/share-modal.spec.ts",
       "test/dashboard-shares.spec.ts",

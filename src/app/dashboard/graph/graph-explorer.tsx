@@ -33,25 +33,25 @@ type NodeType = "concept" | "person" | "project" | "recipe" | "company" | "place
 // ── Colors ───────────────────────────────────────────────────────────────────
 
 const NODE_COLORS: Record<NodeType, string> = {
-  concept: "#7A8B5C",
-  person: "#D4890A",
-  project: "#2C2416",
-  recipe: "#D4890A",
-  company: "#3D3524",
-  place: "#7A8B5C",
-  journal: "#2C241680",
-  other: "rgba(44,36,22,0.25)",
+  concept: "var(--moss)",
+  person: "var(--harvest)",
+  project: "var(--ink)",
+  recipe: "var(--harvest)",
+  company: "var(--earth)",
+  place: "var(--moss)",
+  journal: "var(--muted)",
+  other: "var(--muted-light)",
 };
 
 const NODE_STROKE: Record<NodeType, string> = {
-  concept: "#5a6b3c",
-  person: "#a0670a",
-  project: "#2C2416",
-  recipe: "#a0670a",
-  company: "#2C2416",
-  place: "#5a6b3c",
-  journal: "#2C241650",
-  other: "rgba(44,36,22,0.15)",
+  concept: "var(--earth)",
+  person: "var(--earth)",
+  project: "var(--ink)",
+  recipe: "var(--earth)",
+  company: "var(--ink)",
+  place: "var(--earth)",
+  journal: "var(--muted-light)",
+  other: "var(--surface-border)",
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -246,9 +246,9 @@ export default function GraphExplorer({ data }: { data: GraphAnalysis }) {
     node
       .append("text")
       .text((d) => d.name)
-      .attr("font-family", "Georgia, serif")
+      .attr("font-family", "Lora, Georgia, serif")
       .attr("font-size", "10px")
-      .attr("fill", "#2C2416")
+      .attr("fill", "var(--ink)")
       .attr("text-anchor", "middle")
       .attr("dy", (d) => -nodeRadius(d) - 4)
       .attr("pointer-events", "none")
@@ -323,53 +323,53 @@ export default function GraphExplorer({ data }: { data: GraphAnalysis }) {
         <svg ref={svgRef} className="w-full h-full" style={{ background: "transparent" }} />
 
         <div className="absolute bottom-4 left-4 flex flex-col gap-1.5 pointer-events-none">
-          <span className="text-xs font-sans text-ink/40">size = connection count</span>
-          <span className="text-xs font-sans text-ink/40">scroll to zoom · drag to pan</span>
+          <span className="text-detail font-sans text-ink/40">size = connection count</span>
+          <span className="text-detail font-sans text-ink/40">scroll to zoom · drag to pan</span>
         </div>
 
         {filteredNodes.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-sm text-ink/40 font-sans">No nodes match current filters.</p>
+            <p className="text-label text-ink/40 font-sans">No nodes match current filters.</p>
           </div>
         )}
       </div>
 
       <div className="w-56 flex flex-col gap-4 shrink-0">
         {selected ? (
-          <div className="border border-surface-border bg-surface rounded-lg p-4">
-            <p className="font-serif font-medium text-ink text-sm mb-1 break-words leading-snug">{selected.name}</p>
-            <p className="text-xs text-ink/40 font-sans capitalize mb-3">{selected.type}</p>
+          <div className="border border-surface-border bg-surface rounded-lg p-6">
+            <p className="font-serif font-medium text-ink text-label mb-1 break-words leading-snug">{selected.name}</p>
+            <p className="text-detail text-ink/40 font-sans capitalize mb-3">{selected.type}</p>
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs font-sans">
+              <div className="flex justify-between text-detail font-sans">
                 <span className="text-ink/40">Links</span>
                 <span className="text-ink font-medium">{selected.links}</span>
               </div>
-              <div className="flex justify-between text-xs font-sans">
+              <div className="flex justify-between text-detail font-sans">
                 <span className="text-ink/40">Folder</span>
                 <span className="text-ink font-medium">{selected.folder}</span>
               </div>
             </div>
             <a
               href={`/${selected.path.replace(/\.md$/, "")}`}
-              className="mt-3 block text-xs text-moss hover:text-ink transition-colors font-sans"
+              className="mt-3 block text-detail text-moss hover:text-ink transition-colors font-sans"
             >
               Open note →
             </a>
             <button
               onClick={() => setSelected(null)}
-              className="mt-2 text-xs text-ink/30 hover:text-ink/60 transition-colors font-sans"
+              className="mt-2 text-detail text-ink/40 hover:text-ink/60 transition-colors font-sans"
             >
               dismiss
             </button>
           </div>
         ) : (
-          <div className="border border-surface-border bg-surface rounded-lg p-4">
-            <p className="text-xs text-ink/40 font-sans">Click a node to inspect it.</p>
+          <div className="border border-surface-border bg-surface rounded-lg p-6">
+            <p className="text-detail text-ink/40 font-sans">Click a node to inspect it.</p>
           </div>
         )}
 
-        <div className="border border-surface-border bg-surface rounded-lg p-4 flex-1 overflow-y-auto">
-          <p className="text-ink/40 text-xs tracking-[0.15em] uppercase font-sans mb-3">Filter</p>
+        <div className="border border-surface-border bg-surface rounded-lg p-6 flex-1 overflow-y-auto">
+          <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-sans mb-3">Filter</p>
           <div className="space-y-1.5 mb-4">
             {(["concept", "person", "project", "recipe", "company", "place", "journal", "other"] as NodeType[])
               .filter((t) => presentTypes.has(t))
@@ -377,7 +377,7 @@ export default function GraphExplorer({ data }: { data: GraphAnalysis }) {
                 <button
                   key={type}
                   onClick={() => toggleType(type)}
-                  className={`flex items-center gap-2 w-full text-left text-xs font-sans transition-opacity ${filters.types.has(type) ? "opacity-100" : "opacity-30"}`}
+                  className={`flex items-center gap-2 w-full text-left text-detail font-sans transition-opacity ${filters.types.has(type) ? "opacity-100" : "opacity-30"}`}
                 >
                   <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ background: NODE_COLORS[type] }} />
                   <span className="text-ink">{TYPE_LABELS[type]}</span>
@@ -386,19 +386,19 @@ export default function GraphExplorer({ data }: { data: GraphAnalysis }) {
           </div>
 
           <div className="mt-4 pt-4 border-t border-surface-border space-y-1">
-            <div className="flex justify-between text-xs font-sans">
+            <div className="flex justify-between text-detail font-sans">
               <span className="text-ink/40">Showing</span>
               <span className="text-ink">{filteredNodes.length} nodes</span>
             </div>
-            <div className="flex justify-between text-xs font-sans">
+            <div className="flex justify-between text-detail font-sans">
               <span className="text-ink/40">Edges</span>
               <span className="text-ink">{filteredEdges.length}</span>
             </div>
-            <div className="flex justify-between text-xs font-sans">
+            <div className="flex justify-between text-detail font-sans">
               <span className="text-ink/40">Vault total</span>
               <span className="text-ink">{data.nodes.toLocaleString()} notes</span>
             </div>
-            <div className="flex justify-between text-xs font-sans">
+            <div className="flex justify-between text-detail font-sans">
               <span className="text-ink/40">Orphans</span>
               <span className="text-ink">{data.orphan_count}</span>
             </div>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/primitives/button";
 
 export default function LoginForm() {
   const [apiKey, setApiKey] = useState("");
@@ -84,10 +85,10 @@ export default function LoginForm() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-cream">
       <div className="w-full max-w-sm">
         <div className="mb-8">
-          <h1 className="text-2xl font-serif font-medium text-ink tracking-tight">
+          <h1 className="text-heading font-serif font-medium text-ink tracking-tight">
             Grove
           </h1>
-          <p className="text-sm text-ink/60 mt-1">
+          <p className="text-label text-ink/60 mt-1">
             Sign in to view your vault.
           </p>
         </div>
@@ -95,19 +96,19 @@ export default function LoginForm() {
         {/* Magic Link Form */}
         {magicLinkSent ? (
           <div className="mb-8">
-            <div className="bg-moss/10 border border-moss/20 rounded px-4 py-3.5 text-sm text-ink">
+            <div className="bg-moss/15 border border-moss/15 rounded-md px-6 py-3.5 text-label text-ink">
               Check your email for a sign-in link.
             </div>
             <button
               onClick={() => setMagicLinkSent(false)}
-              className="text-xs text-ink/40 mt-3 hover:text-ink/60 transition-colors"
+              className="text-detail text-ink/40 mt-3 hover:text-ink/60 transition-colors"
             >
               Didn&apos;t receive it? Try again
             </button>
           </div>
         ) : (
           <form onSubmit={handleMagicLink} className="mb-8">
-            <label htmlFor="email" className="block text-xs uppercase tracking-[0.1em] text-ink/60 mb-2">
+            <label htmlFor="email" className="block text-detail uppercase tracking-[0.1em] text-ink/60 mb-2">
               Email
             </label>
             <input
@@ -117,28 +118,32 @@ export default function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               autoFocus
-              className="w-full bg-white border border-ink/15 rounded px-4 py-3.5 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+              className="w-full bg-cream border border-ink/15 rounded-md px-6 py-3.5 text-label text-ink placeholder:text-ink/40 focus:outline-none focus:border-moss transition-colors"
             />
-            <button
+            <Button
               type="submit"
-              disabled={loading || !email}
-              className="w-full mt-3 bg-ink text-cream rounded px-4 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!email}
+              loading={loading}
+              loadingLabel="Sending…"
+              size="lg"
+              fullWidth
+              className="mt-3"
             >
-              {loading ? "Sending..." : "Send magic link"}
-            </button>
+              Send magic link
+            </Button>
           </form>
         )}
 
         {/* Divider */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 h-px bg-ink/10" />
-          <span className="text-xs text-ink/30 uppercase tracking-wider">or</span>
-          <div className="flex-1 h-px bg-ink/10" />
+          <div className="flex-1 h-px bg-ink/15" />
+          <span className="text-detail text-ink/40 uppercase tracking-wider">or</span>
+          <div className="flex-1 h-px bg-ink/15" />
         </div>
 
         {/* API Key Form */}
         <form onSubmit={handleApiKey} className="space-y-4">
-          <label htmlFor="api-key" className="block text-xs uppercase tracking-[0.1em] text-ink/60">
+          <label htmlFor="api-key" className="block text-detail uppercase tracking-[0.1em] text-ink/60">
             API key
           </label>
           <input
@@ -147,23 +152,26 @@ export default function LoginForm() {
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="grove_live_..."
-            className="w-full bg-white border border-ink/15 rounded px-4 py-3.5 text-sm text-ink placeholder:text-ink/15 focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors font-mono"
+            className="w-full bg-cream border border-ink/15 rounded-md px-6 py-3.5 text-label text-ink placeholder:text-ink/40 focus:outline-none focus:border-moss transition-colors font-mono"
           />
 
           {error && (
-            <p className="text-sm text-harvest">{error}</p>
+            <p className="text-label text-harvest">{error}</p>
           )}
 
-          <button
+          <Button
             type="submit"
-            disabled={loading || !apiKey}
-            className="w-full bg-ink text-cream rounded px-4 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiKey}
+            loading={loading}
+            loadingLabel="Authenticating…"
+            size="lg"
+            fullWidth
           >
-            {loading ? "Authenticating..." : "Connect with API key"}
-          </button>
+            Connect with API key
+          </Button>
         </form>
 
-        <p className="text-xs text-ink/40 mt-6 text-center">
+        <p className="text-detail text-ink/40 mt-6 text-center">
           Need access?{" "}
           <a href="https://grove.md" className="text-moss hover:underline transition-colors">
             Learn more

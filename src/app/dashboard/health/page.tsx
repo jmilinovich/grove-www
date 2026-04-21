@@ -67,7 +67,7 @@ export default async function HealthPage() {
 
   return (
     <div>
-      <h1 className="font-serif font-medium text-xl text-ink mb-8">Graph health</h1>
+      <h1 className="font-serif font-medium text-title text-ink mb-8">Graph health</h1>
       <HealthView current={current} history={history} initialFlags={flags} />
     </div>
   );

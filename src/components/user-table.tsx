@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { Button } from "./primitives/button";
 
 interface UserMeta {
   id: string;
@@ -41,7 +42,7 @@ function RoleBadge({ role }: { role: string }) {
     viewer: "bg-surface text-muted",
   };
   return (
-    <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${colors[role] ?? colors.viewer}`}>
+    <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-detail font-medium ${colors[role] ?? colors.viewer}`}>
       {role}
     </span>
   );
@@ -124,23 +125,20 @@ export default function UserTable({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-serif text-title font-medium tracking-[-0.015em]">Users</h1>
-        <button
-          onClick={() => setShowInvite(!showInvite)}
-          className="bg-ink text-cream rounded px-3 py-1.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
-        >
+        <Button onClick={() => setShowInvite(!showInvite)} size="sm">
           {showInvite ? "Cancel" : "Invite"}
-        </button>
+        </Button>
       </div>
 
       {/* Invite form */}
       {showInvite && (
         <form
           onSubmit={handleInvite}
-          className="mb-6 rounded-lg border border-surface-border bg-surface/50 p-4"
+          className="mb-6 rounded-lg border border-surface-border bg-surface/60 p-6"
         >
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
             <div>
-              <label htmlFor="invite-email" className="block text-xs uppercase tracking-[0.1em] text-muted mb-1">
+              <label htmlFor="invite-email" className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
                 Email
               </label>
               <input
@@ -151,19 +149,19 @@ export default function UserTable({
                 placeholder="user@example.com"
                 required
                 autoFocus
-                className="w-full bg-white border border-ink/15 rounded px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+                className="w-full bg-cream border border-ink/15 rounded-md px-3 py-2 text-label text-foreground placeholder:text-muted focus:outline-none focus:border-moss transition-colors"
               />
             </div>
 
             <div>
-              <label htmlFor="invite-trail" className="block text-xs uppercase tracking-[0.1em] text-muted mb-1">
+              <label htmlFor="invite-trail" className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
                 Trail
               </label>
               <select
                 id="invite-trail"
                 value={inviteTrail}
                 onChange={(e) => setInviteTrail(e.target.value)}
-                className="bg-white border border-ink/15 rounded px-3 py-2 text-sm text-foreground focus:outline-none focus:border-moss focus:ring-2 focus:ring-moss/15 transition-colors"
+                className="bg-cream border border-ink/15 rounded-md px-3 py-2 text-label text-foreground focus:outline-none focus:border-moss transition-colors"
               >
                 {trails.map((t) => (
                   <option key={t.id} value={t.id}>{t.name}</option>
@@ -172,11 +170,11 @@ export default function UserTable({
             </div>
 
             <div>
-              <label className="block text-xs uppercase tracking-[0.1em] text-muted mb-1">
+              <label className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
                 Role
               </label>
               <div className="flex items-center gap-3 py-2">
-                <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+                <label className="flex items-center gap-1.5 text-label cursor-pointer">
                   <input
                     type="radio"
                     name="role"
@@ -187,7 +185,7 @@ export default function UserTable({
                   />
                   Viewer
                 </label>
-                <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+                <label className="flex items-center gap-1.5 text-label cursor-pointer">
                   <input
                     type="radio"
                     name="role"
@@ -201,68 +199,71 @@ export default function UserTable({
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={inviteLoading || !inviteEmail || !inviteTrail}
-              className="bg-ink text-cream rounded px-4 py-2 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              disabled={!inviteEmail || !inviteTrail}
+              loading={inviteLoading}
+              loadingLabel="Sending…"
+              size="sm"
+              className="whitespace-nowrap"
             >
-              {inviteLoading ? "Sending..." : "Send invite"}
-            </button>
+              Send invite
+            </Button>
           </div>
 
           {inviteError && (
-            <p className="text-sm text-harvest mt-2">{inviteError}</p>
+            <p className="text-label text-harvest mt-2">{inviteError}</p>
           )}
         </form>
       )}
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-surface-border">
-        <table className="w-full text-sm">
+        <table className="w-full text-label">
           <thead>
-            <tr className="border-b border-surface-border bg-surface/50">
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium">Email</th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium">Role</th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium hidden sm:table-cell">Last login</th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">Trails</th>
-              <th className="text-left px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">Keys</th>
-              <th className="text-right px-4 py-2.5 text-xs uppercase tracking-[0.1em] text-muted font-medium">Actions</th>
+            <tr className="border-b border-surface-border bg-surface/60">
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium">Email</th>
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium">Role</th>
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium hidden sm:table-cell">Last login</th>
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">Trails</th>
+              <th className="text-left px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium hidden md:table-cell">Keys</th>
+              <th className="text-right px-6 py-2.5 text-detail uppercase tracking-[0.1em] text-muted font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-b border-surface-border last:border-b-0 hover:bg-surface/30 transition-colors">
-                <td className="px-4 py-3 text-foreground">
+              <tr key={user.id} className="border-b border-surface-border last:border-b-0 hover:bg-surface/40 transition-colors">
+                <td className="px-6 py-3 text-foreground">
                   {user.email ?? user.username ?? user.id}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-6 py-3">
                   <RoleBadge role={user.role} />
                 </td>
-                <td className="px-4 py-3 text-muted hidden sm:table-cell">
+                <td className="px-6 py-3 text-muted hidden sm:table-cell">
                   {relativeTime(user.last_login_at)}
                 </td>
-                <td className="px-4 py-3 text-muted hidden md:table-cell">
+                <td className="px-6 py-3 text-muted hidden md:table-cell">
                   {user.trails.length > 0 ? user.trails.join(", ") : "\u2014"}
                 </td>
-                <td className="px-4 py-3 text-muted hidden md:table-cell">
+                <td className="px-6 py-3 text-muted hidden md:table-cell">
                   {user.key_count}
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-6 py-3 text-right">
                   {user.role !== "owner" && (
                     <>
                       {confirmDelete === user.id ? (
                         <span className="inline-flex items-center gap-2">
-                          <span className="text-xs text-muted">Sure?</span>
+                          <span className="text-detail text-muted">Sure?</span>
                           <button
                             onClick={() => handleDelete(user.id)}
                             disabled={deleteLoading}
-                            className="text-xs text-harvest font-medium hover:underline disabled:opacity-50"
+                            className="text-detail text-harvest font-medium hover:underline disabled:opacity-50"
                           >
                             Remove
                           </button>
                           <button
                             onClick={() => setConfirmDelete(null)}
-                            className="text-xs text-muted hover:text-foreground"
+                            className="text-detail text-muted hover:text-foreground"
                           >
                             No
                           </button>
@@ -270,7 +271,7 @@ export default function UserTable({
                       ) : (
                         <button
                           onClick={() => setConfirmDelete(user.id)}
-                          className="text-xs text-muted hover:text-harvest transition-colors"
+                          className="text-detail text-muted hover:text-harvest transition-colors"
                         >
                           Remove
                         </button>
@@ -282,7 +283,7 @@ export default function UserTable({
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted">
+                <td colSpan={6} className="px-6 py-8 text-center text-muted">
                   No users yet. Invite someone to get started.
                 </td>
               </tr>

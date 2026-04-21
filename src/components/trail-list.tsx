@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useCallback, useEffect } from "react";
+import { buttonClasses } from "./primitives/button";
 
 interface Trail {
   id: string;
@@ -22,7 +23,7 @@ interface Trail {
 function EnabledBadge({ enabled }: { enabled: boolean }) {
   return (
     <span
-      className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${
+      className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-detail font-medium ${
         enabled ? "bg-moss/15 text-moss" : "bg-surface text-ink/40"
       }`}
     >
@@ -34,13 +35,13 @@ function EnabledBadge({ enabled }: { enabled: boolean }) {
 function TagBadge({ tag, deny }: { tag: string; deny?: boolean }) {
   if (deny) {
     return (
-      <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-surface text-ink/40 line-through">
+      <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-detail font-medium bg-surface text-ink/40 line-through">
         {tag}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-moss/15 text-moss">
+    <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-detail font-medium bg-moss/15 text-moss">
       {tag}
     </span>
   );
@@ -49,7 +50,7 @@ function TagBadge({ tag, deny }: { tag: string; deny?: boolean }) {
 function PathChip({ path, deny }: { path: string; deny?: boolean }) {
   return (
     <code
-      className={`text-xs px-1.5 py-0.5 rounded font-mono ${
+      className={`text-detail px-1.5 py-0.5 rounded-md font-mono ${
         deny ? "text-ink/40 bg-surface line-through" : "text-foreground bg-surface"
       }`}
     >
@@ -88,7 +89,7 @@ function TrailUsagePanel({ trailId }: { trailId: string }) {
   if (loading) {
     return (
       <div className="mt-4 pt-4 border-t border-surface-border">
-        <p className="text-xs text-ink/40">Loading usage...</p>
+        <p className="text-detail text-ink/40">Loading usage...</p>
       </div>
     );
   }
@@ -96,7 +97,7 @@ function TrailUsagePanel({ trailId }: { trailId: string }) {
   if (error) {
     return (
       <div className="mt-4 pt-4 border-t border-surface-border">
-        <p className="text-xs text-ink/40">{error}</p>
+        <p className="text-detail text-ink/40">{error}</p>
       </div>
     );
   }
@@ -107,10 +108,10 @@ function TrailUsagePanel({ trailId }: { trailId: string }) {
 
   return (
     <div className="mt-4 pt-4 border-t border-surface-border">
-      <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-3">
+      <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-medium mb-3">
         Usage
       </p>
-      <div className="flex flex-wrap gap-6 text-xs text-ink/60">
+      <div className="flex flex-wrap gap-6 text-detail text-ink/60">
         <span>
           <span className="font-medium text-foreground">{usage?.requests ?? 0}</span>
           {" requests"}
@@ -161,18 +162,18 @@ function TrailCard({
   const hasRateLimits = trail.rate_limit_reads != null || trail.rate_limit_writes != null;
 
   return (
-    <div className="rounded-lg border border-surface-border bg-surface/30 p-5">
+    <div className="rounded-lg border border-surface-border bg-surface/40 p-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h2 className="font-serif text-lg font-medium text-foreground leading-snug">
+            <h2 className="font-serif text-subhead font-medium text-foreground leading-snug">
               {trail.name}
             </h2>
             <EnabledBadge enabled={trail.enabled} />
           </div>
           {trail.description && (
-            <p className="text-sm text-ink/60 leading-relaxed">{trail.description}</p>
+            <p className="text-label text-ink/60 leading-relaxed">{trail.description}</p>
           )}
         </div>
 
@@ -180,35 +181,35 @@ function TrailCard({
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href={`/dashboard/trails/${encodeURIComponent(trail.id)}`}
-            className="text-xs font-medium text-moss hover:text-moss/60 transition-colors"
+            className="text-detail font-medium text-moss hover:text-moss/60 transition-colors"
           >
             Edit
           </Link>
           <button
             onClick={() => setShowUsage((v) => !v)}
-            className="text-xs text-ink/40 hover:text-foreground transition-colors"
+            className="text-detail text-ink/40 hover:text-foreground transition-colors"
           >
             {showUsage ? "Hide usage" : "Usage"}
           </button>
           <button
             onClick={handleToggle}
             disabled={toggling}
-            className="text-xs font-medium text-moss hover:text-moss/60 transition-colors disabled:opacity-50"
+            className="text-detail font-medium text-moss hover:text-moss/60 transition-colors disabled:opacity-50"
           >
             {toggling ? "..." : trail.enabled ? "Disable" : "Enable"}
           </button>
           {confirmDelete ? (
             <span className="inline-flex items-center gap-2">
-              <span className="text-xs text-ink/40">Sure?</span>
+              <span className="text-detail text-ink/40">Sure?</span>
               <button
                 onClick={() => onDelete(trail.id)}
-                className="text-xs text-harvest font-medium hover:underline"
+                className="text-detail text-harvest font-medium hover:underline"
               >
                 Delete
               </button>
               <button
                 onClick={() => setConfirmDelete(false)}
-                className="text-xs text-ink/40 hover:text-foreground"
+                className="text-detail text-ink/40 hover:text-foreground"
               >
                 No
               </button>
@@ -216,7 +217,7 @@ function TrailCard({
           ) : (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="text-xs text-ink/40 hover:text-harvest transition-colors"
+              className="text-detail text-ink/40 hover:text-harvest transition-colors"
             >
               Delete
             </button>
@@ -227,7 +228,7 @@ function TrailCard({
       {/* Tags */}
       {(hasAllowTags || hasDenyTags) && (
         <div className="mb-3">
-          <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-1.5">
+          <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-medium mb-1.5">
             Tags
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -244,7 +245,7 @@ function TrailCard({
       {/* Paths */}
       {(hasAllowPaths || hasDenyPaths) && (
         <div className="mb-3">
-          <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-1.5">
+          <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-medium mb-1.5">
             Paths
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -261,10 +262,10 @@ function TrailCard({
       {/* Rate limits */}
       {hasRateLimits && (
         <div>
-          <p className="text-ink/40 text-[10px] tracking-[0.15em] uppercase font-medium mb-1.5">
+          <p className="text-ink/40 text-detail tracking-[0.15em] uppercase font-medium mb-1.5">
             Rate limits
           </p>
-          <div className="flex flex-wrap gap-4 text-xs text-ink/60">
+          <div className="flex flex-wrap gap-4 text-detail text-ink/60">
             {trail.rate_limit_reads != null && (
               <span>
                 <span className="font-medium text-foreground">{trail.rate_limit_reads}</span>
@@ -324,7 +325,7 @@ export default function TrailList({ initialTrails }: { initialTrails: Trail[] })
         <h1 className="font-serif text-title font-medium tracking-[-0.015em]">Trails</h1>
         <Link
           href="/dashboard/trails/new"
-          className="bg-ink text-cream rounded px-7 py-3.5 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
+          className={buttonClasses({ variant: "primary", size: "lg" })}
         >
           Create trail
         </Link>
@@ -332,7 +333,7 @@ export default function TrailList({ initialTrails }: { initialTrails: Trail[] })
 
       {/* Trail cards */}
       {trails.length === 0 ? (
-        <div className="rounded-lg border border-surface-border bg-surface/30 px-6 py-12 text-center">
+        <div className="rounded-lg border border-surface-border bg-surface/40 px-6 py-12 text-center">
           <p className="text-ink/40">No trails. Create one to share your knowledge.</p>
         </div>
       ) : (

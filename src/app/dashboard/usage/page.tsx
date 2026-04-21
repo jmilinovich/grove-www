@@ -84,7 +84,7 @@ export default async function UsagePage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      <h1 className="font-serif font-medium text-2xl text-ink mb-8">Usage</h1>
+      <h1 className="font-serif font-medium text-heading text-ink mb-8">Usage</h1>
 
       {isEmpty ? (
         <p className="font-sans text-ink/60">
@@ -95,7 +95,7 @@ export default async function UsagePage() {
           {/* Top row — big numbers */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="bg-surface rounded-lg p-6 border border-surface-border">
-              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
+              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-detail">
                 Total Requests
               </p>
               <p className="text-4xl font-serif font-medium text-ink">
@@ -104,17 +104,17 @@ export default async function UsagePage() {
             </div>
 
             <div className="bg-surface rounded-lg p-6 border border-surface-border">
-              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
+              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-detail">
                 Error Rate
               </p>
               <p className="text-4xl font-serif font-medium text-ink">
                 {((metrics!.error_rate ?? 0) * 100).toFixed(1)}
-                <span className="text-2xl text-ink/60">%</span>
+                <span className="text-heading text-ink/60">%</span>
               </p>
             </div>
 
             <div className="bg-surface rounded-lg p-6 border border-surface-border">
-              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
+              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-detail">
                 Uptime
               </p>
               <p className="text-4xl font-serif font-medium text-ink">
@@ -126,10 +126,10 @@ export default async function UsagePage() {
           {/* Tool breakdown */}
           {metrics!.by_tool && Object.keys(metrics!.by_tool).length > 0 && (
             <div>
-              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
+              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-detail">
                 By Tool
               </p>
-              <table className="w-full font-sans text-sm">
+              <table className="w-full font-sans text-label">
                 <thead>
                   <tr className="text-left">
                     <th className="text-ink/40 font-normal pb-3 pr-8">Tool</th>
@@ -145,7 +145,7 @@ export default async function UsagePage() {
                     const tool = metrics!.by_tool[name];
                     return (
                       <tr key={name} className="border-t border-surface-border">
-                        <td className="py-3 pr-8 text-ink font-mono text-xs">{name}</td>
+                        <td className="py-3 pr-8 text-ink font-mono text-detail">{name}</td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
                           {(tool.count ?? 0).toLocaleString()}
                         </td>
@@ -170,7 +170,7 @@ export default async function UsagePage() {
                     .filter(([name]) => !TOOL_NAMES.includes(name as (typeof TOOL_NAMES)[number]))
                     .map(([name, tool]) => (
                       <tr key={name} className="border-t border-surface-border">
-                        <td className="py-3 pr-8 text-ink font-mono text-xs">{name}</td>
+                        <td className="py-3 pr-8 text-ink font-mono text-detail">{name}</td>
                         <td className="py-3 pr-8 text-ink/60 text-right">
                           {(tool.count ?? 0).toLocaleString()}
                         </td>
@@ -198,27 +198,27 @@ export default async function UsagePage() {
           {/* Search stats */}
           {metrics!.search && (
             <div>
-              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
+              <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-detail">
                 Search
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="bg-surface rounded-lg p-6 border border-surface-border">
-                  <p className="text-ink/40 font-sans text-xs mb-2">Queries (last hour)</p>
-                  <p className="text-2xl font-serif font-medium text-ink">
+                  <p className="text-ink/40 font-sans text-detail mb-2">Queries (last hour)</p>
+                  <p className="text-heading font-serif font-medium text-ink">
                     {(metrics!.search.queries_1h ?? 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="bg-surface rounded-lg p-6 border border-surface-border">
-                  <p className="text-ink/40 font-sans text-xs mb-2">Avg latency</p>
-                  <p className="text-2xl font-serif font-medium text-ink">
+                  <p className="text-ink/40 font-sans text-detail mb-2">Avg latency</p>
+                  <p className="text-heading font-serif font-medium text-ink">
                     {formatLatency(metrics!.search.avg_latency_ms ?? 0)}
                   </p>
                 </div>
                 <div className="bg-surface rounded-lg p-6 border border-surface-border">
-                  <p className="text-ink/40 font-sans text-xs mb-2">Zero-result rate</p>
-                  <p className="text-2xl font-serif font-medium text-ink">
+                  <p className="text-ink/40 font-sans text-detail mb-2">Zero-result rate</p>
+                  <p className="text-heading font-serif font-medium text-ink">
                     {((metrics!.search.zero_result_rate ?? 0) * 100).toFixed(1)}
-                    <span className="text-lg text-ink/60">%</span>
+                    <span className="text-subhead text-ink/60">%</span>
                   </p>
                 </div>
               </div>

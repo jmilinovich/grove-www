@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import HandleEditor from "./handle-editor";
+import { Button } from "./primitives/button";
 
 interface TrailSummary {
   id: string;
@@ -183,26 +184,26 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="text-2xl font-semibold text-ink">Profile</h1>
-        <p className="text-sm text-ink/60 mt-1">Manage your identity and access to Grove.</p>
+        <h1 className="text-heading font-medium text-ink">Profile</h1>
+        <p className="text-label text-ink/60 mt-1">Manage your identity and access to Grove.</p>
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-ink/60 uppercase tracking-wide">Identity</h2>
+        <h2 className="text-label font-medium text-ink/60 uppercase tracking-wide">Identity</h2>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs text-ink/50 mb-1">Email</label>
-            <div className="text-sm text-ink">{profile.email ?? "—"}</div>
+            <label className="block text-detail text-ink/60 mb-1">Email</label>
+            <div className="text-label text-ink">{profile.email ?? "—"}</div>
           </div>
           <div>
-            <label className="block text-xs text-ink/50 mb-1">Role</label>
-            <div className="text-sm text-ink capitalize">{profile.role}</div>
+            <label className="block text-detail text-ink/60 mb-1">Role</label>
+            <div className="text-label text-ink capitalize">{profile.role}</div>
           </div>
           {currentHandle && (
             <HandleEditor currentHandle={currentHandle} onChanged={onHandleChanged} />
           )}
           <div>
-            <label className="block text-xs text-ink/50 mb-1" htmlFor="display-name">Display name</label>
+            <label className="block text-detail text-ink/60 mb-1" htmlFor="display-name">Display name</label>
             <div className="flex gap-2 items-center">
               <input
                 id="display-name"
@@ -211,22 +212,24 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
                 onChange={(e) => { setNameInput(e.target.value); setNameStatus("idle"); }}
                 placeholder="Your name"
                 maxLength={100}
-                className="flex-1 max-w-sm px-3 py-1.5 text-sm bg-surface border border-surface-border rounded text-ink focus:outline-none focus:border-moss"
+                className="flex-1 max-w-sm px-3 py-1.5 text-label bg-surface border border-surface-border rounded-md text-ink focus:outline-none focus:border-moss"
               />
-              <button
+              <Button
                 type="button"
                 onClick={saveName}
-                disabled={nameSaving || !nameChanged}
-                className="px-3 py-1.5 text-sm bg-moss text-cream rounded hover:bg-moss/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled={!nameChanged}
+                loading={nameSaving}
+                loadingLabel="Saving…"
+                size="sm"
               >
-                {nameSaving ? "Saving…" : "Save"}
-              </button>
-              {nameStatus === "saved" && <span className="text-xs text-moss">Saved</span>}
-              {nameStatus === "error" && <span className="text-xs text-rust">Could not save</span>}
+                Save
+              </Button>
+              {nameStatus === "saved" && <span className="text-detail text-moss">Saved</span>}
+              {nameStatus === "error" && <span className="text-detail text-harvest">Could not save</span>}
             </div>
           </div>
           <div>
-            <label className="block text-xs text-ink/50 mb-1" htmlFor="bio">Bio</label>
+            <label className="block text-detail text-ink/60 mb-1" htmlFor="bio">Bio</label>
             <div className="flex flex-col gap-2 max-w-xl">
               <textarea
                 id="bio"
@@ -239,20 +242,22 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
                 placeholder="A short description (280 characters max)"
                 maxLength={280}
                 rows={3}
-                className="w-full px-3 py-1.5 text-sm bg-surface border border-surface-border rounded text-ink focus:outline-none focus:border-moss resize-y"
+                className="w-full px-3 py-1.5 text-label bg-surface border border-surface-border rounded-md text-ink focus:outline-none focus:border-moss resize-y"
               />
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={saveBio}
-                  disabled={bioSaving || !bioChanged}
-                  className="px-3 py-1.5 text-sm bg-moss text-cream rounded hover:bg-moss/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                  disabled={!bioChanged}
+                  loading={bioSaving}
+                  loadingLabel="Saving…"
+                  size="sm"
                 >
-                  {bioSaving ? "Saving…" : "Save"}
-                </button>
-                <span className="text-xs text-ink/50">{bioInput.length}/280</span>
-                {bioStatus === "saved" && <span className="text-xs text-moss">Saved</span>}
-                {bioStatus === "error" && <span className="text-xs text-rust">{bioError ?? "Could not save"}</span>}
+                  Save
+                </Button>
+                <span className="text-detail text-ink/60">{bioInput.length}/280</span>
+                {bioStatus === "saved" && <span className="text-detail text-moss">Saved</span>}
+                {bioStatus === "error" && <span className="text-detail text-harvest">{bioError ?? "Could not save"}</span>}
               </div>
             </div>
           </div>
@@ -261,33 +266,33 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
 
       <section className="space-y-4">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-ink/60 uppercase tracking-wide">Sessions</h2>
+          <h2 className="text-label font-medium text-ink/60 uppercase tracking-wide">Sessions</h2>
           {otherSessions.length > 0 && (
             <button
               type="button"
               onClick={signOutAll}
               disabled={signOutAllBusy}
-              className="text-xs text-rust hover:underline disabled:opacity-40"
+              className="text-detail text-harvest hover:underline disabled:opacity-40"
             >
               {signOutAllBusy ? "Signing out…" : "Sign out of all other sessions"}
             </button>
           )}
         </div>
-        {error && <div className="text-xs text-rust">{error}</div>}
+        {error && <div className="text-detail text-harvest">{error}</div>}
         {profile.sessions.length === 0 ? (
-          <div className="text-sm text-ink/50">No active sessions.</div>
+          <div className="text-label text-ink/60">No active sessions.</div>
         ) : (
-          <ul className="divide-y divide-surface-border border border-surface-border rounded">
+          <ul className="divide-y divide-surface-border border border-surface-border rounded-md">
             {profile.sessions.map((s) => (
               <li key={s.id} className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
-                  <div className="text-sm text-ink flex items-center gap-2">
+                  <div className="text-label text-ink flex items-center gap-2">
                     <span>{describeClient(s.user_agent)}</span>
                     {s.is_current && (
-                      <span className="text-xs bg-moss/15 text-moss px-1.5 py-0.5 rounded">This device</span>
+                      <span className="text-detail bg-moss/15 text-moss px-1.5 py-0.5 rounded-md">This device</span>
                     )}
                   </div>
-                  <div className="text-xs text-ink/50 mt-0.5">
+                  <div className="text-detail text-ink/60 mt-0.5">
                     Last active {relativeTime(s.last_used_at ?? s.created_at)} · Signed in {relativeTime(s.created_at)}
                   </div>
                 </div>
@@ -296,7 +301,7 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
                     type="button"
                     onClick={() => revokeSession(s.id)}
                     disabled={busySessionId === s.id}
-                    className="text-xs text-rust hover:underline disabled:opacity-40 ml-4 shrink-0"
+                    className="text-detail text-harvest hover:underline disabled:opacity-40 ml-4 shrink-0"
                   >
                     {busySessionId === s.id ? "Signing out…" : "Sign out"}
                   </button>
@@ -308,20 +313,20 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-ink/60 uppercase tracking-wide">API keys</h2>
+        <h2 className="text-label font-medium text-ink/60 uppercase tracking-wide">API keys</h2>
         {profile.keys.length === 0 ? (
-          <div className="text-sm text-ink/50">No API keys.</div>
+          <div className="text-label text-ink/60">No API keys.</div>
         ) : (
-          <ul className="divide-y divide-surface-border border border-surface-border rounded">
+          <ul className="divide-y divide-surface-border border border-surface-border rounded-md">
             {profile.keys.map((k) => (
               <li key={k.id} className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
-                  <div className="text-sm text-ink truncate">{k.name}</div>
-                  <div className="text-xs text-ink/50 mt-0.5">
+                  <div className="text-label text-ink truncate">{k.name}</div>
+                  <div className="text-detail text-ink/60 mt-0.5">
                     {k.scopes.filter(Boolean).join(" · ")} · Last used {relativeTime(k.last_used_at)}
                   </div>
                 </div>
-                <a href="/dashboard/keys" className="text-xs text-moss hover:underline ml-4 shrink-0">
+                <a href="/dashboard/keys" className="text-detail text-moss hover:underline ml-4 shrink-0">
                   Manage
                 </a>
               </li>
@@ -331,15 +336,15 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-sm font-medium text-ink/60 uppercase tracking-wide">Trail access</h2>
+        <h2 className="text-label font-medium text-ink/60 uppercase tracking-wide">Trail access</h2>
         {profile.trails.length === 0 ? (
-          <div className="text-sm text-ink/50">No trails.</div>
+          <div className="text-label text-ink/60">No trails.</div>
         ) : (
-          <ul className="divide-y divide-surface-border border border-surface-border rounded">
+          <ul className="divide-y divide-surface-border border border-surface-border rounded-md">
             {profile.trails.map((t) => (
               <li key={t.id} className="px-4 py-3">
-                <div className="text-sm text-ink">{t.name}</div>
-                {t.description && <div className="text-xs text-ink/50 mt-0.5">{t.description}</div>}
+                <div className="text-label text-ink">{t.name}</div>
+                {t.description && <div className="text-detail text-ink/60 mt-0.5">{t.description}</div>}
               </li>
             ))}
           </ul>

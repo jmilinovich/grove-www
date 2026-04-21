@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "./primitives/button";
 
 /** Mirrors the backend `isValidHandle()` shape check in src/users.ts. */
 const HANDLE_RE = /^[a-z0-9][a-z0-9_-]{0,29}$/;
@@ -118,10 +119,10 @@ export default function HandleEditor({ currentHandle, onChanged }: HandleEditorP
 
   return (
     <div>
-      <label className="block text-xs text-ink/50 mb-1" htmlFor="handle">Handle</label>
+      <label className="block text-detail text-ink/60 mb-1" htmlFor="handle">Handle</label>
       <div className="flex gap-2 items-center">
         <div className="relative flex-1 max-w-sm">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink/40 pointer-events-none">@</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-label text-ink/40 pointer-events-none">@</span>
           <input
             id="handle"
             type="text"
@@ -136,37 +137,39 @@ export default function HandleEditor({ currentHandle, onChanged }: HandleEditorP
             }}
             placeholder="handle"
             maxLength={30}
-            className="w-full pl-7 pr-3 py-1.5 text-sm bg-surface border border-surface-border rounded text-ink focus:outline-none focus:border-moss"
+            className="w-full pl-7 pr-3 py-1.5 text-label bg-surface border border-surface-border rounded-md text-ink focus:outline-none focus:border-moss"
           />
         </div>
-        <button
+        <Button
           type="button"
           onClick={save}
           disabled={!canSave}
-          className="px-3 py-1.5 text-sm bg-moss text-cream rounded hover:bg-moss/90 disabled:opacity-40 disabled:cursor-not-allowed"
+          loading={saving}
+          loadingLabel="Saving…"
+          size="sm"
         >
-          {saving ? "Saving…" : "Save"}
-        </button>
+          Save
+        </Button>
       </div>
-      <div className="mt-1 text-xs text-ink/50">
-        Your URL: <span className="font-mono text-ink/70">grove.md/@{trimmed || currentHandle}</span>
+      <div className="mt-1 text-detail text-ink/60">
+        Your URL: <span className="font-mono text-ink/60">grove.md/@{trimmed || currentHandle}</span>
       </div>
       {statusMessage && (
         <div
           className={
-            "mt-1 text-xs " +
+            "mt-1 text-detail " +
             (statusMessage.tone === "error"
-              ? "text-rust"
+              ? "text-harvest"
               : statusMessage.tone === "ok"
                 ? "text-moss"
-                : "text-ink/50")
+                : "text-ink/60")
           }
         >
           {statusMessage.text}
         </div>
       )}
       {lastSaved && (
-        <div className="mt-1 text-xs text-ink/60">
+        <div className="mt-1 text-detail text-ink/60">
           Saved. Old URL redirects:{" "}
           <span className="font-mono">grove.md/@{lastSaved.oldHandle}</span>
           {" → "}

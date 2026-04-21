@@ -1,0 +1,90 @@
+name: visual
+
+# Visual regression. Separate from `check` because:
+#   1. Pixel-level font rendering varies by OS — baselines need to be
+#      generated on the same runner that compares them. We use the
+#      official Playwright Docker image (Ubuntu) both here and for
+#      updating baselines, so CI matches what you commit.
+#   2. Runs ~45s on top of the other gates; worth its own knob.
+#
+# How to use:
+#   - A green run on PR / push means no visual drift.
+#   - If intentional visual change: run the `update-snapshots` workflow
+#     manually from Actions → visual → Run workflow → "update baselines".
+#     That regenerates PNGs and commits them to the PR branch.
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package*.json"
+      - "test/visual.spec.ts"
+      - "playwright.visual.config.ts"
+      - ".github/workflows/visual.yml"
+  workflow_dispatch:
+    inputs:
+      update_baselines:
+        description: "Regenerate baselines instead of comparing"
+        type: boolean
+        default: false
+
+concurrency:
+  group: visual-${{ github.ref }}
+  cancel-in-progress: true
+
+# Needed so the update-baselines job can commit regenerated PNGs back
+# to the triggering branch. Default GITHUB_TOKEN is read-only.
+permissions:
+  contents: write
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    # Pinned Playwright Docker image — exact same env every run, matches
+    # the @playwright/test version in package.json. Bump both together.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
+      options: --user 1001
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Compare visual baselines
+        if: ${{ github.event.inputs.update_baselines != 'true' }}
+        run: npm run test:visual
+
+      - name: Regenerate visual baselines
+        if: ${{ github.event.inputs.update_baselines == 'true' }}
+        run: npm run test:visual:update
+
+      - name: Commit baselines (update mode)
+        if: ${{ github.event.inputs.update_baselines == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add test/__screenshots__/
+          if git diff --staged --quiet; then
+            echo "No baseline changes to commit."
+          else
+            git commit -m "chore: regenerate visual baselines"
+            git push
+          fi
+
+      - name: Upload diff on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore

@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { Folder } from "lucide-react";
+import { buttonClasses } from "@/components/primitives/button";
 import { getApiKey } from "@/lib/auth";
 import {
   fetchNote,
@@ -77,7 +79,7 @@ function DirectoryListing({
 
       {subfolders.size > 0 && (
         <div className="mb-8">
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
+          <h2 className="text-detail uppercase tracking-widest text-muted mb-3">
             Folders
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -85,19 +87,9 @@ function DirectoryListing({
               <Link
                 key={folder}
                 href={`/${atHandle}/${prefix}/${folder}`}
-                className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-sm hover:border-muted hover:text-foreground transition-colors text-muted-light"
+                className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-label hover:border-muted hover:text-foreground transition-colors text-muted-light"
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="shrink-0 text-muted"
-                >
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                </svg>
+                <Folder size={14} className="shrink-0 text-muted" />
                 <span className="truncate">{folder}</span>
               </Link>
             ))}
@@ -107,7 +99,7 @@ function DirectoryListing({
 
       {directChildren.length > 0 && (
         <div>
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
+          <h2 className="text-detail uppercase tracking-widest text-muted mb-3">
             Notes
           </h2>
           <div className="space-y-1">
@@ -120,18 +112,18 @@ function DirectoryListing({
                 <div className="flex items-center gap-3 min-w-0">
                   {entry.type && (
                     <span
-                      className={`text-xs font-medium shrink-0 ${
+                      className={`text-detail font-medium shrink-0 ${
                         TYPE_COLORS[entry.type] ?? "text-ink/40"
                       }`}
                     >
                       {entry.type}
                     </span>
                   )}
-                  <span className="text-sm text-muted-light group-hover:text-foreground transition-colors truncate">
+                  <span className="text-label text-muted-light group-hover:text-foreground transition-colors truncate">
                     {entry.name}
                   </span>
                 </div>
-                <span className="text-xs text-muted shrink-0">
+                <span className="text-detail text-muted shrink-0">
                   {new Date(entry.modified_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -152,20 +144,20 @@ function SignInPrompt({ atHandle, vaultPath }: { atHandle: string; vaultPath: st
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-6">
       <div className="w-full max-w-md text-center">
-        <p className="text-xs uppercase tracking-[0.15em] text-ink/40 mb-3">
+        <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
           Private note
         </p>
-        <h1 className="text-2xl font-serif font-medium text-ink tracking-tight mb-2">
+        <h1 className="text-heading font-serif font-medium text-ink tracking-tight mb-2">
           Sign in to read
         </h1>
-        <p className="text-sm text-ink/60 mb-8">
+        <p className="text-label text-ink/60 mb-8">
           This note belongs to{" "}
           <span className="font-mono text-ink">@{handle}</span>. Sign in with an
           API key that has access to continue.
         </p>
         <Link
           href={`/login?redirect=${encodeURIComponent(redirectPath)}`}
-          className="inline-block bg-ink text-cream rounded px-6 py-3 text-sm font-medium hover:bg-earth transition-colors active:scale-[0.98]"
+          className={buttonClasses({ variant: "primary", size: "md" })}
         >
           Sign in
         </Link>
@@ -225,10 +217,10 @@ export default async function ScopedNotePage({ params }: PageProps) {
         <Suspense
           fallback={
             <div className="animate-pulse space-y-3 py-8">
-              <div className="h-4 bg-surface rounded w-3/4" />
-              <div className="h-4 bg-surface rounded w-1/2" />
-              <div className="h-4 bg-surface rounded w-5/6" />
-              <div className="h-4 bg-surface rounded w-2/3" />
+              <div className="h-4 bg-surface rounded-md w-3/4" />
+              <div className="h-4 bg-surface rounded-md w-1/2" />
+              <div className="h-4 bg-surface rounded-md w-5/6" />
+              <div className="h-4 bg-surface rounded-md w-2/3" />
             </div>
           }
         >

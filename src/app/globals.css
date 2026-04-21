@@ -20,14 +20,14 @@ html, body {
   --background: #FAF7F2;
   --foreground: #2C2416;
   --accent: #7A8B5C;
-  --accent-dim: rgba(122, 139, 92, 0.1);
+  --accent-dim: rgba(122, 139, 92, 0.15);
   --amber: #D4890A;
-  --amber-dim: rgba(212, 137, 10, 0.1);
+  --amber-dim: rgba(212, 137, 10, 0.15);
   --surface: #F0EBE1;
-  --surface-border: rgba(44, 36, 22, 0.1);
+  --surface-border: rgba(44, 36, 22, 0.15);
   --surface-hover: #E8E2D6;
-  --muted: #2C241680;
-  --muted-light: #2C241660;
+  --muted: rgba(44, 36, 22, 0.60);
+  --muted-light: rgba(44, 36, 22, 0.40);
 
   /* ── Type scale (Major Third, 1.25 ratio) ── */
   --text-xs: 0.64rem;
@@ -239,7 +239,7 @@ body::before {
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(44, 36, 22, 0.1);
+  border-bottom: 1px solid rgba(44, 36, 22, 0.15);
 }
 
 .note-content .prose h3 {
@@ -319,7 +319,7 @@ body::before {
 }
 
 .callout-title {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.9em;
   margin-bottom: 0.5rem;
 }
