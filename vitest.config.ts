@@ -12,7 +12,11 @@ export default defineConfig({
   },
   test: {
     include: ["test/**/*.spec.ts"],
-    exclude: ["**/node_modules/**", "test/mobile.spec.ts"],
+    exclude: [
+      "**/node_modules/**",
+      "test/mobile.spec.ts",
+      "test/multi-resident.e2e.spec.ts",
+    ],
     environment: "node",
   },
 });

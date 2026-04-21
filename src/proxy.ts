@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Paths that never require auth
 const PUBLIC_PATHS = ["/", "/login", "/api/auth"];
-const PUBLIC_PREFIXES = ["/_next/", "/api/", "/s/"];
+// `/@` covers every scoped resident route (/@handle, /@handle/s/<id>,
+// /@handle/trails/<slug>, /@handle/<path>). The pages themselves decide
+// whether content is public (profile, share, trail) or auth-gated
+// (note viewer shows a sign-in prompt when signed out).
+const PUBLIC_PREFIXES = ["/_next/", "/api/", "/s/", "/@"];
 const PUBLIC_FILES = ["/favicon.ico", "/robots.txt", "/sitemap.xml"];
 
 export default function proxy(request: NextRequest) {
