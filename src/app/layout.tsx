@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter, Lora } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import CommandPalette from "@/components/command-palette";
 import LastVisited from "@/components/last-visited";
 import SidebarProvider from "@/components/sidebar-provider";
 import SearchProvider from "@/components/search-provider";
 import AppShell from "@/components/app-shell";
+import { getApiKey } from "@/lib/auth";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -39,11 +41,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Resolve auth state SSR so AppShell can decide on chrome without an
+  // /api/whoami round-trip (prevents flash of missing chrome on scoped
+  // routes like /@<handle>/...).
+  const cookieStore = await cookies();
+  const isSignedIn = Boolean(getApiKey(cookieStore));
+
   return (
     <html lang="en" className={`${geistMono.variable} ${inter.variable} ${lora.variable} antialiased`}>
       <body className="min-h-screen bg-background text-foreground font-sans">
@@ -51,7 +59,7 @@ export default function RootLayout({
           <SidebarProvider>
             <CommandPalette />
             <LastVisited />
-            <AppShell>
+            <AppShell isSignedIn={isSignedIn}>
               {children}
             </AppShell>
           </SidebarProvider>

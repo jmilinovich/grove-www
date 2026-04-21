@@ -77,6 +77,7 @@ const WIKILINK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 
 function remarkWikilinks(
   links: Record<string, { path: string | null; exists: boolean }>,
+  atHandle?: string,
 ): Plugin<[], MdastRoot> {
   return () => {
     return (tree: MdastRoot) => {
@@ -104,8 +105,11 @@ function remarkWikilinks(
           const linkInfo = links[target];
 
           if (linkInfo?.exists && linkInfo.path) {
-            // Strip .md extension and leading path for URL
-            const href = "/" + linkInfo.path.replace(/\.md$/, "");
+            // Strip .md extension; scope the URL under /@<handle>/ when the
+            // current view is a resident-scoped page so wikilinks stay within
+            // that scope (and don't fall through to the legacy catch-all).
+            const prefix = atHandle ? `/@${atHandle}` : "";
+            const href = prefix + "/" + linkInfo.path.replace(/\.md$/, "");
             children.push({
               type: "wikilink",
               data: {
@@ -485,11 +489,12 @@ async function highlightCodeBlocks(html: string): Promise<string> {
 export async function renderMarkdown(
   content: string,
   links: Record<string, { path: string | null; exists: boolean }>,
+  atHandle?: string,
 ): Promise<string> {
   const result = await unified()
     .use(remarkParse)
     .use(remarkGfm)
-    .use(remarkWikilinks(links))
+    .use(remarkWikilinks(links, atHandle))
     .use(remarkStripDataview())
     .use(remarkStripEmptySections())
     .use(remarkCallouts())

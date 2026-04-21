@@ -58,7 +58,7 @@ export default async function NoteView({
   let html: string;
   let renderFailed = false;
   try {
-    html = await renderMarkdown(note.content, note.links);
+    html = await renderMarkdown(note.content, note.links, atHandle);
   } catch (err) {
     console.error("renderMarkdown failed for", note.path, err);
     renderFailed = true;
