@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import HandleEditor from "./handle-editor";
 
 interface TrailSummary {
   id: string;
@@ -28,9 +29,11 @@ interface SessionSummary {
 export interface Profile {
   id: string;
   username: string | null;
+  handle: string | null;
   email: string | null;
   role: string;
   display_name: string | null;
+  bio: string | null;
   trails: TrailSummary[];
   keys: KeySummary[];
   sessions: SessionSummary[];
@@ -66,6 +69,10 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
   const [nameInput, setNameInput] = useState(initialProfile.display_name ?? "");
   const [nameSaving, setNameSaving] = useState(false);
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [bioInput, setBioInput] = useState(initialProfile.bio ?? "");
+  const [bioSaving, setBioSaving] = useState(false);
+  const [bioStatus, setBioStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [bioError, setBioError] = useState<string | null>(null);
   const [busySessionId, setBusySessionId] = useState<string | null>(null);
   const [signOutAllBusy, setSignOutAllBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,8 +90,8 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
         setNameStatus("error");
         return;
       }
-      const data = (await res.json()) as Profile;
-      setProfile((p) => ({ ...p, display_name: data.display_name }));
+      const data = (await res.json()) as { display_name?: string | null };
+      setProfile((p) => ({ ...p, display_name: data.display_name ?? null }));
       setNameInput(data.display_name ?? "");
       setNameStatus("saved");
     } catch {
@@ -93,6 +100,44 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
       setNameSaving(false);
     }
   }, [nameInput]);
+
+  const saveBio = useCallback(async () => {
+    const value = bioInput.trim();
+    if (value.length > 280) {
+      setBioError("Bio must be 280 characters or fewer.");
+      setBioStatus("error");
+      return;
+    }
+    setBioSaving(true);
+    setBioStatus("idle");
+    setBioError(null);
+    try {
+      const res = await fetch("/api/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bio: value || null }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { bio?: string | null; error?: string };
+      if (!res.ok) {
+        setBioError(data.error ?? "Could not save bio.");
+        setBioStatus("error");
+        return;
+      }
+      const savedBio = data.bio ?? null;
+      setProfile((p) => ({ ...p, bio: savedBio }));
+      setBioInput(savedBio ?? "");
+      setBioStatus("saved");
+    } catch {
+      setBioError("Network error.");
+      setBioStatus("error");
+    } finally {
+      setBioSaving(false);
+    }
+  }, [bioInput]);
+
+  const onHandleChanged = useCallback((newHandle: string) => {
+    setProfile((p) => ({ ...p, username: newHandle, handle: newHandle }));
+  }, []);
 
   const revokeSession = useCallback(async (sessionId: string) => {
     setBusySessionId(sessionId);
@@ -131,7 +176,9 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
   }, []);
 
   const nameChanged = (nameInput || "") !== (profile.display_name ?? "");
+  const bioChanged = (bioInput || "") !== (profile.bio ?? "");
   const otherSessions = profile.sessions.filter((s) => !s.is_current);
+  const currentHandle = profile.handle ?? profile.username ?? "";
 
   return (
     <div className="space-y-10">
@@ -151,6 +198,9 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
             <label className="block text-xs text-ink/50 mb-1">Role</label>
             <div className="text-sm text-ink capitalize">{profile.role}</div>
           </div>
+          {currentHandle && (
+            <HandleEditor currentHandle={currentHandle} onChanged={onHandleChanged} />
+          )}
           <div>
             <label className="block text-xs text-ink/50 mb-1" htmlFor="display-name">Display name</label>
             <div className="flex gap-2 items-center">
@@ -173,6 +223,37 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
               </button>
               {nameStatus === "saved" && <span className="text-xs text-moss">Saved</span>}
               {nameStatus === "error" && <span className="text-xs text-rust">Could not save</span>}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-ink/50 mb-1" htmlFor="bio">Bio</label>
+            <div className="flex flex-col gap-2 max-w-xl">
+              <textarea
+                id="bio"
+                value={bioInput}
+                onChange={(e) => {
+                  setBioInput(e.target.value);
+                  setBioStatus("idle");
+                  setBioError(null);
+                }}
+                placeholder="A short description (280 characters max)"
+                maxLength={280}
+                rows={3}
+                className="w-full px-3 py-1.5 text-sm bg-surface border border-surface-border rounded text-ink focus:outline-none focus:border-moss resize-y"
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={saveBio}
+                  disabled={bioSaving || !bioChanged}
+                  className="px-3 py-1.5 text-sm bg-moss text-cream rounded hover:bg-moss/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {bioSaving ? "Saving…" : "Save"}
+                </button>
+                <span className="text-xs text-ink/50">{bioInput.length}/280</span>
+                {bioStatus === "saved" && <span className="text-xs text-moss">Saved</span>}
+                {bioStatus === "error" && <span className="text-xs text-rust">{bioError ?? "Could not save"}</span>}
+              </div>
             </div>
           </div>
         </div>
