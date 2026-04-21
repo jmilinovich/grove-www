@@ -1,7 +1,21 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getApiKey } from "@/lib/auth";
+import { fetchWhoami, landingPathForRole, roleFromWhoami } from "@/lib/role";
+
 const GITHUB_URL = "https://github.com/jmilinovich/grove";
 const WAITLIST_URL = "#waitlist";
 
-export default function Home() {
+export default async function Home() {
+  const cookieStore = await cookies();
+  const apiKey = getApiKey(cookieStore);
+  if (apiKey) {
+    const whoami = await fetchWhoami(apiKey);
+    if (whoami) {
+      redirect(landingPathForRole(roleFromWhoami(whoami)));
+    }
+  }
+
   return (
     <div className="flex flex-col items-center">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-accent focus:text-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium">

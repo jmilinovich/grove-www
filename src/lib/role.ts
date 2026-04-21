@@ -26,3 +26,23 @@ export async function fetchWhoami(apiKey: string): Promise<WhoamiResponse | null
 export function roleFromWhoami(whoami: WhoamiResponse | null): Role {
   return whoami?.trail ? "non-owner" : "owner";
 }
+
+// Accept only same-origin relative paths — `/foo`, `/foo?q=1`, `/foo#h`.
+// Reject `//evil.com` (protocol-relative), `https://evil.com` (absolute),
+// `/\evil.com` (some parsers normalize this to a host), or anything not
+// starting with a single `/`.
+export function isSafeRelativePath(p: string | null | undefined): p is string {
+  if (!p) return false;
+  if (p.length < 1 || p[0] !== "/") return false;
+  if (p.length >= 2 && (p[1] === "/" || p[1] === "\\")) return false;
+  return true;
+}
+
+export function landingPathForRole(role: Role): string {
+  return role === "owner" ? "/dashboard" : "/home";
+}
+
+export function resolveLandingPath(role: Role, requested: string | null | undefined): string {
+  if (isSafeRelativePath(requested)) return requested;
+  return landingPathForRole(role);
+}
