@@ -251,7 +251,7 @@ export default function LifecycleView({ digest }: { digest: GardenDigest }) {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="border border-surface-border bg-surface rounded-lg p-4">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-2 text-xs font-sans">
             Total classified

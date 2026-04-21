@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter, Lora } from "next/font/google";
 import "./globals.css";
 import CommandPalette from "@/components/command-palette";
@@ -21,6 +21,11 @@ const lora = Lora({
   variable: "--font-lora",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Grove — your knowledge, everywhere your AI is",

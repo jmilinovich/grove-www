@@ -91,7 +91,7 @@ export default async function HomePage() {
         <HomeSearch trailName={trailInfo?.name ?? trail.name} />
       </section>
 
-      <section className="grid grid-cols-2 gap-4 mb-10">
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
         <div className="border border-surface-border bg-surface rounded-lg p-5">
           <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-3">Notes</p>
           <p className="font-serif font-medium text-2xl text-ink">

@@ -48,7 +48,7 @@ export default function MermaidBlock({ source }: { source: string }) {
   return (
     <div
       ref={containerRef}
-      className="my-4 flex justify-center [&_svg]:max-w-full"
+      className="my-4 max-w-full overflow-x-auto flex justify-center [&_svg]:max-w-full [&_svg]:h-auto"
     />
   );
 }

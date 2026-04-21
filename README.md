@@ -20,6 +20,18 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Mobile baseline
+
+Every page must render without horizontal scroll at **375 × 667** (iPhone SE). This is the guaranteed baseline — anything narrower is not supported.
+
+The regression guard is a Playwright spec that loads each representative route at 375 px and asserts `document.documentElement.scrollWidth <= clientWidth + 1`:
+
+```bash
+npm run test:mobile
+```
+
+It boots a local mock of `api.grove.md` and a fresh `next dev` on an isolated `NEXT_DIST_DIR` so it does not collide with your running dev server. New pages must pass this test before merge.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -93,7 +93,7 @@ export default async function UsagePage() {
       ) : (
         <div className="space-y-10">
           {/* Top row — big numbers */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="bg-surface rounded-lg p-6 border border-surface-border">
               <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
                 Total Requests
@@ -201,7 +201,7 @@ export default async function UsagePage() {
               <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4 font-sans text-xs">
                 Search
               </p>
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="bg-surface rounded-lg p-6 border border-surface-border">
                   <p className="text-ink/40 font-sans text-xs mb-2">Queries (last hour)</p>
                   <p className="text-2xl font-serif font-medium text-ink">

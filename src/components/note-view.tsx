@@ -66,7 +66,7 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
   const aliases = isPerson ? getAliases(note) : [];
 
   return (
-    <article className="note-content mx-auto" style={{ maxWidth: 680 }}>
+    <article className="note-content mx-auto max-w-[680px] w-full">
       <header className="mb-10 pb-8 border-b border-ink/15">
         <h1 className="text-heading font-serif font-medium text-ink leading-[1.2] tracking-[-0.015em]">
           {title}
