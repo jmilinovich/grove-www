@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # Keep npm deps fresh without drowning the inbox. Grouped so one PR per
+  # week covers minor/patch bumps; major updates come as individual PRs
+  # (reviewed manually, often breaking).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Next.js / React majors always need hand-driven migration — let
+      # Dependabot propose, never auto-merge.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions pin updates — catches a lot of security advisories.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"

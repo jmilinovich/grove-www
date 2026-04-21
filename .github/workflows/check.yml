@@ -1,0 +1,90 @@
+name: check
+
+# Fast merge gate. Runs on every PR and every push to main.
+#
+# What it verifies:
+#   1. `npm run typecheck` — tsc --noEmit
+#   2. `npm run build`     — Next.js production build
+#   3. `npm test`          — vitest unit + integration
+#   4. `npm run test:mobile` — Playwright: no horizontal scroll at 375px
+#   5. `npm audit --audit-level=high` — flag known high/critical vulns
+#   6. gitleaks — scan the push for accidental secrets
+#
+# Design-system drift-lint and visual regression are intentionally NOT here
+# yet — they come in with the design-system extraction PR, which tightens
+# the gate without changing the scaffolding.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel stale runs on the same ref — saves minutes on rapid-fire pushes.
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit + integration tests
+        run: npm test
+
+      - name: Install Playwright (chromium only)
+        run: npx playwright install chromium --with-deps
+
+      - name: Mobile — no horizontal scroll at 375px
+        run: npm run test:mobile
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: npm audit (high + critical only)
+        run: npm audit --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

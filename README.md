@@ -32,6 +32,31 @@ npm run test:mobile
 
 It boots a local mock of `api.grove.md` and a fresh `next dev` on an isolated `NEXT_DIST_DIR` so it does not collide with your running dev server. New pages must pass this test before merge.
 
+## Merging
+
+CI runs automatically on every PR and every push to `main` via
+`.github/workflows/check.yml`:
+
+- `npm run typecheck` — `tsc --noEmit`
+- `npm run build` — Next.js production build
+- `npm test` — vitest unit + integration (44 tests)
+- `npm run test:mobile` — mobile scroll baseline (Playwright)
+- `npm audit --audit-level=high` — flag known high/critical vulnerabilities
+- `gitleaks` — scan for accidentally committed secrets
+
+Dependabot proposes weekly grouped npm updates and monthly GitHub Actions
+bumps.
+
+Optional local pre-push hook runs the fast check before every push:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Branch protection should require the `check` workflow's status checks to
+pass before merge to `main`. See `AGENTS.md` for the recommended
+configuration.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
