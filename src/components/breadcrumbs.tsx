@@ -4,19 +4,28 @@
 
 import Link from "next/link";
 
-export default function Breadcrumbs({ path }: { path: string }) {
+export default function Breadcrumbs({
+  path,
+  atHandle,
+}: {
+  path: string;
+  atHandle?: string;
+}) {
   // Strip .md extension
   const clean = path.replace(/\.md$/, "");
   const segments = clean.split("/").filter(Boolean);
 
   if (segments.length === 0) return null;
 
+  // Breadcrumbs inside a resident-scoped page stay scoped.
+  const prefix = atHandle ? `/@${atHandle}` : "";
+
   return (
     <nav aria-label="Breadcrumb" className="text-sm text-ink/40 mb-4">
       <ol className="flex flex-wrap items-center gap-1">
         {segments.map((segment, i) => {
           const isLast = i === segments.length - 1;
-          const href = "/" + segments.slice(0, i + 1).join("/");
+          const href = prefix + "/" + segments.slice(0, i + 1).join("/");
 
           return (
             <li key={href} className="flex items-center gap-1">

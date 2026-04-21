@@ -176,6 +176,7 @@ function SignInPrompt({ atHandle, vaultPath }: { atHandle: string; vaultPath: st
 export default async function ScopedNotePage({ params }: PageProps) {
   const { atHandle, path } = await params;
   const vaultPath = path.map(decodeURIComponent).join("/");
+  const handle = parseAtHandle(atHandle) ?? undefined;
 
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
@@ -216,7 +217,7 @@ export default async function ScopedNotePage({ params }: PageProps) {
   if (note) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-8">
-        <Breadcrumbs path={vaultPath} />
+        <Breadcrumbs path={vaultPath} atHandle={handle} />
         <MetadataBar frontmatter={note.frontmatter} path={vaultPath} />
         <Suspense
           fallback={
@@ -228,7 +229,7 @@ export default async function ScopedNotePage({ params }: PageProps) {
             </div>
           }
         >
-          <NoteView note={note} />
+          <NoteView note={note} atHandle={handle} />
         </Suspense>
       </div>
     );
@@ -240,7 +241,7 @@ export default async function ScopedNotePage({ params }: PageProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
-      <Breadcrumbs path={vaultPath} />
+      <Breadcrumbs path={vaultPath} atHandle={handle} />
       <DirectoryListing prefix={vaultPath} entries={entries} atHandle={atHandle} />
     </div>
   );

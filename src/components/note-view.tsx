@@ -48,7 +48,13 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-export default async function NoteView({ note }: { note: NoteResponse }) {
+export default async function NoteView({
+  note,
+  atHandle,
+}: {
+  note: NoteResponse;
+  atHandle?: string;
+}) {
   let html: string;
   let renderFailed = false;
   try {
@@ -97,7 +103,8 @@ export default async function NoteView({ note }: { note: NoteResponse }) {
           <ul className="space-y-1">
             {note.backlinks.map((bl) => {
               const name = bl.replace(/\.md$/, "").split("/").pop() ?? bl;
-              const href = "/" + bl.replace(/\.md$/, "");
+              const prefix = atHandle ? `/@${atHandle}` : "";
+              const href = prefix + "/" + bl.replace(/\.md$/, "");
               return (
                 <li key={bl}>
                   <Link
