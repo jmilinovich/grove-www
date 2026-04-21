@@ -33,6 +33,11 @@ concurrency:
   group: visual-${{ github.ref }}
   cancel-in-progress: true
 
+# Needed so the update-baselines job can commit regenerated PNGs back
+# to the triggering branch. Default GITHUB_TOKEN is read-only.
+permissions:
+  contents: write
+
 jobs:
   visual:
     runs-on: ubuntu-latest
