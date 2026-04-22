@@ -31,7 +31,7 @@ test.describe("share modal — mobile 375px", () => {
   test("owner sees Share button; opens, generates, shows success", async ({ page, context }) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await setOwnerSession(context);
-    await page.goto(NOTE_URL, { waitUntil: "domcontentloaded" });
+    await page.goto(NOTE_URL, { waitUntil: "networkidle" });
 
     const shareButton = page.getByRole("button", { name: "Share this note" });
     await expect(shareButton).toBeVisible();
@@ -61,7 +61,7 @@ test.describe("share modal — mobile 375px", () => {
 
   test("Esc closes modal and returns focus to Share button", async ({ page, context }) => {
     await setOwnerSession(context);
-    await page.goto(NOTE_URL, { waitUntil: "domcontentloaded" });
+    await page.goto(NOTE_URL, { waitUntil: "networkidle" });
 
     const shareButton = page.getByRole("button", { name: "Share this note" });
     await shareButton.click();
@@ -74,7 +74,7 @@ test.describe("share modal — mobile 375px", () => {
 
   test("Tab cycles focus inside modal (focus trap)", async ({ page, context }) => {
     await setOwnerSession(context);
-    await page.goto(NOTE_URL, { waitUntil: "domcontentloaded" });
+    await page.goto(NOTE_URL, { waitUntil: "networkidle" });
 
     await page.getByRole("button", { name: "Share this note" }).click();
     const dialog = page.getByRole("dialog");
@@ -113,7 +113,7 @@ test.describe("share modal — clipboard failure fallback", () => {
       });
     });
 
-    await page.goto(NOTE_URL, { waitUntil: "domcontentloaded" });
+    await page.goto(NOTE_URL, { waitUntil: "networkidle" });
     await page.getByRole("button", { name: "Share this note" }).click();
 
     const dialog = page.getByRole("dialog");
