@@ -4,6 +4,7 @@ import { getApiKey } from "@/lib/auth";
 import { resolveScopedRedirect } from "@/lib/bare-redirect";
 
 interface PageProps {
+  params: Promise<{ rest?: string[] }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -17,17 +18,19 @@ function searchToString(sp: Record<string, string | string[] | undefined>): stri
   return "?" + new URLSearchParams(entries).toString();
 }
 
-export default async function LegacyProfileRedirect({ searchParams }: PageProps) {
+export default async function LegacySettingsRedirect({ params, searchParams }: PageProps) {
+  const { rest = [] } = await params;
   const sp = await searchParams;
+  const subPath = rest.length > 0 ? "/" + rest.map(encodeURIComponent).join("/") : "";
   const search = searchToString(sp);
-  const bare = `/profile${search}`;
+  const bare = `/settings${subPath}`;
 
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect(`/login?redirect=${encodeURIComponent(bare)}`);
+  if (!apiKey) redirect(`/login?redirect=${encodeURIComponent(bare + search)}`);
 
-  const target = await resolveScopedRedirect(apiKey, "/profile", "", search);
-  if (!target) redirect(`/login?redirect=${encodeURIComponent(bare)}`);
+  const target = await resolveScopedRedirect(apiKey, "/settings", subPath, search);
+  if (!target) redirect(`/login?redirect=${encodeURIComponent(bare + search)}`);
 
   permanentRedirect(target);
 }

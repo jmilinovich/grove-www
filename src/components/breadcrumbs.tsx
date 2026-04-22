@@ -7,9 +7,11 @@ import Link from "next/link";
 export default function Breadcrumbs({
   path,
   atHandle,
+  vaultSlug,
 }: {
   path: string;
   atHandle?: string;
+  vaultSlug?: string;
 }) {
   // Strip .md extension
   const clean = path.replace(/\.md$/, "");
@@ -17,8 +19,15 @@ export default function Breadcrumbs({
 
   if (segments.length === 0) return null;
 
-  // Breadcrumbs inside a resident-scoped page stay scoped.
-  const prefix = atHandle ? `/@${atHandle}` : "";
+  // Breadcrumbs inside a resident-scoped page stay scoped. When a vault slug
+  // is provided we drop the breadcrumb root one segment deeper so links stay
+  // inside the vault (`/@handle/slug/...`) rather than escaping to the
+  // resident landing (`/@handle/...`).
+  const prefix = atHandle
+    ? vaultSlug
+      ? `/@${atHandle}/${vaultSlug}`
+      : `/@${atHandle}`
+    : "";
 
   return (
     <nav aria-label="Breadcrumb" className="text-label text-ink/40 mb-4">

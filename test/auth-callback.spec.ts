@@ -7,6 +7,39 @@ const originalFetch = globalThis.fetch;
 
 interface FetchBehavior {
   whoami: { ok: boolean; trail?: { id: string; name: string } | null };
+  // When omitted the stub returns a single-vault MRU scope under /@test/personal.
+  me?: {
+    handle?: string;
+    username?: string;
+    vaults?: Array<{
+      id: string;
+      slug: string;
+      name: string;
+      role: "owner" | "member" | "viewer";
+      owner_handle: string;
+      joined_at?: string;
+      last_active_at?: string | null;
+    }>;
+  } | null;
+}
+
+function defaultMe() {
+  return {
+    id: "u-1",
+    handle: "test",
+    username: "test",
+    vaults: [
+      {
+        id: "v1",
+        slug: "personal",
+        name: "Personal",
+        role: "owner",
+        owner_handle: "test",
+        joined_at: "2026-01-01T00:00:00Z",
+        last_active_at: "2026-04-20T00:00:00Z",
+      },
+    ],
+  };
 }
 
 function installFetch(behavior: FetchBehavior): FetchStub {
@@ -52,6 +85,18 @@ function installFetch(behavior: FetchBehavior): FetchStub {
       );
     }
 
+    if (url.endsWith("/v1/me") || url.includes("/v1/me?")) {
+      // Explicit `me: null` signals a 404 — exercises the no-vault fallback.
+      if (behavior.me === null) {
+        return new Response("not found", { status: 404 });
+      }
+      const body = behavior.me ?? defaultMe();
+      return new Response(JSON.stringify(body), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     throw new Error(`unexpected fetch: ${url}`);
   };
 
@@ -81,11 +126,73 @@ describe("auth callback redirect by role", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("routes owners to /dashboard", async () => {
+  it("routes owners directly to their MRU vault dashboard", async () => {
     installFetch({ whoami: { ok: true, trail: null } });
     const res = await callCallback("http://localhost/api/auth/callback?code=xyz");
     expect(res.status).toBe(307);
-    expect(locationPath(res)).toBe("/dashboard");
+    expect(locationPath(res)).toBe("/@test/personal/dashboard");
+  });
+
+  it("picks the vault with the most recent last_active_at", async () => {
+    installFetch({
+      whoami: { ok: true, trail: null },
+      me: {
+        handle: "alice",
+        vaults: [
+          {
+            id: "v1",
+            slug: "old",
+            name: "Old",
+            role: "owner",
+            owner_handle: "alice",
+            joined_at: "2026-01-01T00:00:00Z",
+            last_active_at: "2026-02-01T00:00:00Z",
+          },
+          {
+            id: "v2",
+            slug: "new",
+            name: "New",
+            role: "member",
+            owner_handle: "bob",
+            joined_at: "2026-03-01T00:00:00Z",
+            last_active_at: "2026-04-10T00:00:00Z",
+          },
+        ],
+      },
+    });
+    const res = await callCallback("http://localhost/api/auth/callback?code=xyz");
+    expect(locationPath(res)).toBe("/@alice/new/dashboard");
+  });
+
+  it("falls back to earliest-joined when no vault has last_active_at", async () => {
+    installFetch({
+      whoami: { ok: true, trail: null },
+      me: {
+        handle: "alice",
+        vaults: [
+          {
+            id: "v2",
+            slug: "later",
+            name: "Later",
+            role: "member",
+            owner_handle: "bob",
+            joined_at: "2026-03-01T00:00:00Z",
+            last_active_at: null,
+          },
+          {
+            id: "v1",
+            slug: "earlier",
+            name: "Earlier",
+            role: "owner",
+            owner_handle: "alice",
+            joined_at: "2026-01-01T00:00:00Z",
+            last_active_at: null,
+          },
+        ],
+      },
+    });
+    const res = await callCallback("http://localhost/api/auth/callback?code=xyz");
+    expect(locationPath(res)).toBe("/@alice/earlier/dashboard");
   });
 
   it("routes trail users to /home", async () => {
@@ -111,40 +218,39 @@ describe("auth callback redirect by role", () => {
     expect(locationPath(res)).toBe("/foo?q=bar");
   });
 
-  it("rejects ?redirect=//evil.com and falls back to role default", async () => {
+  it("rejects ?redirect=//evil.com and falls back to scoped landing", async () => {
     installFetch({ whoami: { ok: true, trail: null } });
     const res = await callCallback(
       "http://localhost/api/auth/callback?code=xyz&redirect=" +
         encodeURIComponent("//evil.com"),
     );
-    expect(locationPath(res)).toBe("/dashboard");
+    expect(locationPath(res)).toBe("/@test/personal/dashboard");
   });
 
-  it("rejects ?redirect=https://evil.com and falls back to role default", async () => {
+  it("rejects ?redirect=https://evil.com and falls back to scoped landing", async () => {
     installFetch({ whoami: { ok: true, trail: null } });
     const res = await callCallback(
       "http://localhost/api/auth/callback?code=xyz&redirect=" +
         encodeURIComponent("https://evil.com"),
     );
-    expect(locationPath(res)).toBe("/dashboard");
+    expect(locationPath(res)).toBe("/@test/personal/dashboard");
   });
 
-  it("rejects ?redirect=/\\evil.com and falls back to role default", async () => {
+  it("rejects ?redirect=/\\evil.com and falls back to scoped landing", async () => {
     installFetch({ whoami: { ok: true, trail: null } });
     const res = await callCallback(
       "http://localhost/api/auth/callback?code=xyz&redirect=" +
         encodeURIComponent("/\\evil.com"),
     );
-    expect(locationPath(res)).toBe("/dashboard");
+    expect(locationPath(res)).toBe("/@test/personal/dashboard");
   });
 
-  it("falls back to role default when whoami fails", async () => {
-    // Simulate trail sign-in whose whoami comes back 401; still route safely.
-    installFetch({ whoami: { ok: false } });
+  it("falls back to bare /dashboard when whoami and /v1/me both fail", async () => {
+    installFetch({ whoami: { ok: false }, me: null });
     const res = await callCallback(
       "http://localhost/api/auth/callback?code=xyz&trail=t1",
     );
-    // No role data → treat as owner (no trail) default.
+    // No role data + no vaults → bare owner default (safe landing).
     expect(locationPath(res)).toBe("/dashboard");
   });
 

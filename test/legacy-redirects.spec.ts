@@ -240,3 +240,268 @@ describe("legacy /[...path] redirect (P16-3)", () => {
     expect(redirectSpy).not.toHaveBeenCalled();
   });
 });
+
+// ── /dashboard[/...], /profile, /images, /settings — bare → MRU vault ──
+//
+// P8-B3 moves every authenticated route under `/@<handle>/<slug>/...`. The
+// bare routes still work via permanent-redirect shims that call /v1/me,
+// resolve the most-recently-used vault, and preserve any query string on
+// the way through.
+
+describe("legacy bare-route → MRU vault shims (P8-B3)", () => {
+  function meResponse(vaults: Array<{
+    id: string;
+    slug: string;
+    name: string;
+    role: "owner" | "member" | "viewer";
+    owner_handle: string;
+    joined_at?: string;
+    last_active_at?: string | null;
+  }>, handle = "jm") {
+    return okJson({ id: "u", handle, username: handle, vaults });
+  }
+
+  async function loadDashboard() {
+    const mod = await import("@/app/dashboard/[[...rest]]/page");
+    return mod.default;
+  }
+  async function loadProfile() {
+    const mod = await import("@/app/profile/page");
+    return mod.default;
+  }
+  async function loadImages() {
+    const mod = await import("@/app/images/page");
+    return mod.default;
+  }
+  async function loadSettings() {
+    const mod = await import("@/app/settings/[[...rest]]/page");
+    return mod.default;
+  }
+
+  it("permanent-redirects /dashboard → /@handle/<mru>/dashboard", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v",
+          slug: "personal",
+          name: "Personal",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: "2026-04-20T00:00:00Z",
+        },
+      ]),
+    );
+    const Page = await loadDashboard();
+    await expect(
+      Page({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith(
+      "/@jm/personal/dashboard",
+    );
+  });
+
+  it("preserves query string across the 308 redirect", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v",
+          slug: "personal",
+          name: "Personal",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: "2026-04-20T00:00:00Z",
+        },
+      ]),
+    );
+    const Page = await loadDashboard();
+    await expect(
+      Page({
+        params: Promise.resolve({ rest: ["shares"] }),
+        searchParams: Promise.resolve({ tab: "active", page: "2" }),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    const target = permanentRedirectSpy.mock.calls.at(-1)?.[0] as string;
+    expect(target.startsWith("/@jm/personal/dashboard/shares?")).toBe(true);
+    expect(target).toContain("tab=active");
+    expect(target).toContain("page=2");
+  });
+
+  it("picks the vault with the most recent last_active_at", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v1",
+          slug: "older",
+          name: "Older",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: "2026-02-01T00:00:00Z",
+        },
+        {
+          id: "v2",
+          slug: "mru",
+          name: "Recent",
+          role: "member",
+          owner_handle: "alice",
+          joined_at: "2026-03-01T00:00:00Z",
+          last_active_at: "2026-04-15T00:00:00Z",
+        },
+      ]),
+    );
+    const Page = await loadDashboard();
+    await expect(
+      Page({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/mru/dashboard");
+  });
+
+  it("falls back to earliest-joined when no vault has last_active_at", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v-later",
+          slug: "later",
+          name: "Later",
+          role: "member",
+          owner_handle: "jm",
+          joined_at: "2026-03-01T00:00:00Z",
+          last_active_at: null,
+        },
+        {
+          id: "v-first",
+          slug: "first",
+          name: "First",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: null,
+        },
+      ]),
+    );
+    const Page = await loadDashboard();
+    await expect(
+      Page({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/first/dashboard");
+  });
+
+  it("redirects signed-out users to /login?redirect=/dashboard", async () => {
+    cookiesStore.get.mockReturnValue(undefined);
+    const Page = await loadDashboard();
+    await expect(
+      Page({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(redirectSpy).toHaveBeenCalledWith(
+      "/login?redirect=" + encodeURIComponent("/dashboard"),
+    );
+    // No API round-trip for signed-out visitors.
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("bare /profile → scoped profile", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v",
+          slug: "personal",
+          name: "Personal",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: "2026-04-20T00:00:00Z",
+        },
+      ]),
+    );
+    const Page = await loadProfile();
+    await expect(
+      Page({ searchParams: Promise.resolve({}) }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith(
+      "/@jm/personal/profile",
+    );
+  });
+
+  it("bare /images → scoped images", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v",
+          slug: "personal",
+          name: "Personal",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: "2026-04-20T00:00:00Z",
+        },
+      ]),
+    );
+    const Page = await loadImages();
+    await expect(
+      Page({ searchParams: Promise.resolve({}) }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/personal/images");
+  });
+
+  it("bare /settings/vaults → scoped settings/vaults", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v",
+          slug: "personal",
+          name: "Personal",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: "2026-04-20T00:00:00Z",
+        },
+      ]),
+    );
+    const Page = await loadSettings();
+    await expect(
+      Page({
+        params: Promise.resolve({ rest: ["vaults"] }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith(
+      "/@jm/personal/settings/vaults",
+    );
+  });
+
+  it("sends users with no vaults back to /login rather than /@null", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(meResponse([]));
+    const Page = await loadDashboard();
+    await expect(
+      Page({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(redirectSpy).toHaveBeenCalledWith(
+      "/login?redirect=" + encodeURIComponent("/dashboard"),
+    );
+  });
+});

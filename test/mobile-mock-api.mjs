@@ -98,6 +98,7 @@ const server = http.createServer((req, res) => {
     return body(res, {
       id: "u-test",
       username: "test",
+      handle: "test",
       email: "test@grove.md",
       role: "owner",
       display_name: "Test User",
@@ -106,6 +107,17 @@ const server = http.createServer((req, res) => {
       ],
       keys: [
         { id: "k-test", name: "mobile-test", scopes: ["read", "write"], created_at: iso(), last_used_at: iso() },
+      ],
+      vaults: [
+        {
+          id: "v1",
+          slug: "personal",
+          name: "Personal",
+          role: "owner",
+          owner_handle: "test",
+          joined_at: iso(),
+          last_active_at: iso(),
+        },
       ],
       sessions: [
         { id: "s-1", user_agent: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)", created_at: iso(), last_used_at: iso(), expires_at: iso(), is_current: true },

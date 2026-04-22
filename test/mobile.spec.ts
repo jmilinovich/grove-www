@@ -41,17 +41,23 @@ const SIGNED_OUT_ROUTES: Array<{ path: string; label: string }> = [
   { path: "/login", label: "login" },
 ];
 
+// Signed-in routes live under `/@<handle>/<vault>/...` (P8-B3). Bare paths
+// like `/dashboard` are still reachable — they 301 into the scoped shell
+// via the legacy shim — but the mobile layout contract is on the canonical
+// scoped URLs. `@` is URL-encoded since some browsers re-encode it.
+const SCOPED_PREFIX = "/%40test/personal";
 const SIGNED_IN_ROUTES: Array<{ path: string; label: string }> = [
-  { path: "/dashboard", label: "dashboard" },
+  { path: `${SCOPED_PREFIX}/dashboard`, label: "dashboard" },
   { path: "/home", label: "home" },
-  { path: "/profile", label: "profile" },
-  { path: "/dashboard/usage", label: "dashboard/usage" },
-  { path: "/dashboard/trails", label: "dashboard/trails" },
-  { path: "/dashboard/keys", label: "dashboard/keys" },
-  { path: "/dashboard/shares", label: "dashboard/shares" },
-  { path: "/dashboard/users", label: "dashboard/users" },
-  { path: "/dashboard/health", label: "dashboard/health" },
-  { path: "/images", label: "images" },
+  { path: `${SCOPED_PREFIX}/profile`, label: "profile" },
+  { path: `${SCOPED_PREFIX}/dashboard/usage`, label: "dashboard/usage" },
+  { path: `${SCOPED_PREFIX}/dashboard/trails`, label: "dashboard/trails" },
+  { path: `${SCOPED_PREFIX}/dashboard/keys`, label: "dashboard/keys" },
+  { path: `${SCOPED_PREFIX}/dashboard/shares`, label: "dashboard/shares" },
+  { path: `${SCOPED_PREFIX}/dashboard/users`, label: "dashboard/users" },
+  { path: `${SCOPED_PREFIX}/dashboard/health`, label: "dashboard/health" },
+  { path: `${SCOPED_PREFIX}/images`, label: "images" },
+  { path: `${SCOPED_PREFIX}/settings/vaults`, label: "settings/vaults" },
   { path: "/Resources/Concepts/Example", label: "note (catch-all)" },
 ];
 

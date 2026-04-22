@@ -2,16 +2,9 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, Check } from "lucide-react";
+import type { VaultEntry } from "@/lib/vault-context";
 
-export interface VaultEntry {
-  id: string;
-  slug: string;
-  name: string;
-  role: "owner" | "member" | "viewer";
-  owner_handle: string;
-  last_active_at?: string | null;
-  joined_at?: string;
-}
+export type { VaultEntry };
 
 export interface VaultSwitcherProps {
   /** The vaults this user belongs to. Always-rendered — just disabled at n=1. */

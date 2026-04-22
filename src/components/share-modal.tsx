@@ -9,6 +9,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from "react";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 type Stage = "form" | "loading" | "success" | "error";
 
@@ -64,6 +65,7 @@ export default function ShareModal({
   const [copied, setCopied] = useState(false);
   const [clipboardFailed, setClipboardFailed] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const { link } = useScopedLink();
 
   const headingId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -335,7 +337,7 @@ export default function ShareModal({
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <a
-                  href="/dashboard/shares"
+                  href={link("/dashboard/shares")}
                   className="text-sm text-moss hover:text-moss/60 transition-colors"
                 >
                   Manage all shares →
