@@ -6,15 +6,17 @@ name: Dependabot auto-merge
 # status checks pass, then merges it. We never bypass CI — the gate is
 # the ruleset's required-checks list.
 #
-# Why pull_request_target, and why AUTOMERGE_PAT:
-#   * pull_request_target runs with write permissions on the base repo,
-#     needed to enable auto-merge. It uses the workflow from main, not
-#     from the PR, so a compromised Dependabot branch can't tamper with
-#     this job.
-#   * Default GITHUB_TOKEN-driven commits don't retrigger other
-#     workflows (anti-loop safety). Using a PAT stored as AUTOMERGE_PAT
-#     means commits this workflow pushes (via `gh pr merge`) behave like
-#     human pushes and CI runs normally on the next PR in the queue.
+# Why pull_request_target:
+#   * Runs with write permissions on the base repo, needed to enable
+#     auto-merge. It uses the workflow from main, not from the PR, so a
+#     compromised Dependabot branch can't tamper with this job.
+#
+# Token choice: GITHUB_TOKEN, not AUTOMERGE_PAT. Dependabot PRs run in
+# a restricted-secrets context and can't see regular Actions secrets —
+# they're scoped to Settings → Secrets → Dependabot. GITHUB_TOKEN is
+# always present and is sufficient for `gh pr merge --auto` (we're
+# enabling a queued merge, not pushing commits, so bot-loop protection
+# doesn't apply).
 
 on:
   pull_request_target:
@@ -39,7 +41,7 @@ jobs:
           DEPS: ${{ steps.meta.outputs.dependency-names }}
           TYPE: ${{ steps.meta.outputs.update-type }}
           DEP_TYPE: ${{ steps.meta.outputs.dependency-type }}
-          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
