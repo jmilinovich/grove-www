@@ -53,7 +53,8 @@ export default async function proxy(request: NextRequest) {
   const token = request.cookies.get("grove_token");
   if (!token?.value) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
+    // Preserve query string so /dashboard?tab=keys survives the login trip.
+    loginUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 
