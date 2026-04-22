@@ -168,3 +168,4 @@ fires before React attaches event handlers; on Linux CI the click
 lands on a dead DOM element and the test times out waiting for state
 that never arrives. The share-modal spec is the reference; copy its
 pattern when writing new interactive tests.
+
