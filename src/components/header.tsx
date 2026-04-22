@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Home,
   LayoutGrid,
@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import { useSidebar } from "./sidebar-provider";
 import { useSearch } from "./search-provider";
+import { VaultSwitcher, type VaultEntry } from "./vault-switcher";
+import { useScopedLink } from "@/hooks/use-scoped-link";
+import { activeScopeFromMe, scopedPath, type MeResponse } from "@/lib/vault-context";
 
 interface TrailInfo {
   id: string;
@@ -29,8 +32,10 @@ function handleLogout() {
 export default function Header() {
   const { toggle, open: sidebarOpen } = useSidebar();
   const { openSearch } = useSearch();
+  const { atHandle, vaultSlug, ready } = useScopedLink();
   const [trail, setTrail] = useState<TrailInfo | null>(null);
   const [roleLoaded, setRoleLoaded] = useState(false);
+  const [me, setMe] = useState<MeResponse | null>(null);
 
   useEffect(() => {
     fetch("/api/whoami")
@@ -42,13 +47,61 @@ export default function Header() {
       .catch(() => setRoleLoaded(true));
   }, []);
 
+  // /v1/me carries the vaults the user belongs to — feed them to the
+  // switcher so it can render even when the current page isn't in a vault
+  // scope (e.g. /home). Fetched client-side because server components are
+  // already responsible for their own auth round-trip; this one is purely
+  // chrome and should not block the initial render.
+  useEffect(() => {
+    fetch("/api/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: MeResponse | null) => setMe(data))
+      .catch(() => setMe(null));
+  }, []);
+
+  const vaults: VaultEntry[] = useMemo(() => me?.vaults ?? [], [me]);
+  const viewerHandle = me?.handle ?? me?.username ?? atHandle ?? "";
+  // Current vault: scoped-route params win; fall back to MRU from /v1/me.
+  const currentSlug = useMemo(() => {
+    if (vaultSlug) return vaultSlug;
+    const active = activeScopeFromMe(me);
+    return active?.slug ?? "";
+  }, [vaultSlug, me]);
+
   const isNonOwner = trail !== null;
-  const homeHref = isNonOwner ? "/home" : "/dashboard";
+  // Home-button target: trail users → /home; scoped viewers → their vault's
+  // dashboard; everyone else → bare /dashboard which will 301 to MRU.
+  const homeHref = useMemo(() => {
+    if (isNonOwner) return "/home";
+    if (ready && atHandle && vaultSlug) {
+      return scopedPath(atHandle, vaultSlug, "/dashboard");
+    }
+    const active = activeScopeFromMe(me);
+    if (active) return scopedPath(active.handle, active.slug, "/dashboard");
+    return "/dashboard";
+  }, [isNonOwner, ready, atHandle, vaultSlug, me]);
+  const profileHref = useMemo(() => {
+    if (ready && atHandle && vaultSlug) {
+      return scopedPath(atHandle, vaultSlug, "/profile");
+    }
+    const active = activeScopeFromMe(me);
+    if (active) return scopedPath(active.handle, active.slug, "/profile");
+    return "/profile";
+  }, [ready, atHandle, vaultSlug, me]);
+  const imagesHref = useMemo(() => {
+    if (ready && atHandle && vaultSlug) {
+      return scopedPath(atHandle, vaultSlug, "/images");
+    }
+    const active = activeScopeFromMe(me);
+    if (active) return scopedPath(active.handle, active.slug, "/images");
+    return "/images";
+  }, [ready, atHandle, vaultSlug, me]);
+
   const homeLabel = isNonOwner ? "Home" : "Dashboard";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-12 flex items-center justify-between px-4 bg-background border-b border-surface-border">
-      {/* Left: sidebar toggle + logo */}
+      {/* Left: sidebar toggle + logo + vault switcher */}
       <div className="flex items-center gap-3">
         <button
           onClick={toggle}
@@ -68,6 +121,15 @@ export default function Header() {
           <span className="text-detail text-muted border-l border-surface-border pl-3 ml-1">
             {trail.name}
           </span>
+        )}
+        {!isNonOwner && vaults.length > 0 && viewerHandle && currentSlug && (
+          <div className="hidden sm:block border-l border-surface-border pl-3 ml-1">
+            <VaultSwitcher
+              vaults={vaults}
+              currentSlug={currentSlug}
+              viewerHandle={viewerHandle}
+            />
+          </div>
         )}
       </div>
 
@@ -96,7 +158,7 @@ export default function Header() {
       <div className="flex items-center gap-1">
       {roleLoaded && !isNonOwner && (
         <Link
-          href="/images"
+          href={imagesHref}
           className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
           aria-label="Images"
         >
@@ -113,7 +175,7 @@ export default function Header() {
         </Link>
       )}
       <Link
-        href="/profile"
+        href={profileHref}
         className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
         aria-label="Profile"
       >

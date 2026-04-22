@@ -4,17 +4,20 @@ import { getApiKey } from "@/lib/auth";
 import { fetchWhoami, roleFromWhoami } from "@/lib/role";
 import DashboardNav from "@/components/dashboard-nav";
 
-export default async function DashboardLayout({
-  children,
-}: {
+interface LayoutProps {
   children: React.ReactNode;
-}) {
+  params: Promise<{ atHandle: string; vaultSlug: string }>;
+}
+
+export default async function DashboardLayout({ children, params }: LayoutProps) {
+  const { atHandle, vaultSlug } = await params;
+  const scopedRoot = `/@${atHandle}/${vaultSlug}/dashboard`;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect("/login?redirect=/dashboard");
+  if (!apiKey) redirect(`/login?redirect=${encodeURIComponent(scopedRoot)}`);
 
   const whoami = await fetchWhoami(apiKey);
-  if (!whoami) redirect("/login?redirect=/dashboard");
+  if (!whoami) redirect(`/login?redirect=${encodeURIComponent(scopedRoot)}`);
   if (roleFromWhoami(whoami) === "non-owner") redirect("/home");
 
   return (

@@ -2,33 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 const tabs = [
-  { label: "Overview", href: "/dashboard" },
-  { label: "Keys", href: "/dashboard/keys" },
-  { label: "Shares", href: "/dashboard/shares" },
-  { label: "Trails", href: "/dashboard/trails" },
-  { label: "Users", href: "/dashboard/users" },
-  { label: "Usage", href: "/dashboard/usage" },
-  { label: "Graph", href: "/dashboard/graph" },
-  { label: "Health", href: "/dashboard/health" },
+  { label: "Overview", sub: "/dashboard" },
+  { label: "Keys", sub: "/dashboard/keys" },
+  { label: "Shares", sub: "/dashboard/shares" },
+  { label: "Trails", sub: "/dashboard/trails" },
+  { label: "Users", sub: "/dashboard/users" },
+  { label: "Usage", sub: "/dashboard/usage" },
+  { label: "Graph", sub: "/dashboard/graph" },
+  { label: "Health", sub: "/dashboard/health" },
 ];
 
 export default function DashboardNav() {
   const pathname = usePathname();
+  const { link } = useScopedLink();
 
   return (
     <nav className="flex gap-1 border-b border-surface-border mb-8">
       {tabs.map((tab) => {
+        const href = link(tab.sub);
         const isActive =
-          tab.href === "/dashboard"
-            ? pathname === "/dashboard"
-            : pathname.startsWith(tab.href);
+          tab.sub === "/dashboard"
+            ? pathname.endsWith("/dashboard")
+            : pathname.startsWith(href) || pathname.endsWith(tab.sub);
 
         return (
           <Link
-            key={tab.href}
-            href={tab.href}
+            key={tab.sub}
+            href={href}
             className={[
               "px-4 py-2.5 text-label font-medium transition-colors relative",
               isActive

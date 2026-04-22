@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "./primitives/button";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -170,6 +171,8 @@ function flattenTree(nodes: TreeNode[], acc: TreeNode[] = []): TreeNode[] {
 
 export default function TrailEditor({ initial }: { initial: TrailEditorInitial }) {
   const router = useRouter();
+  const { link } = useScopedLink();
+  const trailsHref = link("/dashboard/trails");
   const isCreate = initial.id === "new";
 
   const [name, setName] = useState(initial.name);
@@ -393,7 +396,7 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
         if (isCreate && data.token) {
           setNewToken(data.token);
         } else {
-          router.push("/dashboard/trails");
+          router.push(trailsHref);
           router.refresh();
         }
       } catch {
@@ -446,7 +449,7 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
             Copy token
           </button>
           <button
-            onClick={() => router.push("/dashboard/trails")}
+            onClick={() => router.push(trailsHref)}
             className="text-label text-ink/60 hover:text-ink transition-colors"
           >
             Done
@@ -584,7 +587,7 @@ export default function TrailEditor({ initial }: { initial: TrailEditorInitial }
           </Button>
           <button
             type="button"
-            onClick={() => router.push("/dashboard/trails")}
+            onClick={() => router.push(trailsHref)}
             className="text-label text-ink/60 hover:text-ink transition-colors"
           >
             Cancel

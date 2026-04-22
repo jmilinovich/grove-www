@@ -23,15 +23,15 @@ inline_style_whitelist=(
   "src/components/trail-editor.tsx"
   "src/components/image-grid.tsx"
   "src/components/lifecycle-view.tsx"
-  "src/app/dashboard/page.tsx"
-  "src/app/dashboard/graph/graph-explorer.tsx"
+  "src/app/(resident)/[atHandle]/[vaultSlug]/dashboard/page.tsx"
+  "src/app/(resident)/[atHandle]/[vaultSlug]/dashboard/graph/graph-explorer.tsx"
 )
 
 # Files where hand-rolled SVG or hardcoded colors are expected (data viz,
 # or an inline HTML template served from a proxy where Tailwind classes
 # don't reach).
 svg_whitelist=(
-  "src/app/dashboard/graph/graph-explorer.tsx"
+  "src/app/(resident)/[atHandle]/[vaultSlug]/dashboard/graph/graph-explorer.tsx"
   "src/components/health-view.tsx"
   "src/proxy.ts"
 )
@@ -65,7 +65,7 @@ fail "Raw Tailwind palette (use brand tokens: cream/ink/moss/harvest/earth)" "$r
 
 # Hex literals in TSX/TS outside data-viz allow-list.
 # Exclude HTML entities (`&#8984;`) which share the # prefix but aren't colors.
-hex_hits=$(SEARCH_TSX '#[0-9a-fA-F]{3,8}\b' | grep -v '&#' | grep -vE "($(IFS='|'; echo "${svg_whitelist[*]}"))" || true)
+hex_hits=$(SEARCH_TSX '#[0-9a-fA-F]{3,8}\b' | grep -v '&#' | grep -vFf <(printf '%s\n' "${svg_whitelist[@]}") || true)
 fail "Hex color literals outside data-viz" "$hex_hits"
 [[ -z "$hex_hits" ]] && pass "no hardcoded hex in components"
 
@@ -128,7 +128,7 @@ fail "Gradients (Grove does not use gradients)" "$gradients"
 # ── INLINE STYLES ───────────────────────────────────────────────────
 section "Inline styles"
 
-inline_styles=$(SEARCH_TSX 'style=\{\{' | grep -vE "($(IFS='|'; echo "${inline_style_whitelist[*]}"))" || true)
+inline_styles=$(SEARCH_TSX 'style=\{\{' | grep -vFf <(printf '%s\n' "${inline_style_whitelist[@]}") || true)
 fail "Inline style={{}} outside whitelist (move to class or primitive)" "$inline_styles"
 [[ -z "$inline_styles" ]] && pass "inline styles contained"
 

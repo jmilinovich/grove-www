@@ -56,14 +56,15 @@ interface Route {
   signedIn?: boolean;
 }
 
+const SCOPED_PREFIX = "/%40test/personal";
 const ROUTES: Route[] = [
   { path: "/", label: "landing" },
   { path: "/login", label: "login" },
   { path: "/home", label: "home", signedIn: true },
-  { path: "/profile", label: "profile", signedIn: true },
-  { path: "/dashboard", label: "dashboard", signedIn: true },
-  { path: "/dashboard/keys", label: "dashboard-keys", signedIn: true },
-  { path: "/dashboard/trails", label: "dashboard-trails", signedIn: true },
+  { path: `${SCOPED_PREFIX}/profile`, label: "profile", signedIn: true },
+  { path: `${SCOPED_PREFIX}/dashboard`, label: "dashboard", signedIn: true },
+  { path: `${SCOPED_PREFIX}/dashboard/keys`, label: "dashboard-keys", signedIn: true },
+  { path: `${SCOPED_PREFIX}/dashboard/trails`, label: "dashboard-trails", signedIn: true },
   { path: "/Resources/Concepts/Example", label: "note-viewer", signedIn: true },
 ];
 

@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import HandleEditor from "./handle-editor";
 import { Button } from "./primitives/button";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 interface TrailSummary {
   id: string;
@@ -66,6 +67,7 @@ function describeClient(ua: string | null): string {
 }
 
 export default function ProfileView({ initialProfile }: { initialProfile: Profile }) {
+  const { link } = useScopedLink();
   const [profile, setProfile] = useState(initialProfile);
   const [nameInput, setNameInput] = useState(initialProfile.display_name ?? "");
   const [nameSaving, setNameSaving] = useState(false);
@@ -326,7 +328,7 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
                     {k.scopes.filter(Boolean).join(" · ")} · Last used {relativeTime(k.last_used_at)}
                   </div>
                 </div>
-                <a href="/dashboard/keys" className="text-detail text-moss hover:underline ml-4 shrink-0">
+                <a href={link("/dashboard/keys")} className="text-detail text-moss hover:underline ml-4 shrink-0">
                   Manage
                 </a>
               </li>

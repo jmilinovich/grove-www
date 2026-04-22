@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { encryptKey } from "@/lib/auth";
-import { fetchWhoami, resolveLandingPath, roleFromWhoami } from "@/lib/role";
+import {
+  fetchMe,
+  fetchWhoami,
+  resolveLandingPathForUser,
+  roleFromWhoami,
+} from "@/lib/role";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -56,9 +61,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/login?error=key_creation_failed", request.url));
     }
 
-    const whoami = await fetchWhoami(apiKeyToken);
+    // Fetch whoami + me in parallel: role decides owner-vs-trail routing,
+    // /v1/me carries the vaults array so owners can land directly in their
+    // MRU vault instead of bouncing through the bare /dashboard shim.
+    const [whoami, me] = await Promise.all([
+      fetchWhoami(apiKeyToken),
+      fetchMe(apiKeyToken),
+    ]);
     const role = roleFromWhoami(whoami);
-    const destination = resolveLandingPath(role, requestedRedirect);
+    const destination = resolveLandingPathForUser(role, requestedRedirect, me);
 
     const encrypted = encryptKey(apiKeyToken);
     const response = NextResponse.redirect(new URL(destination, request.url));

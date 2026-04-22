@@ -62,6 +62,31 @@ function installFetch(scenario: Scenario): void {
       );
     }
 
+    if (url.endsWith("/v1/me") || url.includes("/v1/me?")) {
+      // Owners always have at least one vault membership after P8-B1.
+      return new Response(
+        JSON.stringify({
+          id: "u-e2e",
+          handle: "owner",
+          username: "owner",
+          vaults: scenario.trail
+            ? []
+            : [
+                {
+                  id: "v1",
+                  slug: "personal",
+                  name: "Personal",
+                  role: "owner",
+                  owner_handle: "owner",
+                  joined_at: "2026-01-01T00:00:00Z",
+                  last_active_at: "2026-04-20T00:00:00Z",
+                },
+              ],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }
+
     throw new Error(`unexpected fetch: ${url}`);
   };
 
@@ -107,7 +132,7 @@ describe("post-login e2e: magic link round-trip", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("owner full flow: request → click → /dashboard in one redirect", async () => {
+  it("owner full flow: request → click → scoped dashboard in one redirect", async () => {
     installFetch({ trail: null });
 
     const callback = buildCallback({});
@@ -117,7 +142,7 @@ describe("post-login e2e: magic link round-trip", () => {
     const redirect = await clickMagicLink(callback);
     expect(redirect.status).toBe(307);
     const { path } = locationOf(redirect);
-    expect(path).toBe("/dashboard");
+    expect(path).toBe("/@owner/personal/dashboard");
 
     // Session cookie set on the callback response — owner lands authenticated.
     const setCookie = (redirect as NextResponse).cookies.get("grove_token");
@@ -151,7 +176,7 @@ describe("post-login e2e: magic link round-trip", () => {
     expect(path).toBe("/profile");
   });
 
-  it("rejects external ?redirect= and lands at role default", async () => {
+  it("rejects external ?redirect= and lands at the scoped landing", async () => {
     installFetch({ trail: null });
 
     const callback = buildCallback({ redirect: "https://evil.com/steal" });
@@ -159,6 +184,6 @@ describe("post-login e2e: magic link round-trip", () => {
 
     const redirect = await clickMagicLink(callback);
     const { path } = locationOf(redirect);
-    expect(path).toBe("/dashboard");
+    expect(path).toBe("/@owner/personal/dashboard");
   });
 });

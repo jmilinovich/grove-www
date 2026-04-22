@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useCallback, useEffect } from "react";
 import { buttonClasses } from "./primitives/button";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 interface Trail {
   id: string;
@@ -142,6 +143,7 @@ function TrailCard({
   onToggle: (id: string, enabled: boolean) => Promise<void>;
   onDelete: (id: string) => void;
 }) {
+  const { link } = useScopedLink();
   const [toggling, setToggling] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
@@ -180,7 +182,7 @@ function TrailCard({
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
           <Link
-            href={`/dashboard/trails/${encodeURIComponent(trail.id)}`}
+            href={link(`/dashboard/trails/${encodeURIComponent(trail.id)}`)}
             className="text-detail font-medium text-moss hover:text-moss/60 transition-colors"
           >
             Edit
@@ -289,6 +291,7 @@ function TrailCard({
 }
 
 export default function TrailList({ initialTrails }: { initialTrails: Trail[] }) {
+  const { link } = useScopedLink();
   const [trails, setTrails] = useState(initialTrails);
 
   const handleToggle = useCallback(async (id: string, enabled: boolean) => {
@@ -324,7 +327,7 @@ export default function TrailList({ initialTrails }: { initialTrails: Trail[] })
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-serif text-title font-medium tracking-[-0.015em]">Trails</h1>
         <Link
-          href="/dashboard/trails/new"
+          href={link("/dashboard/trails/new")}
           className={buttonClasses({ variant: "primary", size: "lg" })}
         >
           Create trail
