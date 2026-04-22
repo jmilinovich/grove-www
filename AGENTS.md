@@ -106,3 +106,44 @@ Branch protection rules.
   inline buttons.
 - Icons come from `lucide-react`. Don't hand-roll SVGs unless the icon is
   truly custom (logos, sparklines, charts).
+
+## Merging PRs — standing authorization
+
+You are authorized to merge PRs into `main` without asking first, *if*
+the following are all true:
+
+- CI is green: `check / verify`, `check / audit`, `check / secrets` all
+  SUCCESS. Visual regression SUCCESS when the PR triggers it.
+- `mergeable == "MERGEABLE"` and `mergeStateStatus` is `CLEAN` (or
+  `UNSTABLE` only if the sole red check is `visual` and the PR
+  doesn't touch UI — then regenerate baselines via
+  `gh workflow run visual.yml --ref <branch> -f update_baselines=true`).
+- Not a draft.
+- No `changes requested` review.
+- No label named `needs-human`, `wip`, or `do-not-merge`.
+- For Dependabot PRs: any version bump passing CI is fair game,
+  including majors of dev tooling (TypeScript, @types/*, Playwright,
+  vitest). Framework majors (`next`, `react`, `react-dom`) are always
+  off-limits — Dependabot is configured to skip them but check anyway.
+
+Default action: `gh pr merge <n> --squash --delete-branch`.
+
+Stale PRs (DIRTY) from Dependabot: comment `@dependabot rebase` and
+re-check status before merging.
+
+Ask before merging when:
+- The PR changes `DESIGN.md`, `AGENTS.md`, `GOAL.md`, or `README.md`
+  substantively (reviewer judgment needed).
+- The PR removes tests, lowers the drift/lint/verify bar, or disables
+  status checks.
+- CI is red for a reason that isn't "rebase onto current main."
+- The PR author is a first-time external contributor.
+
+### GitHub auth note
+
+The `gh` CLI used for merges must have the `workflow` scope to merge
+PRs that touch `.github/workflows/*`. If `gh pr merge` fails with
+"refusing to allow an OAuth App to create or update workflow", run
+`gh auth refresh -s workflow` once to grant the scope. Those PRs
+(usually Dependabot-updating an Actions version) are otherwise safe
+to merge.
