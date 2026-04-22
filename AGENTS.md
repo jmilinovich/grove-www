@@ -72,8 +72,18 @@ Two workflows live under `.github/workflows/`:
   runs `test:visual:update` and commits the new PNGs back to the branch.
 
 Dependabot (`.github/dependabot.yml`) opens a weekly grouped PR for npm
-minor/patch bumps, and a monthly PR for GitHub Actions version pins.
-Next.js / React majors come as individual PRs — review by hand.
+minor/patch bumps, and a monthly grouped PR for GitHub Actions pins.
+Dev-dep majors ride along in the same weekly PR; production majors come
+as individual PRs. Next.js / React majors are ignored outright — if one
+ever appears, `dependabot-auto-merge.yml` routes it to human review.
+
+**`dependabot-auto-merge.yml`** runs on every Dependabot PR, classifies
+the update with `dependabot/fetch-metadata@v2`, and enables GitHub's
+native `--auto --squash` on anything that isn't a framework major. The
+actual merge fires when the required status checks go green — CI is
+still the gate; auto-merge is just the trigger. Uses `AUTOMERGE_PAT`
+(stored as a repo secret) instead of the default `GITHUB_TOKEN` so
+commits the workflow pushes retrigger CI normally.
 
 ## Pre-push hook (opt-in)
 
@@ -126,7 +136,9 @@ the following are all true:
   vitest). Framework majors (`next`, `react`, `react-dom`) are always
   off-limits — Dependabot is configured to skip them but check anyway.
 
-Default action: `gh pr merge <n> --squash --delete-branch`.
+Default action for PRs you open yourself: `gh pr merge <n> --auto --squash --delete-branch`. This uses GitHub's native auto-merge queue — the PR sits until required checks pass, then merges without a second touch. No more "wait for CI, come back, merge" round trips.
+
+For existing PRs that are already green, `gh pr merge <n> --squash --delete-branch` still works.
 
 Stale PRs (DIRTY) from Dependabot: comment `@dependabot rebase` and
 re-check status before merging.
@@ -147,3 +159,12 @@ PRs that touch `.github/workflows/*`. If `gh pr merge` fails with
 `gh auth refresh -s workflow` once to grant the scope. Those PRs
 (usually Dependabot-updating an Actions version) are otherwise safe
 to merge.
+
+### Test stability
+
+Playwright tests that click a React-rendered element after `goto` must
+use `waitUntil: "networkidle"`, not `"domcontentloaded"`. The latter
+fires before React attaches event handlers; on Linux CI the click
+lands on a dead DOM element and the test times out waiting for state
+that never arrives. The share-modal spec is the reference; copy its
+pattern when writing new interactive tests.

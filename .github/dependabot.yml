@@ -1,8 +1,9 @@
 version: 2
 updates:
-  # Keep npm deps fresh without drowning the inbox. Grouped so one PR per
-  # week covers minor/patch bumps; major updates come as individual PRs
-  # (reviewed manually, often breaking).
+  # npm — one grouped PR per week for safe bumps, separate PRs for anything
+  # that needs eyeballs. All of this goes through auto-merge
+  # (.github/workflows/dependabot-auto-merge.yml); framework majors are
+  # ignored outright below so they never reach the queue.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -10,13 +11,27 @@ updates:
       day: "monday"
     open-pull-requests-limit: 5
     groups:
-      minor-and-patch:
+      # All dev-dep updates (minor, patch, AND major) ship in one PR —
+      # breakage there only affects the build pipeline, not production,
+      # and CI catches it before auto-merge fires.
+      dev-deps:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+          - "major"
+      # Production minor + patch grouped together. Production majors
+      # come as individual PRs so they get their own CI run and release
+      # notes in the PR body.
+      prod-minor-patch:
+        dependency-type: "production"
         update-types:
           - "minor"
           - "patch"
     ignore:
-      # Next.js / React majors always need hand-driven migration — let
-      # Dependabot propose, never auto-merge.
+      # Framework majors always need hand-driven migration. Skip them
+      # entirely — dependabot will still open minor/patch PRs so security
+      # fixes flow through.
       - dependency-name: "next"
         update-types: ["version-update:semver-major"]
       - dependency-name: "react"
@@ -24,8 +39,13 @@ updates:
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
 
-  # GitHub Actions pin updates — catches a lot of security advisories.
+  # GitHub Actions — one monthly grouped PR for every action pin bump.
+  # Usually just version bumps; safe to auto-merge with CI.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"
