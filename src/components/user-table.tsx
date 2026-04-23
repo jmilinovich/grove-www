@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "./primitives/button";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 interface UserMeta {
   id: string;
@@ -55,9 +56,15 @@ export default function UserTable({
   initialUsers: UserMeta[];
   trails: Trail[];
 }) {
+  const { vaultSlug } = useScopedLink();
   const [users, setUsers] = useState(initialUsers);
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  // Default scope: "vault" when the user is inside a scoped route (most of the
+  // time). "trail" is still available for narrowing invites to a single trail.
+  // If there are zero trails, scope is always "vault" and the Scope selector
+  // is hidden.
+  const [inviteScope, setInviteScope] = useState<"vault" | "trail">("vault");
   const [inviteTrail, setInviteTrail] = useState(trails[0]?.id ?? "");
   const [inviteRole, setInviteRole] = useState<"viewer" | "member">("viewer");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -79,14 +86,18 @@ export default function UserTable({
     setInviteLoading(true);
 
     try {
+      // Two invite shapes per /v1/admin/invite: `{email, trail_id, role}` to
+      // grant access to a single trail, `{email, vault, role}` to add the
+      // user to the vault's member list.
+      const payload =
+        inviteScope === "vault" && vaultSlug
+          ? { email: inviteEmail.trim(), vault: vaultSlug, role: inviteRole }
+          : { email: inviteEmail.trim(), trail_id: inviteTrail, role: inviteRole };
+
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: inviteEmail.trim(),
-          trail_id: inviteTrail,
-          role: inviteRole,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -103,7 +114,7 @@ export default function UserTable({
     } finally {
       setInviteLoading(false);
     }
-  }, [inviteEmail, inviteTrail, inviteRole, refreshUsers]);
+  }, [inviteEmail, inviteScope, inviteTrail, inviteRole, vaultSlug, refreshUsers]);
 
   const handleDelete = useCallback(async (userId: string) => {
     setDeleteLoading(true);
@@ -136,7 +147,7 @@ export default function UserTable({
           onSubmit={handleInvite}
           className="mb-6 rounded-lg border border-surface-border bg-surface/60 p-6"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
             <div>
               <label htmlFor="invite-email" className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
                 Email
@@ -154,20 +165,38 @@ export default function UserTable({
             </div>
 
             <div>
-              <label htmlFor="invite-trail" className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
-                Trail
+              <label htmlFor="invite-scope" className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
+                Scope
               </label>
               <select
-                id="invite-trail"
-                value={inviteTrail}
-                onChange={(e) => setInviteTrail(e.target.value)}
+                id="invite-scope"
+                value={inviteScope}
+                onChange={(e) => setInviteScope(e.target.value as "vault" | "trail")}
+                disabled={!vaultSlug && trails.length === 0}
                 className="bg-cream border border-ink/15 rounded-md px-3 py-2 text-label text-foreground focus:outline-none focus:border-moss transition-colors"
               >
-                {trails.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
+                {vaultSlug && <option value="vault">Full vault</option>}
+                {trails.length > 0 && <option value="trail">Trail</option>}
               </select>
             </div>
+
+            {inviteScope === "trail" && trails.length > 0 && (
+              <div>
+                <label htmlFor="invite-trail" className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
+                  Trail
+                </label>
+                <select
+                  id="invite-trail"
+                  value={inviteTrail}
+                  onChange={(e) => setInviteTrail(e.target.value)}
+                  className="bg-cream border border-ink/15 rounded-md px-3 py-2 text-label text-foreground focus:outline-none focus:border-moss transition-colors"
+                >
+                  {trails.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label className="block text-detail uppercase tracking-[0.1em] text-muted mb-1">
@@ -201,7 +230,11 @@ export default function UserTable({
 
             <Button
               type="submit"
-              disabled={!inviteEmail || !inviteTrail}
+              disabled={
+                !inviteEmail ||
+                (inviteScope === "trail" && !inviteTrail) ||
+                (inviteScope === "vault" && !vaultSlug)
+              }
               loading={inviteLoading}
               loadingLabel="Sending…"
               size="sm"
