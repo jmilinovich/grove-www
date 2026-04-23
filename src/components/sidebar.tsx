@@ -34,19 +34,17 @@ function TreeNode({
 }: {
   entry: TreeEntry;
   depth?: number;
-  handle: string | null;
+  handle: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [children, setChildren] = useState<TreeEntry[] | null>(entry.children ?? null);
   const [loading, setLoading] = useState(false);
   const pathname = usePathname();
 
-  // Build canonical scoped URL. Sidebar is rendered outside resident scope
-  // (on /dashboard, /home, etc.) so it must emit `/@<handle>/<path>` — a bare
-  // `/path` would hit the legacy catch-all which only redirects signed-in
-  // users with a resolved handle.
-  const prefix = handle ? `/@${handle}` : "";
-  const scopedPath = `${prefix}/${entry.path}`;
+  // Sidebar only mounts once `handle` is resolved (see Sidebar below), so
+  // the prefix is always `/@<handle>`. Rendering earlier would leak bare
+  // `/<folder>` URLs that Next.js would prefetch through the legacy shim.
+  const scopedPath = `/@${handle}/${entry.path}`;
   const isActive = pathname === scopedPath || pathname.startsWith(`${scopedPath}/`);
 
   const handleToggle = useCallback(async () => {
@@ -120,6 +118,7 @@ function TreeNode({
             </button>
             <Link
               href={scopedPath}
+              prefetch={false}
               className={`flex items-center gap-2 flex-1 py-1.5 text-label rounded-md transition-colors truncate ${
                 isActive
                   ? "text-foreground font-medium"
@@ -133,6 +132,7 @@ function TreeNode({
         ) : (
           <Link
             href={scopedPath}
+            prefetch={false}
             className={`flex items-center gap-2 flex-1 py-1.5 pl-5 text-label rounded-md transition-colors truncate ${
               isActive
                 ? "text-foreground font-medium"
@@ -239,7 +239,7 @@ export default function Sidebar() {
           )}
 
           <nav>
-            {topLevelFolders === null ? (
+            {topLevelFolders === null || handle === null ? (
               <div className="px-2 py-2 text-detail text-muted">Loading...</div>
             ) : topLevelFolders.length === 0 ? (
               <div className="px-2 py-2 text-detail text-muted">No accessible folders.</div>
