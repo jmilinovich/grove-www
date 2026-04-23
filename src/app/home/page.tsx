@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { getApiKey } from "@/lib/auth";
 import { fetchWhoami, roleFromWhoami } from "@/lib/role";
+import { resolveScopedRedirect } from "@/lib/bare-redirect";
 import { listNotes, type ListEntry } from "@/lib/grove-api";
 import HomeSearch from "@/components/home-search";
 
@@ -62,8 +63,12 @@ export default async function HomePage() {
   const whoami = await fetchWhoami(apiKey);
   if (!whoami) redirect("/login?redirect=/home");
 
-  // Owners use the full dashboard
-  if (roleFromWhoami(whoami) === "owner") redirect("/dashboard");
+  // Owners go to the scoped dashboard of their MRU vault directly — skip the
+  // /dashboard shim hop. Fall through to the shim if MRU resolution fails.
+  if (roleFromWhoami(whoami) === "owner") {
+    const target = await resolveScopedRedirect(apiKey, "/dashboard", "", "");
+    redirect(target ?? "/dashboard");
+  }
 
   const trail = whoami.trail!;
   const [trailInfo, recent] = await Promise.all([
