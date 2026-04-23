@@ -15,7 +15,8 @@ import { useSidebar } from "./sidebar-provider";
 import { useSearch } from "./search-provider";
 import { VaultSwitcher, type VaultEntry } from "./vault-switcher";
 import { useScopedLink } from "@/hooks/use-scoped-link";
-import { activeScopeFromMe, scopedPath, type MeResponse } from "@/lib/vault-context";
+import { useMe } from "@/contexts/me-context";
+import { activeScopeFromMe, bareHandle, scopedPath } from "@/lib/vault-context";
 
 interface TrailInfo {
   id: string;
@@ -35,7 +36,9 @@ export default function Header() {
   const { atHandle, vaultSlug, ready } = useScopedLink();
   const [trail, setTrail] = useState<TrailInfo | null>(null);
   const [roleLoaded, setRoleLoaded] = useState(false);
-  const [me, setMe] = useState<MeResponse | null>(null);
+  // /api/me is shared via MeProvider so the sidebar + header don't each
+  // fire their own request on every page load.
+  const { me } = useMe();
 
   useEffect(() => {
     fetch("/api/whoami")
@@ -47,20 +50,8 @@ export default function Header() {
       .catch(() => setRoleLoaded(true));
   }, []);
 
-  // /v1/me carries the vaults the user belongs to — feed them to the
-  // switcher so it can render even when the current page isn't in a vault
-  // scope (e.g. /home). Fetched client-side because server components are
-  // already responsible for their own auth round-trip; this one is purely
-  // chrome and should not block the initial render.
-  useEffect(() => {
-    fetch("/api/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: MeResponse | null) => setMe(data))
-      .catch(() => setMe(null));
-  }, []);
-
   const vaults: VaultEntry[] = useMemo(() => me?.vaults ?? [], [me]);
-  const viewerHandle = me?.handle ?? me?.username ?? atHandle ?? "";
+  const viewerHandle = me?.handle ?? me?.username ?? bareHandle(atHandle ?? "");
   // Current vault: scoped-route params win; fall back to MRU from /v1/me.
   const currentSlug = useMemo(() => {
     if (vaultSlug) return vaultSlug;
@@ -123,7 +114,7 @@ export default function Header() {
           </span>
         )}
         {!isNonOwner && vaults.length > 0 && viewerHandle && currentSlug && (
-          <div className="hidden sm:block border-l border-surface-border pl-3 ml-1">
+          <div className="border-l border-surface-border pl-3 ml-1">
             <VaultSwitcher
               vaults={vaults}
               currentSlug={currentSlug}

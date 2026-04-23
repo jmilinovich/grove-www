@@ -81,13 +81,31 @@ export function activeScopeFromMe(
 
 /**
  * Build `/@<handle>/<slug><subPath>` preserving a leading slash on subPath.
- * Pass `""` for the vault root. Tolerates `handle` arriving with or without a
- * leading `@` — Next.js captures the `[atHandle]` route segment as `"@jm"`,
- * but `activeScopeFromMe` / `/v1/me` return bare `"jm"`; both are valid inputs.
+ * Pass `""` for the vault root. Tolerates `handle` arriving in any of the
+ * shapes callers produce:
+ *   - bare:          `"jm"`          (from /v1/me.handle / .username)
+ *   - with @:        `"@jm"`         (historical route-param shape)
+ *   - URL-encoded:   `"%40jm"`       (Next.js 16 useParams returns this —
+ *                                     it does not decode reserved chars)
+ *   - doubly bad:    `"@%40jm"`      (from one round-trip through a
+ *                                     broken caller; be forgiving)
+ * Every input normalizes to a single leading `@` in the output.
  */
+export function bareHandle(handle: string): string {
+  let h: string;
+  try {
+    h = decodeURIComponent(handle);
+  } catch {
+    h = handle;
+  }
+  // Strip any leading @s the input may already carry.
+  while (h.startsWith("@")) h = h.slice(1);
+  return h;
+}
+
 export function scopedPath(handle: string, slug: string, subPath = ""): string {
-  const bareHandle = handle.startsWith("@") ? handle.slice(1) : handle;
+  const h = bareHandle(handle);
   const trimmed =
     subPath.length === 0 || subPath.startsWith("/") ? subPath : `/${subPath}`;
-  return `/@${bareHandle}/${slug}${trimmed}`;
+  return `/@${h}/${slug}${trimmed}`;
 }

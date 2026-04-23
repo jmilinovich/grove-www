@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Folder } from "lucide-react";
 import { useSidebar } from "./sidebar-provider";
+import { useMe } from "@/contexts/me-context";
 
 interface TreeEntry {
   name: string;
@@ -167,7 +168,9 @@ export default function Sidebar() {
   const { open, close } = useSidebar();
   const [firstVisit, setFirstVisit] = useState(false);
   const [topLevelFolders, setTopLevelFolders] = useState<TreeEntry[] | null>(null);
-  const [handle, setHandle] = useState<string | null>(null);
+  // Handle comes from the shared /api/me context — no per-component fetch.
+  const { me } = useMe();
+  const handle = useMemo(() => me?.handle ?? me?.username ?? null, [me]);
 
   useEffect(() => {
     const visited = localStorage.getItem("grove_sidebar_hint_shown");
@@ -175,24 +178,6 @@ export default function Sidebar() {
       setFirstVisit(true);
       localStorage.setItem("grove_sidebar_hint_shown", "1");
     }
-  }, []);
-
-  // Resolve the current user's canonical handle once — all tree-node hrefs
-  // are built as `/@<handle>/<path>` so clicks stay within the scoped routes.
-  useEffect(() => {
-    async function loadHandle() {
-      try {
-        const res = await fetch("/api/me");
-        if (!res.ok) return;
-        const me = (await res.json()) as { handle?: string | null; username?: string | null };
-        const h = me.handle ?? me.username ?? null;
-        if (h) setHandle(h);
-      } catch {
-        // Leave handle null — links will fall back to bare paths, and the
-        // legacy catch-all will redirect signed-in users.
-      }
-    }
-    loadHandle();
   }, []);
 
   // Fetch top-level folders from the API — only shows what the user's key can access

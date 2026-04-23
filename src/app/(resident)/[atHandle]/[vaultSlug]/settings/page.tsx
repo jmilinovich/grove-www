@@ -1,4 +1,5 @@
 import { permanentRedirect } from "next/navigation";
+import { scopedPath } from "@/lib/vault-context";
 
 interface PageProps {
   params: Promise<{ atHandle: string; vaultSlug: string }>;
@@ -9,5 +10,5 @@ interface PageProps {
 // from the legacy shim) doesn't dead-end in a 404.
 export default async function SettingsIndexRedirect({ params }: PageProps) {
   const { atHandle, vaultSlug } = await params;
-  permanentRedirect(`/@${atHandle}/${vaultSlug}/settings/vaults`);
+  permanentRedirect(scopedPath(atHandle, vaultSlug, "/settings/vaults"));
 }

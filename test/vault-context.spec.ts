@@ -124,4 +124,22 @@ describe("scopedPath", () => {
     );
     expect(scopedPath("@jm", "personal")).toBe("/@jm/personal");
   });
+
+  it("normalizes a URL-encoded handle (%40jm) — Next.js 16 useParams returns this form", () => {
+    // Next 16 keeps route params URL-encoded: `useParams()` returns
+    // `"%40jm"` for `/@jm/...`, not `"@jm"`. Without decoding, scopedPath
+    // would pass `%40jm` through unchanged and produce `/@%40jm/...` —
+    // still visibly broken.
+    expect(scopedPath("%40jm", "personal", "/dashboard")).toBe(
+      "/@jm/personal/dashboard",
+    );
+  });
+
+  it("tolerates doubly-broken input from a round-trip through a buggy caller", () => {
+    // Defense in depth: even if upstream already generated `/@%40jm/...`
+    // and Next captured `"@%40jm"`, normalize to `/@jm/...`.
+    expect(scopedPath("@%40jm", "personal", "/profile")).toBe(
+      "/@jm/personal/profile",
+    );
+  });
 });

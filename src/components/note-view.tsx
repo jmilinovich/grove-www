@@ -4,6 +4,7 @@
 
 import type { NoteResponse } from "@/lib/grove-api";
 import { renderMarkdown } from "@/lib/markdown";
+import { bareHandle } from "@/lib/vault-context";
 import MermaidHydrator from "./mermaid-hydrator";
 import ShareButton from "./share-button";
 import Link from "next/link";
@@ -114,7 +115,7 @@ export default async function NoteView({
           <ul className="space-y-1">
             {note.backlinks.map((bl) => {
               const name = bl.replace(/\.md$/, "").split("/").pop() ?? bl;
-              const prefix = atHandle ? `/@${atHandle}` : "";
+              const prefix = atHandle ? `/@${bareHandle(atHandle)}` : "";
               const href = prefix + "/" + bl.replace(/\.md$/, "");
               return (
                 <li key={bl}>

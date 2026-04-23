@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
 import { ConnectedVaultsList } from "@/components/connected-vaults-list";
-import type { VaultEntry } from "@/lib/vault-context";
+import { scopedPath, bareHandle, type VaultEntry } from "@/lib/vault-context";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 const PUBLIC_GROVE_URL = process.env.NEXT_PUBLIC_GROVE_URL ?? "https://api.grove.md";
@@ -36,16 +36,16 @@ interface PageProps {
 
 export default async function SettingsVaultsPage({ params }: PageProps) {
   const { atHandle, vaultSlug } = await params;
-  const scopedPath = `/@${atHandle}/${vaultSlug}/settings/vaults`;
+  const scoped = scopedPath(atHandle, vaultSlug, "/settings/vaults");
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect(`/login?redirect=${encodeURIComponent(scopedPath)}`);
+  if (!apiKey) redirect(`/login?redirect=${encodeURIComponent(scoped)}`);
 
   const me = await fetchMe(apiKey);
-  if (!me) redirect(`/login?redirect=${encodeURIComponent(scopedPath)}`);
+  if (!me) redirect(`/login?redirect=${encodeURIComponent(scoped)}`);
 
   const vaults = me.vaults ?? [];
-  const viewerHandle = me.handle ?? me.username ?? atHandle;
+  const viewerHandle = me.handle ?? me.username ?? bareHandle(atHandle);
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
