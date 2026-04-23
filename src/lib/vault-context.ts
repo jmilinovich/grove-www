@@ -81,10 +81,13 @@ export function activeScopeFromMe(
 
 /**
  * Build `/@<handle>/<slug><subPath>` preserving a leading slash on subPath.
- * Pass `""` for the vault root.
+ * Pass `""` for the vault root. Tolerates `handle` arriving with or without a
+ * leading `@` — Next.js captures the `[atHandle]` route segment as `"@jm"`,
+ * but `activeScopeFromMe` / `/v1/me` return bare `"jm"`; both are valid inputs.
  */
 export function scopedPath(handle: string, slug: string, subPath = ""): string {
+  const bareHandle = handle.startsWith("@") ? handle.slice(1) : handle;
   const trimmed =
     subPath.length === 0 || subPath.startsWith("/") ? subPath : `/${subPath}`;
-  return `/@${handle}/${slug}${trimmed}`;
+  return `/@${bareHandle}/${slug}${trimmed}`;
 }
