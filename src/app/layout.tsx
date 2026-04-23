@@ -6,6 +6,7 @@ import CommandPalette from "@/components/command-palette";
 import LastVisited from "@/components/last-visited";
 import SidebarProvider from "@/components/sidebar-provider";
 import SearchProvider from "@/components/search-provider";
+import { MeProvider } from "@/contexts/me-context";
 import AppShell from "@/components/app-shell";
 import { getApiKey } from "@/lib/auth";
 
@@ -55,15 +56,17 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${geistMono.variable} ${inter.variable} ${lora.variable} antialiased`}>
       <body className="min-h-screen bg-background text-foreground font-sans">
-        <SearchProvider>
-          <SidebarProvider>
-            <CommandPalette />
-            <LastVisited />
-            <AppShell isSignedIn={isSignedIn}>
-              {children}
-            </AppShell>
-          </SidebarProvider>
-        </SearchProvider>
+        <MeProvider>
+          <SearchProvider>
+            <SidebarProvider>
+              <CommandPalette />
+              <LastVisited />
+              <AppShell isSignedIn={isSignedIn}>
+                {children}
+              </AppShell>
+            </SidebarProvider>
+          </SearchProvider>
+        </MeProvider>
       </body>
     </html>
   );

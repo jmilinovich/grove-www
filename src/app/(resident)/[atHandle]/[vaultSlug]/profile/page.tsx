@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
+import { scopedPath } from "@/lib/vault-context";
 import ProfileView, { type Profile } from "@/components/profile-view";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
@@ -25,7 +26,7 @@ interface PageProps {
 export default async function ProfilePage({ params }: PageProps) {
   const { atHandle, vaultSlug } = await params;
   const loginRedirect = `/login?redirect=${encodeURIComponent(
-    `/@${atHandle}/${vaultSlug}/profile`,
+    scopedPath(atHandle, vaultSlug, "/profile"),
   )}`;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);

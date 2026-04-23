@@ -3,6 +3,7 @@
  */
 
 import Link from "next/link";
+import { bareHandle } from "@/lib/vault-context";
 
 export default function Breadcrumbs({
   path,
@@ -25,8 +26,8 @@ export default function Breadcrumbs({
   // resident landing (`/@handle/...`).
   const prefix = atHandle
     ? vaultSlug
-      ? `/@${atHandle}/${vaultSlug}`
-      : `/@${atHandle}`
+      ? `/@${bareHandle(atHandle)}/${vaultSlug}`
+      : `/@${bareHandle(atHandle)}`
     : "";
 
   return (

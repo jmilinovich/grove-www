@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { renderMarkdown } from "@/lib/markdown";
+import { bareHandle } from "@/lib/vault-context";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -136,8 +137,9 @@ function ExpiredPage({
   reason: "expired" | "revoked";
   expiresAt: string | null;
 }) {
-  const handlePath = atHandle.startsWith("@") ? `/${atHandle}` : `/@${atHandle}`;
-  const displayHandle = atHandle.startsWith("@") ? atHandle : `@${atHandle}`;
+  const bare = bareHandle(atHandle);
+  const handlePath = `/@${bare}`;
+  const displayHandle = `@${bare}`;
   const subline =
     reason === "revoked"
       ? "This link was revoked."

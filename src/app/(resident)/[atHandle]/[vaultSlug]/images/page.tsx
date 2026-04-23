@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
 import { listNotes, type ListEntry } from "@/lib/grove-api";
+import { scopedPath } from "@/lib/vault-context";
 import ImageGrid from "@/components/image-grid";
 
 export const metadata = {
@@ -18,7 +19,7 @@ export default async function ImagesPage({ params }: PageProps) {
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) {
     redirect(
-      `/login?redirect=${encodeURIComponent(`/@${atHandle}/${vaultSlug}/images`)}`,
+      `/login?redirect=${encodeURIComponent(scopedPath(atHandle, vaultSlug, "/images"))}`,
     );
   }
 
