@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { getApiKey } from "@/lib/auth";
-import { fetchWhoami, roleFromWhoami } from "@/lib/role";
+import { fetchMe, fetchWhoami, roleFromWhoami } from "@/lib/role";
 import { resolveScopedRedirect } from "@/lib/bare-redirect";
 import { listNotes, type ListEntry } from "@/lib/grove-api";
 import HomeSearch from "@/components/home-search";
@@ -71,12 +71,21 @@ export default async function HomePage() {
   }
 
   const trail = whoami.trail!;
-  const [trailInfo, recent] = await Promise.all([
+  const [trailInfo, recent, me] = await Promise.all([
     fetchTrailInfo(trail.id),
     fetchRecent(apiKey),
+    fetchMe(apiKey),
   ]);
 
   const mostRecent = recent[0];
+  // Scope note links to the trail owner's resident so they don't round-trip
+  // through the legacy `[...path]` shim (which races with cookie/context and
+  // 404s). Prefer the viewer's own handle, fall back to the vault owner's.
+  const handle =
+    me?.handle ??
+    me?.username ??
+    me?.vaults?.[0]?.owner_handle ??
+    null;
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12">
@@ -126,10 +135,11 @@ export default async function HomePage() {
           <ul className="divide-y divide-surface-border border border-surface-border rounded-md">
             {recent.map((n) => {
               const displayPath = n.path.replace(/\.md$/, "");
+              const href = handle ? `/@${handle}/${displayPath}` : `/${displayPath}`;
               return (
                 <li key={n.path}>
                   <Link
-                    href={`/${displayPath}`}
+                    href={href}
                     className="flex items-center justify-between px-4 py-3 hover:bg-surface/60 transition-colors"
                   >
                     <div className="min-w-0">

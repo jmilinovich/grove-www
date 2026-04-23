@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import type { ListEntry } from "@/lib/grove-api";
+import { useMe } from "@/contexts/me-context";
 
 interface NoteDetail {
   path: string;
@@ -34,6 +35,8 @@ function str(v: unknown): string | null {
 export default function ImageDetail({ image, onClose }: Props) {
   const [detail, setDetail] = useState<NoteDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const { me } = useMe();
+  const handle = useMemo(() => me?.handle ?? me?.username ?? null, [me]);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +70,8 @@ export default function ImageDetail({ image, onClose }: Props) {
         .find((l) => l && !l.startsWith("#") && !l.startsWith("!["))
     : image.description;
 
-  const notePath = "/" + image.path.replace(/\.md$/, "");
+  const trimmedPath = image.path.replace(/\.md$/, "");
+  const notePath = handle ? `/@${handle}/${trimmedPath}` : `/${trimmedPath}`;
 
   return (
     <div
