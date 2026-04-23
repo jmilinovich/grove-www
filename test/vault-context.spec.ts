@@ -113,4 +113,15 @@ describe("scopedPath", () => {
     expect(scopedPath("jm", "personal", "")).toBe("/@jm/personal");
     expect(scopedPath("jm", "personal")).toBe("/@jm/personal");
   });
+
+  it("strips a leading @ on handle so [atHandle] route params don't double-encode", () => {
+    // Next.js captures the `[atHandle]` route segment as `"@jm"`, and callers
+    // (e.g. useScopedLink) pass that straight through. Without stripping,
+    // scopedPath would return `/@@jm/personal/...` which URL-encodes to
+    // `/@%40jm/personal/...`.
+    expect(scopedPath("@jm", "personal", "/dashboard")).toBe(
+      "/@jm/personal/dashboard",
+    );
+    expect(scopedPath("@jm", "personal")).toBe("/@jm/personal");
+  });
 });
