@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as d3 from "d3";
+import { useScopedLink } from "@/hooks/use-scoped-link";
+import { bareHandle } from "@/lib/vault-context";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -158,6 +160,8 @@ export default function GraphExplorer({ data }: { data: GraphAnalysis }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<SelectedNode | null>(null);
+  const { atHandle } = useScopedLink();
+  const notePrefix = atHandle ? `/@${bareHandle(atHandle)}` : "";
   const [filters, setFilters] = useState<FilterState>({
     types: new Set<NodeType>(["concept", "person", "project", "recipe", "company", "place", "journal", "other"]),
   });
@@ -350,7 +354,7 @@ export default function GraphExplorer({ data }: { data: GraphAnalysis }) {
               </div>
             </div>
             <a
-              href={`/${selected.path.replace(/\.md$/, "")}`}
+              href={`${notePrefix}/${selected.path.replace(/\.md$/, "")}`}
               className="mt-3 block text-detail text-moss hover:text-ink transition-colors font-sans"
             >
               Open note →
