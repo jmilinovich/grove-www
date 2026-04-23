@@ -1,56 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 
 const MermaidBlock = dynamic(() => import("./mermaid-block"), { ssr: false });
 
 /**
- * Finds all <div data-mermaid-source="..."> in the rendered HTML
- * and replaces them with interactive MermaidBlock components.
+ * Replaces every SSR'd `<div data-mermaid-source="…">` with a client-rendered
+ * MermaidBlock via React portal — so the diagram renders in place of the
+ * skeleton, not at the hydrator's position in the tree. Previously the
+ * skeleton box stayed visible *and* the diagram rendered at the bottom of
+ * the note, double-stacking the content.
  */
 export default function MermaidHydrator() {
-  const [sources, setSources] = useState<{ id: string; source: string }[]>([]);
+  const [targets, setTargets] = useState<{ el: HTMLElement; source: string }[]>([]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-mermaid-source]");
-    if (elements.length === 0) return;
-
-    const found: { id: string; source: string }[] = [];
-    elements.forEach((el, i) => {
+    const found: { el: HTMLElement; source: string }[] = [];
+    elements.forEach((el) => {
       const encoded = el.getAttribute("data-mermaid-source") ?? "";
       try {
         const source = atob(encoded);
-        const id = `mermaid-slot-${i}`;
-        el.id = id;
-        found.push({ id, source });
+        // Drop skeleton styling so the portal renders into a clean host
+        el.classList.remove("mermaid-placeholder");
+        el.innerHTML = "";
+        found.push({ el, source });
       } catch {
-        // Invalid base64
+        // Invalid base64 — leave placeholder alone
       }
     });
-    setSources(found);
+    setTargets(found);
   }, []);
-
-  if (sources.length === 0) return null;
 
   return (
     <>
-      {sources.map(({ id, source }) => (
-        <MermaidPortal key={id} targetId={id} source={source} />
-      ))}
+      {targets.map(({ el, source }, i) =>
+        createPortal(<MermaidBlock source={source} />, el, `mermaid-${i}`),
+      )}
     </>
   );
-}
-
-function MermaidPortal({ targetId, source }: { targetId: string; source: string }) {
-  useEffect(() => {
-    const el = document.getElementById(targetId);
-    if (!el) return;
-    // Clear the placeholder content
-    el.innerHTML = "";
-    el.setAttribute("data-hydrated", "true");
-  }, [targetId]);
-
-  // Render inline — the MermaidBlock will handle its own container
-  return <MermaidBlock source={source} />;
 }
