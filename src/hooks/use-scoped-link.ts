@@ -2,19 +2,22 @@
 
 import { useParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
-import { scopedPath } from "@/lib/vault-context";
+import { scopedPath, userScopedPath } from "@/lib/vault-context";
 
 /**
  * Derive the current `{atHandle, vaultSlug}` from Next.js route params and
- * expose a `link(subPath)` helper that builds `/@<handle>/<slug><subPath>`
- * without hardcoding either segment. Components that live inside the
- * `(resident)/[atHandle]/[vaultSlug]/...` tree use this so their internal
- * links follow the current scope — no lookups or window-global reads.
+ * expose link helpers that build scoped URLs without hardcoding segments.
  *
- * If params are missing (component is rendered outside the scope, e.g. a
- * bare redirect shim or /home), `link(...)` returns the un-scoped subPath
- * as a graceful fallback — callers can also read `ready` to branch
- * explicitly when they need a hard guarantee.
+ * - `link(subPath)` → `/@<handle>/<slug><subPath>` (vault-scoped; needs both
+ *   segments; falls back to the un-scoped `subPath` when outside the scope).
+ * - `userLink(subPath)` → `/@<handle><subPath>` (user-scoped; needs only the
+ *   handle; falls back to `subPath` when outside any scope). Added in P8-B6
+ *   for pages hoisted out of the `[vaultSlug]` subtree (profile,
+ *   settings/vaults, …).
+ *
+ * Components that live under `(resident)/[atHandle]/[vaultSlug]/...` use
+ * `link()` for internal nav. Components that need to point at a user-scoped
+ * page regardless of whether a vault is in the current URL use `userLink()`.
  */
 export function useScopedLink() {
   const params = useParams();
@@ -29,13 +32,22 @@ export function useScopedLink() {
     [atHandle, vaultSlug],
   );
 
+  const userLink = useCallback(
+    (subPath: string) => {
+      if (!atHandle) return subPath;
+      return userScopedPath(atHandle, subPath);
+    },
+    [atHandle],
+  );
+
   return useMemo(
     () => ({
       atHandle,
       vaultSlug,
       ready: Boolean(atHandle && vaultSlug),
       link,
+      userLink,
     }),
-    [atHandle, vaultSlug, link],
+    [atHandle, vaultSlug, link, userLink],
   );
 }

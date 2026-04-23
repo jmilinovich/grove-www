@@ -80,32 +80,59 @@ export function activeScopeFromMe(
 }
 
 /**
- * Build `/@<handle>/<slug><subPath>` preserving a leading slash on subPath.
- * Pass `""` for the vault root. Tolerates `handle` arriving in any of the
- * shapes callers produce:
+ * Normalize a handle segment to its bare form (no leading `@`, URL-decoded).
+ *
+ * Handles arrive in every shape callers produce:
  *   - bare:          `"jm"`          (from /v1/me.handle / .username)
  *   - with @:        `"@jm"`         (historical route-param shape)
  *   - URL-encoded:   `"%40jm"`       (Next.js 16 useParams returns this —
  *                                     it does not decode reserved chars)
  *   - doubly bad:    `"@%40jm"`      (from one round-trip through a
  *                                     broken caller; be forgiving)
- * Every input normalizes to a single leading `@` in the output.
+ *
+ * Shared by `scopedPath` and `userScopedPath` — no duplicated normalization.
  */
-export function bareHandle(handle: string): string {
+function normalizeHandle(raw: string): string {
   let h: string;
   try {
-    h = decodeURIComponent(handle);
+    h = decodeURIComponent(raw);
   } catch {
-    h = handle;
+    h = raw;
   }
   // Strip any leading @s the input may already carry.
   while (h.startsWith("@")) h = h.slice(1);
   return h;
 }
 
+/**
+ * Build the bare handle form (no leading `@`). Thin public wrapper around
+ * `normalizeHandle` kept for callers that want the handle on its own (e.g.
+ * to embed in a longer URL or show in UI chrome).
+ */
+export function bareHandle(handle: string): string {
+  return normalizeHandle(handle);
+}
+
+function trimmedSub(subPath: string): string {
+  if (subPath.length === 0) return "";
+  return subPath.startsWith("/") ? subPath : `/${subPath}`;
+}
+
 export function scopedPath(handle: string, slug: string, subPath = ""): string {
-  const h = bareHandle(handle);
-  const trimmed =
-    subPath.length === 0 || subPath.startsWith("/") ? subPath : `/${subPath}`;
-  return `/@${h}/${slug}${trimmed}`;
+  const h = normalizeHandle(handle);
+  return `/@${h}/${slug}${trimmedSub(subPath)}`;
+}
+
+/**
+ * Build `/@<handle><subPath>` for user-scoped pages whose underlying data is
+ * the signed-in user (profile, settings/vaults, cross-vault keys, …). These
+ * routes live one level up from the vault-scoped `/@<h>/<slug>/...` tree
+ * because the `<slug>` segment would lie about the resource — P8-B6 hoisted
+ * them out of the `[vaultSlug]` subtree.
+ *
+ * Pass `""` for the handle root itself.
+ */
+export function userScopedPath(handle: string, subPath = ""): string {
+  const h = normalizeHandle(handle);
+  return `/@${h}${trimmedSub(subPath)}`;
 }

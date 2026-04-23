@@ -16,7 +16,12 @@ import { useSearch } from "./search-provider";
 import { VaultSwitcher, type VaultEntry } from "./vault-switcher";
 import { useScopedLink } from "@/hooks/use-scoped-link";
 import { useMe } from "@/contexts/me-context";
-import { activeScopeFromMe, bareHandle, scopedPath } from "@/lib/vault-context";
+import {
+  activeScopeFromMe,
+  bareHandle,
+  scopedPath,
+  userScopedPath,
+} from "@/lib/vault-context";
 
 interface TrailInfo {
   id: string;
@@ -71,14 +76,18 @@ export default function Header() {
     if (active) return scopedPath(active.handle, active.slug, "/dashboard");
     return "/dashboard";
   }, [isNonOwner, ready, atHandle, vaultSlug, me]);
+  // Profile is user-scoped (P8-B6): `/@<handle>/profile`, no vault slug.
+  // Use the route's atHandle when we have it; otherwise fall back to the
+  // viewer's handle from /v1/me; last resort is bare `/profile` which 308s
+  // to the user-scoped canonical via its own shim.
   const profileHref = useMemo(() => {
-    if (ready && atHandle && vaultSlug) {
-      return scopedPath(atHandle, vaultSlug, "/profile");
+    if (ready && atHandle) {
+      return userScopedPath(atHandle, "/profile");
     }
     const active = activeScopeFromMe(me);
-    if (active) return scopedPath(active.handle, active.slug, "/profile");
+    if (active) return userScopedPath(active.handle, "/profile");
     return "/profile";
-  }, [ready, atHandle, vaultSlug, me]);
+  }, [ready, atHandle, me]);
   const imagesHref = useMemo(() => {
     if (ready && atHandle && vaultSlug) {
       return scopedPath(atHandle, vaultSlug, "/images");

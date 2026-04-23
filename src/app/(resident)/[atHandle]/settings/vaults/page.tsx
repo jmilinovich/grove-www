@@ -2,10 +2,15 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
 import { ConnectedVaultsList } from "@/components/connected-vaults-list";
-import { scopedPath, bareHandle, type VaultEntry } from "@/lib/vault-context";
+import {
+  bareHandle,
+  userScopedPath,
+  type VaultEntry,
+} from "@/lib/vault-context";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
-const PUBLIC_GROVE_URL = process.env.NEXT_PUBLIC_GROVE_URL ?? "https://api.grove.md";
+const PUBLIC_GROVE_URL =
+  process.env.NEXT_PUBLIC_GROVE_URL ?? "https://api.grove.md";
 
 interface MeResponse {
   handle?: string | null;
@@ -31,18 +36,21 @@ export const metadata = {
 };
 
 interface PageProps {
-  params: Promise<{ atHandle: string; vaultSlug: string }>;
+  params: Promise<{ atHandle: string }>;
 }
 
+// User-scoped connected-vaults list (P8-B6). Lives at /@<handle>/settings/vaults
+// — hoisted out of the vault-scoped subtree because the underlying data is
+// `/v1/me.vaults[]` (the cross-vault list of vaults the user belongs to).
 export default async function SettingsVaultsPage({ params }: PageProps) {
-  const { atHandle, vaultSlug } = await params;
-  const scoped = scopedPath(atHandle, vaultSlug, "/settings/vaults");
+  const { atHandle } = await params;
+  const canonical = userScopedPath(atHandle, "/settings/vaults");
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect(`/login?redirect=${encodeURIComponent(scoped)}`);
+  if (!apiKey) redirect(`/login?redirect=${encodeURIComponent(canonical)}`);
 
   const me = await fetchMe(apiKey);
-  if (!me) redirect(`/login?redirect=${encodeURIComponent(scoped)}`);
+  if (!me) redirect(`/login?redirect=${encodeURIComponent(canonical)}`);
 
   const vaults = me.vaults ?? [];
   const viewerHandle = me.handle ?? me.username ?? bareHandle(atHandle);

@@ -3,6 +3,7 @@ import {
   activeScopeFromMe,
   resolveActiveVault,
   scopedPath,
+  userScopedPath,
   type VaultEntry,
 } from "@/lib/vault-context";
 
@@ -141,5 +142,42 @@ describe("scopedPath", () => {
     expect(scopedPath("@%40jm", "personal", "/profile")).toBe(
       "/@jm/personal/profile",
     );
+  });
+});
+
+describe("userScopedPath (P8-B6)", () => {
+  it("joins handle + subPath under /@<handle>/...", () => {
+    expect(userScopedPath("jm", "/profile")).toBe("/@jm/profile");
+    expect(userScopedPath("jm", "/settings/vaults")).toBe(
+      "/@jm/settings/vaults",
+    );
+  });
+
+  it("inserts a slash when subPath is missing a leading one", () => {
+    expect(userScopedPath("jm", "profile")).toBe("/@jm/profile");
+  });
+
+  it("returns the bare handle for an empty subPath", () => {
+    expect(userScopedPath("jm", "")).toBe("/@jm");
+    expect(userScopedPath("jm")).toBe("/@jm");
+  });
+
+  it("shares normalization with scopedPath — @-prefixed handles are stripped", () => {
+    expect(userScopedPath("@jm", "/profile")).toBe("/@jm/profile");
+  });
+
+  it("shares normalization with scopedPath — %40-encoded handles decode", () => {
+    // Next 16's useParams returns `"%40jm"` for `/@jm/...`. Both helpers
+    // must route through the same `normalizeHandle` so there is one source
+    // of truth for handle sanitation.
+    expect(userScopedPath("%40jm", "/profile")).toBe("/@jm/profile");
+  });
+
+  it("matches the handle prefix produced by scopedPath", () => {
+    // Handle-normalization round-trip: `userScopedPath(h, "/x")` should
+    // share the `/@<bare-handle>` prefix with `scopedPath(h, slug, "/x")`.
+    const user = userScopedPath("@jm", "/profile");
+    const vault = scopedPath("@jm", "personal", "/profile");
+    expect(vault.startsWith(user.replace("/profile", ""))).toBe(true);
   });
 });

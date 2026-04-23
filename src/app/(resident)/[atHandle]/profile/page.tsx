@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
-import { scopedPath } from "@/lib/vault-context";
+import { userScopedPath } from "@/lib/vault-context";
 import ProfileView, { type Profile } from "@/components/profile-view";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
@@ -20,13 +20,15 @@ export const metadata = {
 };
 
 interface PageProps {
-  params: Promise<{ atHandle: string; vaultSlug: string }>;
+  params: Promise<{ atHandle: string }>;
 }
 
+// User-scoped profile page (P8-B6). Lives at /@<handle>/profile — hoisted out
+// of the vault-scoped subtree because /v1/me has no vault dimension.
 export default async function ProfilePage({ params }: PageProps) {
-  const { atHandle, vaultSlug } = await params;
+  const { atHandle } = await params;
   const loginRedirect = `/login?redirect=${encodeURIComponent(
-    scopedPath(atHandle, vaultSlug, "/profile"),
+    userScopedPath(atHandle, "/profile"),
   )}`;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);

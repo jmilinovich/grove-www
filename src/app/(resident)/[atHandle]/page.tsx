@@ -1,6 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { buttonClasses } from "@/components/primitives/button";
+import { getApiKey } from "@/lib/auth";
+import { resolveScopedRedirect } from "@/lib/bare-redirect";
 import {
   fetchResident,
   parseAtHandle,
@@ -31,6 +34,18 @@ export default async function ResidentProfilePage({ params }: PageProps) {
   if (!handle) notFound();
   const resident = await fetchResident(handle);
   if (!resident) notFound();
+
+  // Signed-in visitors at the bare `/@<handle>` land on the MRU vault
+  // dashboard rather than the public profile. `redirect()` issues a 307 by
+  // default (temporary) — not 308, because the MRU target is mutable per
+  // the user's activity and a cached 308 would pin the first-visited vault
+  // forever. See SPEC.md P8-B6 design decision #4.
+  const cookieStore = await cookies();
+  const apiKey = getApiKey(cookieStore);
+  if (apiKey) {
+    const target = await resolveScopedRedirect(apiKey, "/dashboard", "", "");
+    if (target) redirect(target);
+  }
 
   const displayName = resident.display_name ?? `@${resident.handle}`;
 
