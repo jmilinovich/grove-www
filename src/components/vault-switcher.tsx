@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useParams } from "next/navigation";
 import { ChevronDown, Check } from "lucide-react";
 import type { VaultEntry } from "@/lib/vault-context";
 
@@ -9,7 +10,7 @@ export type { VaultEntry };
 export interface VaultSwitcherProps {
   /** The vaults this user belongs to. Always-rendered — just disabled at n=1. */
   vaults: VaultEntry[];
-  /** Slug of the vault currently displayed. */
+  /** Slug of the vault currently displayed. May be empty on user-scoped pages. */
   currentSlug: string;
   /** Handle used for the "@<handle> /" chrome label. */
   viewerHandle: string;
@@ -44,6 +45,15 @@ export function VaultSwitcher({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
+  // On user-scoped pages (`/@<h>/profile`, `/@<h>/settings/*`) there is no
+  // `vaultSlug` in the URL — the switcher should show a neutral "Switch
+  // to vault…" launcher instead of claiming a vault is active. Derived
+  // from `useParams()` so the component reflects the current route without
+  // any parent wiring (see SPEC.md P8-B6 component behavior).
+  const routeParams = useParams();
+  const onUserScopedPage =
+    typeof routeParams?.vaultSlug !== "string" ||
+    (routeParams.vaultSlug as string).length === 0;
 
   if (vaults.length === 0) return null;
   const current = vaults.find((v) => v.slug === currentSlug) ?? vaults[0];
@@ -102,14 +112,22 @@ export function VaultSwitcher({
         aria-haspopup="listbox"
         aria-controls={listboxId}
         aria-label="Switch vault"
-        aria-disabled={singleVault}
+        aria-disabled={singleVault && !onUserScopedPage}
         onClick={() => setOpen((o) => !o)}
         className="inline-flex items-center gap-1.5 rounded-md border border-ink/15 bg-white/60 px-2.5 py-1.5 font-mono text-sm text-ink hover:bg-white focus:outline-none focus:ring-2 focus:ring-moss/40"
       >
-        <span>@{viewerHandle}</span>
-        <span className="text-ink/40">/</span>
-        <span>{current.slug}</span>
-        {!singleVault && <ChevronDown className="size-3.5 opacity-50" aria-hidden="true" />}
+        {onUserScopedPage ? (
+          <span className="text-ink/60">Switch to vault…</span>
+        ) : (
+          <>
+            <span>@{viewerHandle}</span>
+            <span className="text-ink/40">/</span>
+            <span>{current.slug}</span>
+          </>
+        )}
+        {(onUserScopedPage || !singleVault) && (
+          <ChevronDown className="size-3.5 opacity-50" aria-hidden="true" />
+        )}
       </button>
 
       {open && (
@@ -122,7 +140,9 @@ export function VaultSwitcher({
         >
           <ul className="py-1">
             {vaults.map((v) => {
-              const active = v.slug === current.slug;
+              // On user-scoped pages nothing is "currently active" — no
+              // check mark, no bolding, just a plain list.
+              const active = !onUserScopedPage && v.slug === current.slug;
               return (
                 <li key={v.id}>
                   <button

@@ -417,28 +417,16 @@ describe("legacy bare-route → MRU vault shims (P8-B3)", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("bare /profile → scoped profile", async () => {
+  it("bare /profile → user-scoped profile (no MRU lookup, P8-B6)", async () => {
     cookiesStore.get.mockReturnValue({ value: "api-key" });
-    fetchMock.mockResolvedValueOnce(
-      meResponse([
-        {
-          id: "v",
-          slug: "personal",
-          name: "Personal",
-          role: "owner",
-          owner_handle: "jm",
-          joined_at: "2026-01-01T00:00:00Z",
-          last_active_at: "2026-04-20T00:00:00Z",
-        },
-      ]),
-    );
+    // /profile no longer resolves the MRU vault — profile is user-scoped, so
+    // we only need the viewer's handle from /v1/me.
+    fetchMock.mockResolvedValueOnce(meResponse([]));
     const Page = await loadProfile();
     await expect(
       Page({ searchParams: Promise.resolve({}) }),
     ).rejects.toThrow(/NEXT_REDIRECT/);
-    expect(permanentRedirectSpy).toHaveBeenCalledWith(
-      "/@jm/personal/profile",
-    );
+    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/profile");
   });
 
   it("bare /images → scoped images", async () => {
@@ -463,22 +451,9 @@ describe("legacy bare-route → MRU vault shims (P8-B3)", () => {
     expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/personal/images");
   });
 
-  it("bare /settings (no sub-path) lands on settings/vaults, not a 404", async () => {
+  it("bare /settings → user-scoped /settings/vaults in one hop (P8-B6)", async () => {
     cookiesStore.get.mockReturnValue({ value: "api-key" });
-    fetchMock.mockResolvedValueOnce(
-      meResponse([
-        {
-          id: "v",
-          slug: "personal",
-          name: "Personal",
-          role: "owner",
-          owner_handle: "jm",
-          joined_at: "2026-01-01T00:00:00Z",
-          last_active_at: "2026-04-20T00:00:00Z",
-        },
-      ]),
-    );
-    // Legacy shim 308s /settings to /@jm/personal/settings …
+    fetchMock.mockResolvedValueOnce(meResponse([]));
     const Legacy = await loadSettings();
     await expect(
       Legacy({
@@ -486,38 +461,15 @@ describe("legacy bare-route → MRU vault shims (P8-B3)", () => {
         searchParams: Promise.resolve({}),
       }),
     ).rejects.toThrow(/NEXT_REDIRECT/);
-    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/personal/settings");
-
-    // …and the scoped /@handle/<slug>/settings index 308s onward to /vaults.
-    permanentRedirectSpy.mockClear();
-    const { default: ScopedSettingsIndex } = await import(
-      "@/app/(resident)/[atHandle]/[vaultSlug]/settings/page"
-    );
-    await expect(
-      ScopedSettingsIndex({
-        params: Promise.resolve({ atHandle: "jm", vaultSlug: "personal" }),
-      }),
-    ).rejects.toThrow(/NEXT_REDIRECT/);
-    expect(permanentRedirectSpy).toHaveBeenCalledWith(
-      "/@jm/personal/settings/vaults",
-    );
+    // Single hop — directly to user-scoped settings/vaults, no MRU lookup,
+    // no intermediate /@jm/personal/settings stop.
+    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/settings/vaults");
+    expect(permanentRedirectSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("bare /settings/vaults → scoped settings/vaults", async () => {
+  it("bare /settings/vaults → user-scoped settings/vaults (P8-B6)", async () => {
     cookiesStore.get.mockReturnValue({ value: "api-key" });
-    fetchMock.mockResolvedValueOnce(
-      meResponse([
-        {
-          id: "v",
-          slug: "personal",
-          name: "Personal",
-          role: "owner",
-          owner_handle: "jm",
-          joined_at: "2026-01-01T00:00:00Z",
-          last_active_at: "2026-04-20T00:00:00Z",
-        },
-      ]),
-    );
+    fetchMock.mockResolvedValueOnce(meResponse([]));
     const Page = await loadSettings();
     await expect(
       Page({
@@ -525,9 +477,7 @@ describe("legacy bare-route → MRU vault shims (P8-B3)", () => {
         searchParams: Promise.resolve({}),
       }),
     ).rejects.toThrow(/NEXT_REDIRECT/);
-    expect(permanentRedirectSpy).toHaveBeenCalledWith(
-      "/@jm/personal/settings/vaults",
-    );
+    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/settings/vaults");
   });
 
   it("sends users with no vaults back to /login rather than /@null", async () => {
