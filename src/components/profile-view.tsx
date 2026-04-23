@@ -186,7 +186,7 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="text-heading font-medium text-ink">Profile</h1>
+        <h1 className="font-serif text-heading font-medium text-ink">Profile</h1>
         <p className="text-label text-ink/60 mt-1">Manage your identity and access to Grove.</p>
       </header>
 

@@ -18,7 +18,7 @@ export default function Error({
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="text-center max-w-md">
         <p className="text-6xl font-medium text-ink/15 mb-4">500</p>
-        <h1 className="text-title font-medium mb-2">Something went wrong</h1>
+        <h1 className="font-serif text-title font-medium mb-2">Something went wrong</h1>
         <p className="text-label text-ink/40 mb-8">
           We couldn&apos;t load this note. This is usually transient — try refreshing.
         </p>

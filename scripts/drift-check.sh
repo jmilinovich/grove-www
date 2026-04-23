@@ -97,6 +97,17 @@ bad_weight_css=$(grep -nE 'font-weight: ?(100|200|300|600|700|800|900)' "$CSS" 2
 fail "globals.css font-weight outside 400/500" "$bad_weight_css"
 [[ -z "$bad_weight_css" ]] && pass "globals.css font weights clean"
 
+# Heading pages use serif (Lora) — `text-title` and `text-heading` are
+# SIZE tokens only, so an <h1>/<h2> carrying them without `font-serif`
+# inherits `--font-sans` (Inter). This rule surfaces headings that opted
+# into the display size but forgot the family pairing, which is how the
+# profile / error / not-found pages silently drifted for ~2 days before
+# anyone noticed. Multi-line className={[...]} arrays fall outside this
+# grep — add an inline `// drift: font-serif` tag if you must.
+heading_no_serif=$(SEARCH_TSX '<h[1-2] [^>]*\b(text-title|text-heading)\b' | grep -v 'font-serif' | grep -v '// drift: font-serif' || true)
+fail "Heading uses text-title/text-heading without font-serif (Lora family missing)" "$heading_no_serif"
+[[ -z "$heading_no_serif" ]] && pass "heading-size tokens paired with font-serif"
+
 # ── RADIUS ──────────────────────────────────────────────────────────
 section "Radius"
 
