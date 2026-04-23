@@ -25,7 +25,7 @@ export default async function ImagesPage({ params }: PageProps) {
 
   let entries: ListEntry[];
   try {
-    entries = await listNotes("", apiKey, "image");
+    entries = await listNotes("", apiKey, "image", vaultSlug);
   } catch {
     entries = [];
   }

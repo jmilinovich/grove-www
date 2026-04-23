@@ -136,3 +136,20 @@ export function userScopedPath(handle: string, subPath = ""): string {
   const h = normalizeHandle(handle);
   return `/@${h}${trimmedSub(subPath)}`;
 }
+
+/**
+ * Build an api.grove.md path for a vault-scoped REST endpoint.
+ *
+ *   scopedApiPath("test-vault", "/v1/list") → "/v/test-vault/v1/list"
+ *   scopedApiPath(undefined, "/v1/list")    → "/v1/list"  (legacy fallback)
+ *
+ * Pass `undefined` for the slug on legacy single-vault callers; the
+ * grove-server proxy will route those to the token's bound vault with a
+ * `Sunset` header. New code should always pass a real slug from the
+ * request's route params so non-personal vaults work end to end.
+ */
+export function scopedApiPath(slug: string | undefined, endpoint: string): string {
+  const ep = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  if (!slug) return ep;
+  return `/v/${slug}${ep}`;
+}

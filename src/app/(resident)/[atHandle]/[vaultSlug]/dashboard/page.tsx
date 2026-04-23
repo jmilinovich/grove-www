@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
+import { scopedApiPath } from "@/lib/vault-context";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -51,9 +52,9 @@ interface BetterStackMonitor {
   paused: boolean;
 }
 
-async function fetchStats(apiKey: string): Promise<VaultStats | null> {
+async function fetchStats(apiKey: string, vaultSlug?: string): Promise<VaultStats | null> {
   try {
-    const res = await fetch(`${API_URL}/v1/stats`, {
+    const res = await fetch(`${API_URL}${scopedApiPath(vaultSlug, "/v1/stats")}`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
     });
@@ -153,13 +154,20 @@ export const metadata = {
   title: "Dashboard — Grove",
 };
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  params: Promise<{ atHandle: string; vaultSlug: string }>;
+}
+
+export default async function DashboardPage({ params }: DashboardPageProps) {
+  const { vaultSlug } = await params;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) redirect("/login?redirect=/dashboard");
 
   const [stats, metrics, monitors] = await Promise.all([
-    fetchStats(apiKey),
+    fetchStats(apiKey, vaultSlug),
+    // /metrics is proxy-wide (not vault-scoped) — leave as-is under
+    // scope A. Part B will re-home per-vault metrics under /v/<slug>/metrics.
     fetchMetrics(apiKey),
     fetchBetterStack(),
   ]);
