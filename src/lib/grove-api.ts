@@ -4,6 +4,7 @@
  */
 
 import { createHash } from "node:crypto";
+import { scopedApiPath } from "./vault-context";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -42,9 +43,11 @@ export interface SearchResult {
 export async function fetchNote(
   path: string,
   apiKey: string,
+  vaultSlug?: string,
 ): Promise<NoteResponse | null> {
   const ck = cacheKey(apiKey);
-  const res = await fetch(`${API_URL}/v1/notes/${encodeURIComponent(path)}?_ck=${ck}`, {
+  const endpoint = scopedApiPath(vaultSlug, `/v1/notes/${encodeURIComponent(path)}`);
+  const res = await fetch(`${API_URL}${endpoint}?_ck=${ck}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
     next: { revalidate: 300 },
   });
@@ -71,11 +74,13 @@ export async function listNotes(
   prefix: string,
   apiKey: string,
   type?: string,
+  vaultSlug?: string,
 ): Promise<ListEntry[]> {
   const ck = cacheKey(apiKey);
   const params = new URLSearchParams({ prefix, _ck: ck });
   if (type) params.set("type", type);
-  const res = await fetch(`${API_URL}/v1/list?${params}`, {
+  const endpoint = scopedApiPath(vaultSlug, "/v1/list");
+  const res = await fetch(`${API_URL}${endpoint}?${params}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
     next: { revalidate: 300 },
   });
@@ -89,10 +94,12 @@ export async function searchNotes(
   query: string,
   apiKey: string,
   limit = 10,
+  vaultSlug?: string,
 ): Promise<SearchResult[]> {
   const ck = cacheKey(apiKey);
   const params = new URLSearchParams({ q: query, limit: String(limit), _ck: ck });
-  const res = await fetch(`${API_URL}/v1/search?${params}`, {
+  const endpoint = scopedApiPath(vaultSlug, "/v1/search");
+  const res = await fetch(`${API_URL}${endpoint}?${params}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
     next: { revalidate: 300 },
   });

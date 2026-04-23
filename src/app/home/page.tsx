@@ -29,6 +29,9 @@ async function fetchTrailInfo(trailId: string): Promise<TrailInfo | null> {
 }
 
 async function fetchRecent(apiKey: string): Promise<ListEntry[]> {
+  // /home is user-scoped (not vault-scoped) — no slug to pass. Backend
+  // routes the bare /v1/list to the token's bound vault with a Sunset
+  // header. Fine for non-owner trail viewers; owners redirect above.
   try {
     const entries = await listNotes("", apiKey);
     return entries

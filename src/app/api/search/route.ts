@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   if (!q) {
     return NextResponse.json({ results: [] });
   }
+  const vaultSlug = request.nextUrl.searchParams.get("vaultSlug") ?? undefined;
 
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const results = await searchNotes(q, apiKey);
+    const results = await searchNotes(q, apiKey, 10, vaultSlug);
     return NextResponse.json({ results });
   } catch {
     return NextResponse.json({ error: "Search failed" }, { status: 502 });

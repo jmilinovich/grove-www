@@ -4,6 +4,7 @@ import { getApiKey } from "@/lib/auth";
 import { fetchWhoami, roleFromWhoami } from "@/lib/role";
 import { scopedPath } from "@/lib/vault-context";
 import DashboardNav from "@/components/dashboard-nav";
+import AdminScopeBanner from "@/components/admin-scope-banner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       <DashboardNav />
+      <AdminScopeBanner vaultSlug={vaultSlug} />
       {children}
     </div>
   );

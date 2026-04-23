@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   if (!path) {
     return NextResponse.json({ error: "Missing path" }, { status: 400 });
   }
+  const vaultSlug = request.nextUrl.searchParams.get("vaultSlug") ?? undefined;
 
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const note = await fetchNote(path, apiKey);
+    const note = await fetchNote(path, apiKey, vaultSlug);
     if (!note) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
