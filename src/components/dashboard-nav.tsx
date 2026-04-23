@@ -32,6 +32,7 @@ export default function DashboardNav() {
           <Link
             key={tab.sub}
             href={href}
+            prefetch={false}
             className={[
               "px-4 py-2.5 text-label font-medium transition-colors relative",
               isActive
