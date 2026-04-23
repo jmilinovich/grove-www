@@ -463,6 +463,46 @@ describe("legacy bare-route → MRU vault shims (P8-B3)", () => {
     expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/personal/images");
   });
 
+  it("bare /settings (no sub-path) lands on settings/vaults, not a 404", async () => {
+    cookiesStore.get.mockReturnValue({ value: "api-key" });
+    fetchMock.mockResolvedValueOnce(
+      meResponse([
+        {
+          id: "v",
+          slug: "personal",
+          name: "Personal",
+          role: "owner",
+          owner_handle: "jm",
+          joined_at: "2026-01-01T00:00:00Z",
+          last_active_at: "2026-04-20T00:00:00Z",
+        },
+      ]),
+    );
+    // Legacy shim 308s /settings to /@jm/personal/settings …
+    const Legacy = await loadSettings();
+    await expect(
+      Legacy({
+        params: Promise.resolve({}),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith("/@jm/personal/settings");
+
+    // …and the scoped /@handle/<slug>/settings index 308s onward to /vaults.
+    permanentRedirectSpy.mockClear();
+    const { default: ScopedSettingsIndex } = await import(
+      "@/app/(resident)/[atHandle]/[vaultSlug]/settings/page"
+    );
+    await expect(
+      ScopedSettingsIndex({
+        params: Promise.resolve({ atHandle: "jm", vaultSlug: "personal" }),
+      }),
+    ).rejects.toThrow(/NEXT_REDIRECT/);
+    expect(permanentRedirectSpy).toHaveBeenCalledWith(
+      "/@jm/personal/settings/vaults",
+    );
+  });
+
   it("bare /settings/vaults → scoped settings/vaults", async () => {
     cookiesStore.get.mockReturnValue({ value: "api-key" });
     fetchMock.mockResolvedValueOnce(
