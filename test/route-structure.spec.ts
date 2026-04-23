@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Route-structure tests (P8-B6). Covers the middleware legacy-URL redirects,
+// Route-structure tests (P8-B6). Covers the proxy legacy-URL redirects,
 // the bare-route shims for user-scoped pages, and the bare `/@<handle>`
 // signed-in redirect to MRU.
 //
-// We exercise the middleware directly as a function (same pattern the rest
-// of the suite uses for server components — call the exported default with
-// mocked request). For Next middleware this means constructing a
-// `NextRequest` and asserting on the returned `NextResponse`.
+// We exercise the proxy directly as a function (same pattern the rest of
+// the suite uses for server components — call the exported default with a
+// mocked request). For Next.js 16 this file is `src/proxy.ts` (Next.js
+// renamed `middleware.ts` to `proxy.ts` in 16.x; both cannot coexist).
 
 import { NextRequest } from "next/server";
 
@@ -79,12 +79,15 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ── middleware: legacy user-scoped URL → user-scoped canonical (P8-B6) ──
+// ── proxy: legacy user-scoped URL → user-scoped canonical (P8-B6) ──────
 
-describe("middleware legacy user-scoped redirects (P8-B6)", () => {
+describe("proxy legacy user-scoped redirects (P8-B6)", () => {
   async function loadMiddleware() {
-    const mod = await import("@/middleware");
-    return mod.middleware;
+    // In Next.js 16 the file is src/proxy.ts (default export). Keeping the
+    // helper name `loadMiddleware` inside this test file is just familiarity
+    // — the thing it loads is the proxy function.
+    const mod = await import("@/proxy");
+    return mod.default;
   }
 
   function makeReq(url: string): NextRequest {

@@ -16,6 +16,18 @@ const PUBLIC_FILES = ["/favicon.ico", "/robots.txt", "/sitemap.xml"];
 const SCOPED_SHARE_RE = /^\/@[^/]+\/s\/([^/]+)$/;
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
+// P8-B6 legacy user-scoped URL redirects.
+//
+// Before P8-B6, `profile` and `settings/vaults` lived under the vault-scoped
+// subtree (`/@<h>/<v>/profile`, `/@<h>/<v>/settings/vaults`) even though
+// both pages only read `/v1/me` — the `<v>` segment was never used. P8-B6
+// hoisted those pages to `/@<h>/profile` and `/@<h>/settings/vaults`.
+// This runs before auth so legacy bookmarks don't bounce through /login.
+const LEGACY_USER_SCOPED =
+  /^\/@([^/]+)\/([^/]+)\/(profile|settings\/vaults)\/?$/;
+const BARE_SETTINGS = /^\/@([^/]+)\/settings\/?$/;
+const REDIRECT_CACHE_CONTROL = "max-age=3600";
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -32,6 +44,18 @@ export default async function proxy(request: NextRequest) {
         },
       });
     }
+  }
+
+  const legacyMatch = pathname.match(LEGACY_USER_SCOPED);
+  if (legacyMatch) {
+    const [, handle, , subpath] = legacyMatch;
+    return redirect308(request, `/@${handle}/${subpath}`);
+  }
+
+  const settingsMatch = pathname.match(BARE_SETTINGS);
+  if (settingsMatch) {
+    const [, handle] = settingsMatch;
+    return redirect308(request, `/@${handle}/settings/vaults`);
   }
 
   // Public exact paths
@@ -59,6 +83,18 @@ export default async function proxy(request: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+// Build an absolute URL from the incoming request and the target pathname,
+// preserving search + hash. Explicitly constructed rather than cloned so no
+// trailing-slash or pathname-normalization quirks from the original leak in.
+function redirect308(request: NextRequest, targetPathname: string) {
+  const target = new URL(targetPathname, request.nextUrl.origin);
+  target.search = request.nextUrl.search;
+  target.hash = request.nextUrl.hash;
+  const res = NextResponse.redirect(target, 308);
+  res.headers.set("Cache-Control", REDIRECT_CACHE_CONTROL);
+  return res;
 }
 
 async function checkShareGone(id: string): Promise<{ reason: "expired" | "revoked" } | null> {
