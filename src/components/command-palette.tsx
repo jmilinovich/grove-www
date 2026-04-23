@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { useSearch } from "./search-provider";
+import { useMe } from "@/contexts/me-context";
 
 interface SearchResult {
   path: string;
@@ -22,6 +23,8 @@ export default function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const router = useRouter();
+  const { me } = useMe();
+  const handle = useMemo(() => me?.handle ?? me?.username ?? null, [me]);
 
   const resetState = useCallback(() => {
     setQuery("");
@@ -88,9 +91,12 @@ export default function CommandPalette() {
     return () => clearTimeout(debounceRef.current);
   }, [query]);
 
-  // Navigate to result
+  // Navigate to result. Emit canonical `/@<handle>/<path>` so we don't
+  // round-trip through the legacy `[...path]` shim, whose /v1/me lookup
+  // races with cookie propagation and occasionally 404s.
   function navigateTo(path: string) {
-    const href = "/" + path.replace(/\.md$/, "");
+    const trimmed = path.replace(/\.md$/, "");
+    const href = handle ? `/@${handle}/${trimmed}` : `/${trimmed}`;
     closeSearch();
     resetState();
     router.push(href);
