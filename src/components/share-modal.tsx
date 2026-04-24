@@ -65,7 +65,7 @@ export default function ShareModal({
   const [copied, setCopied] = useState(false);
   const [clipboardFailed, setClipboardFailed] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const { link } = useScopedLink();
+  const { link, vaultSlug } = useScopedLink();
 
   const headingId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -134,15 +134,25 @@ export default function ShareModal({
     setStage("loading");
     setErrorMessage("");
     try {
-      const res = await fetch("/api/admin/share", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          note_path: notePath,
-          ttl_days: ttlDays,
-          max_views: maxViews,
-        }),
-      });
+      // Send the current vault slug so the backend binds the share to
+      // this vault. Without it, grove-server mints the share against
+      // the token's default context (personal) and following the link
+      // 404s in the wrong vault — or worse, fuzzy-matches to a note in
+      // a different vault.
+      const qp = new URLSearchParams();
+      if (vaultSlug) qp.set("vaultSlug", vaultSlug);
+      const res = await fetch(
+        qp.toString() ? `/api/admin/share?${qp}` : "/api/admin/share",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            note_path: notePath,
+            ttl_days: ttlDays,
+            max_views: maxViews,
+          }),
+        },
+      );
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         setErrorMessage(data?.error ?? "");
