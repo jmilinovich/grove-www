@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { Button } from "./primitives/button";
+import { RelativeTime } from "./primitives/relative-time";
 import { useScopedLink } from "@/hooks/use-scoped-link";
 
 interface UserMeta {
@@ -20,20 +21,6 @@ interface Trail {
   name: string;
   description: string;
   enabled: boolean;
-}
-
-function relativeTime(iso: string | null): string {
-  if (!iso) return "Never";
-  const ms = Date.now() - new Date(iso).getTime();
-  const sec = Math.floor(ms / 1000);
-  if (sec < 60) return "Just now";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const days = Math.floor(hr / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function RoleBadge({ role }: { role: string }) {
@@ -282,7 +269,7 @@ export default function MemberTable({
                   <RoleBadge role={user.role} />
                 </td>
                 <td className="px-6 py-3 text-muted hidden sm:table-cell">
-                  {relativeTime(user.last_login_at)}
+                  <RelativeTime iso={user.last_login_at} />
                 </td>
                 <td className="px-6 py-3 text-muted hidden md:table-cell">
                   {user.trails.length > 0 ? user.trails.join(", ") : "\u2014"}

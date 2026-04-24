@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Button } from "./primitives/button";
+import { RelativeTime } from "./primitives/relative-time";
 
 interface KeyMeta {
   id: string;
@@ -10,20 +11,6 @@ interface KeyMeta {
   created_at: string;
   last_used_at: string | null;
   expires_at: string | null;
-}
-
-function relativeTime(iso: string | null): string {
-  if (!iso) return "Never";
-  const ms = Date.now() - new Date(iso).getTime();
-  const sec = Math.floor(ms / 1000);
-  if (sec < 60) return "Just now";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const days = Math.floor(hr / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function ScopeBadge({ scope }: { scope: string }) {
@@ -251,13 +238,13 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
                   )}
                 </td>
                 <td className="px-6 py-3 text-muted hidden md:table-cell">
-                  {relativeTime(key.created_at)}
+                  <RelativeTime iso={key.created_at} />
                 </td>
                 <td className="px-6 py-3 text-muted hidden md:table-cell">
-                  {relativeTime(key.last_used_at)}
+                  <RelativeTime iso={key.last_used_at} />
                 </td>
                 <td className="px-6 py-3 text-muted hidden lg:table-cell">
-                  {key.expires_at ? relativeTime(key.expires_at) : "Never"}
+                  <RelativeTime iso={key.expires_at} />
                 </td>
                 <td className="px-6 py-3 text-right">
                   {confirmRevoke === key.id ? (
