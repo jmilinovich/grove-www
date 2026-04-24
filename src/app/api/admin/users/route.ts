@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getApiKey } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { checkSameOrigin } from "@/lib/csrf";
+import { bodyLimitErrorResponse, readJsonBody } from "@/lib/body-limit";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -58,7 +59,14 @@ export async function POST(request: NextRequest) {
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await readJsonBody(request);
+  } catch (err) {
+    const limitResponse = bodyLimitErrorResponse(err);
+    if (limitResponse) return limitResponse;
+    throw err;
+  }
 
   const res = await fetch(`${API_URL}/v1/admin/invite`, {
     method: "POST",

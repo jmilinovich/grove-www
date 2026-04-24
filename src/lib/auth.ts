@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { getSessionCookie } from "./session-cookie";
 
 const DEV_SECRET = "grove-dev-secret-do-not-use-in-production";
 
@@ -41,10 +42,13 @@ export function decryptKey(encoded: string): string {
 }
 
 export function getApiKey(cookies: { get: (name: string) => { value: string } | undefined }): string | null {
-  const cookie = cookies.get("grove_token");
-  if (!cookie?.value) return null;
+  // Dual-read window: prefer the `__Host-` prefixed cookie, fall back to
+  // the legacy unprefixed name so sessions issued before the rollover
+  // keep working until the user re-authenticates.
+  const session = getSessionCookie(cookies);
+  if (!session) return null;
   try {
-    return decryptKey(cookie.value);
+    return decryptKey(session.value);
   } catch {
     return null;
   }

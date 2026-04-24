@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
 import { checkSameOrigin } from "@/lib/csrf";
+import { bodyLimitErrorResponse, readJsonBody } from "@/lib/body-limit";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -34,7 +35,17 @@ export async function POST(request: NextRequest) {
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const body = await request.json().catch(() => null);
+  // Share-mint payloads are tiny (`{note_path, ttl_days, max_views}`); cap
+  // well below the default 64 KiB so a path-stuffing attacker can't slip a
+  // multi-megabyte request through.
+  let body: Record<string, unknown>;
+  try {
+    body = await readJsonBody<Record<string, unknown>>(request);
+  } catch (err) {
+    const limitResponse = bodyLimitErrorResponse(err);
+    if (limitResponse) return limitResponse;
+    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+  }
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }

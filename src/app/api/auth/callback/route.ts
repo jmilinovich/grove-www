@@ -6,6 +6,7 @@ import {
   resolveLandingPathForUser,
   roleFromWhoami,
 } from "@/lib/role";
+import { setSessionCookie } from "@/lib/session-cookie";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -73,13 +74,7 @@ export async function GET(request: NextRequest) {
 
     const encrypted = encryptKey(apiKeyToken);
     const response = NextResponse.redirect(new URL(destination, request.url));
-    response.cookies.set("grove_token", encrypted, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    });
+    setSessionCookie(response, encrypted);
 
     return response;
   } catch (err) {

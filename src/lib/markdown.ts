@@ -338,6 +338,81 @@ function visitBlockquotes(tree: MdastRoot, fn: (node: Blockquote) => void) {
 }
 
 // ---------------------------------------------------------------------------
+// Rehype plugin: link safety
+//
+// User-authored markdown can render arbitrary anchors. If the author
+// controls `target` and `rel` we hand them three footguns:
+//   - `target="_top"` / `target="_parent"`: lets the link break out of an
+//     embedding frame and replace it (clickjacking + UX hijack).
+//   - `target="_blank"` without `rel="noopener"`: classic tabnabbing — the
+//     opened page can navigate `window.opener` to a phishing clone.
+//   - missing `rel="noreferrer"`: leaks the current note path as Referer.
+// We strip both attributes upstream (in the sanitize schema) and re-add
+// them here, deterministically:
+//   - off-origin (absolute http/https not pointing at the current host)
+//     and protocol-relative (`//evil.com`) → `target="_blank"`,
+//     `rel="noopener noreferrer nofollow"`.
+//   - relative / same-origin / hash / mailto / wikilinks → `target="_self"`,
+//     no `rel` (don't accidentally leak nofollow into internal pages).
+// `INTERNAL_HOSTS` keeps grove subdomains classified as internal so links
+// between vault, marketing, and api pages don't pop new tabs.
+// ---------------------------------------------------------------------------
+
+const INTERNAL_HOST_SUFFIXES = ["grove.md", "localhost", "127.0.0.1"];
+
+function isInternalHref(href: string): boolean {
+  if (!href) return true;
+  // Hash, query-only, or empty path = same document.
+  if (href.startsWith("#") || href.startsWith("?")) return true;
+  // Protocol-relative (`//host/...`) is always external — pinning a
+  // protocol the browser inherits is exactly the surface we don't want
+  // authors controlling.
+  if (href.startsWith("//")) return false;
+  // Bare path or relative path = same origin.
+  if (href.startsWith("/") || !/^[a-z][a-z0-9+.-]*:/i.test(href)) return true;
+  // Non-http(s) schemes (mailto:, tel:) are not navigable to a different
+  // origin in the tabnabbing sense, treat as internal so we don't slap
+  // `target=_blank` on `mailto:` links.
+  const lower = href.toLowerCase();
+  if (lower.startsWith("mailto:") || lower.startsWith("tel:")) return true;
+  if (!lower.startsWith("http://") && !lower.startsWith("https://")) return false;
+  try {
+    const url = new URL(href);
+    return INTERNAL_HOST_SUFFIXES.some(
+      (suffix) => url.hostname === suffix || url.hostname.endsWith(`.${suffix}`),
+    );
+  } catch {
+    // Malformed URL → treat as internal so we don't open random tabs for it;
+    // the sanitizer's protocol check already rejected anything dangerous.
+    return true;
+  }
+}
+
+function rehypeLinkSafety(): Plugin<[], HastRoot> {
+  return () => {
+    return (tree: HastRoot) => {
+      visitHast(tree, (node) => {
+        const el = node as { tagName?: string; properties?: Record<string, unknown> };
+        if (el.tagName !== "a") return;
+        const props = (el.properties ??= {});
+        const hrefRaw = props.href;
+        const href = typeof hrefRaw === "string" ? hrefRaw : "";
+
+        if (isInternalHref(href)) {
+          props.target = "_self";
+          delete props.rel;
+          return;
+        }
+
+        // External or protocol-relative: force a safe new-tab open.
+        props.target = "_blank";
+        props.rel = "noopener noreferrer nofollow";
+      });
+    };
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Rehype plugin: mermaid code blocks → placeholder divs
 // ---------------------------------------------------------------------------
 
@@ -428,9 +503,20 @@ const sanitizeSchema = {
   // (including by anonymous viewers of shared links). Drop `style`
   // globally; KaTeX / mermaid outputs go through their own pipelines
   // that don't need author-supplied inline styles to survive.
+  //
+  // `id` is NOT in the global allowlist. An author-controlled id can clobber
+  // window properties (`<img id="__proto__">`, `<form id="open">`, etc.) and
+  // shadow same-name DOM lookups. Heading-anchor IDs aren't generated in
+  // this pipeline today; if anchoring lands later, allow `id` only on
+  // heading tags via the per-tag allowlist instead of globally.
+  //
+  // `target` and `rel` are NOT in the `<a>` allowlist. We set them
+  // ourselves in `enforceLinkSafety` based on the link's origin so an
+  // author can't dictate `target="_top"` (clickjacking) or strip
+  // `rel="noopener"` (tabnabbing).
   attributes: {
-    "*": ["className", "class", "id", "title", "data-mermaid-source", "data-language"],
-    a: ["href", "target", "rel"],
+    "*": ["className", "class", "title", "data-mermaid-source", "data-language"],
+    a: ["href"],
     img: ["src", "alt", "width", "height"],
     input: ["type", "checked", "disabled"],
     th: ["align"],
@@ -518,6 +604,10 @@ export async function renderMarkdown(
     .use(rehypeMermaid())
     .use(rehypeKatex)
     .use(rehypeSanitize, sanitizeSchema)
+    // Link safety runs AFTER sanitize so the schema can strip any
+    // author-supplied target/rel first; we then re-add the deterministic
+    // values based on whether the href points off-origin.
+    .use(rehypeLinkSafety())
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
