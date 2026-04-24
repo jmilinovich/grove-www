@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { useParams } from "next/navigation";
 import { ChevronDown, Check } from "lucide-react";
 import type { VaultEntry } from "@/lib/vault-context";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 export type { VaultEntry };
 
@@ -46,14 +46,15 @@ export function VaultSwitcher({
   const panelRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
   // On user-scoped pages (`/@<h>/profile`, `/@<h>/settings/*`) there is no
-  // `vaultSlug` in the URL — the switcher should show a neutral "Switch
-  // to vault…" launcher instead of claiming a vault is active. Derived
-  // from `useParams()` so the component reflects the current route without
-  // any parent wiring (see SPEC.md P8-B6 component behavior).
-  const routeParams = useParams();
-  const onUserScopedPage =
-    typeof routeParams?.vaultSlug !== "string" ||
-    (routeParams.vaultSlug as string).length === 0;
+  // vault in the URL — the switcher should show a neutral "Switch to
+  // vault…" launcher instead of claiming a vault is active.
+  // `useScopedLink` returns the effective slug from either the
+  // `[vaultSlug]` route param or the detected first segment of the
+  // `[...path]` catch-all, so the switcher chrome reflects the real
+  // current scope on every route shape (see SPEC.md P8-B6 component
+  // behavior).
+  const { vaultSlug: scopedSlug } = useScopedLink();
+  const onUserScopedPage = !scopedSlug;
 
   if (vaults.length === 0) return null;
   const current = vaults.find((v) => v.slug === currentSlug) ?? vaults[0];

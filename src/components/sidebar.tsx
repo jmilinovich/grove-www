@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Folder } from "lucide-react";
 import { useSidebar } from "./sidebar-provider";
 import { useMe } from "@/contexts/me-context";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 interface TreeEntry {
   name: string;
@@ -183,15 +184,12 @@ export default function Sidebar() {
   // Handle comes from the shared /api/me context — no per-component fetch.
   const { me } = useMe();
   const handle = useMemo(() => me?.handle ?? me?.username ?? null, [me]);
-  // Route params expose `vaultSlug` only when the matched page is under
-  // `[atHandle]/[vaultSlug]/...`. Legacy / unscoped routes return undefined
-  // and we fall back to the token's bound vault server-side.
-  const params = useParams();
-  const rawVaultSlug = params?.vaultSlug;
-  const vaultSlug = useMemo(() => {
-    const v = Array.isArray(rawVaultSlug) ? rawVaultSlug[0] : rawVaultSlug;
-    return typeof v === "string" && v.length > 0 ? v : undefined;
-  }, [rawVaultSlug]);
+  // Resolve the effective vault slug (from `[vaultSlug]` param or the
+  // first segment of `[...path]` when it matches the viewer's vaults).
+  // `useScopedLink` handles both shapes so the sidebar stays scoped on
+  // legacy-catch-all routes.
+  const { vaultSlug: scopedSlug } = useScopedLink();
+  const vaultSlug = scopedSlug ?? undefined;
 
   useEffect(() => {
     const visited = localStorage.getItem("grove_sidebar_hint_shown");

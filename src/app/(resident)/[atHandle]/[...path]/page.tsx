@@ -57,8 +57,13 @@ function DirectoryListing({
   const directChildren: ListEntry[] = [];
   const subfolders = new Set<string>();
 
+  // `prefix.length + 1` assumes a trailing `/` after the prefix so e.g.
+  // `Resources/Concepts/foo.md` → `Concepts/foo.md`. At the vault root
+  // `prefix === ""` and we want the raw `entry.path`; `.slice(1)` would
+  // eat the first character and render "Resources/foo" as "esources/foo".
+  const relativeStart = prefix.length > 0 ? prefix.length + 1 : 0;
   for (const entry of entries) {
-    const relative = entry.path.slice(prefix.length + 1);
+    const relative = entry.path.slice(relativeStart);
     const slashIndex = relative.indexOf("/");
     if (slashIndex === -1) {
       directChildren.push(entry);
@@ -67,7 +72,7 @@ function DirectoryListing({
     }
   }
 
-  const folderName = prefix.split("/").pop() || prefix;
+  const folderName = prefix.split("/").pop() || prefix || "Vault";
 
   return (
     <div>
@@ -215,6 +220,19 @@ export default async function ScopedNotePage({ params }: PageProps) {
       `[@handle/...path] fetchNote failed for "${vaultPath}" (slug=${vaultSlug ?? "-"}), trying listNotes:`,
       err,
     );
+  }
+
+  // grove-server's `resolveNote` has a BM25 fuzzy fallback intended for
+  // wikilink resolution — it will return *some* note for nearly any
+  // query. When navigating a URL the user typed / clicked in the sidebar
+  // we want the exact path or nothing, because rendering a random
+  // fuzzy-matched note for a folder URL like `/@h/personal/Areas`
+  // silently replaces the directory listing with whatever BM25 ranked
+  // first. `resolved_from` is only set when the server took a fallback
+  // path, so dropping the note and falling through to `listNotes` makes
+  // URL navigation deterministic.
+  if (note && (note as { resolved_from?: string }).resolved_from) {
+    note = null;
   }
 
   if (!note) {
