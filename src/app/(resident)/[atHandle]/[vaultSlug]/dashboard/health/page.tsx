@@ -12,9 +12,13 @@ export const metadata = {
   title: "Health — Grove",
 };
 
-async function fetchCurrent(apiKey: string): Promise<HealthSnapshot | null> {
+function scoped(vaultSlug: string, path: string): string {
+  return `${API_URL}/v/${encodeURIComponent(vaultSlug)}${path}`;
+}
+
+async function fetchCurrent(apiKey: string, vaultSlug: string): Promise<HealthSnapshot | null> {
   try {
-    const res = await fetch(`${API_URL}/v1/admin/health/current`, {
+    const res = await fetch(scoped(vaultSlug, "/v1/admin/health/current"), {
       headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
     });
@@ -26,9 +30,9 @@ async function fetchCurrent(apiKey: string): Promise<HealthSnapshot | null> {
   }
 }
 
-async function fetchHistory(apiKey: string): Promise<HealthSnapshot[]> {
+async function fetchHistory(apiKey: string, vaultSlug: string): Promise<HealthSnapshot[]> {
   try {
-    const res = await fetch(`${API_URL}/v1/admin/health/history?days=30`, {
+    const res = await fetch(scoped(vaultSlug, "/v1/admin/health/history?days=30"), {
       headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
     });
@@ -40,9 +44,9 @@ async function fetchHistory(apiKey: string): Promise<HealthSnapshot[]> {
   }
 }
 
-async function fetchFlags(apiKey: string): Promise<HealthFlag[]> {
+async function fetchFlags(apiKey: string, vaultSlug: string): Promise<HealthFlag[]> {
   try {
-    const res = await fetch(`${API_URL}/v1/admin/health/flags`, {
+    const res = await fetch(scoped(vaultSlug, "/v1/admin/health/flags"), {
       headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
     });
@@ -54,15 +58,20 @@ async function fetchFlags(apiKey: string): Promise<HealthFlag[]> {
   }
 }
 
-export default async function HealthPage() {
+interface HealthPageProps {
+  params: Promise<{ atHandle: string; vaultSlug: string }>;
+}
+
+export default async function HealthPage({ params }: HealthPageProps) {
+  const { vaultSlug } = await params;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) redirect("/login?redirect=/dashboard/health");
 
   const [current, history, flags] = await Promise.all([
-    fetchCurrent(apiKey),
-    fetchHistory(apiKey),
-    fetchFlags(apiKey),
+    fetchCurrent(apiKey, vaultSlug),
+    fetchHistory(apiKey, vaultSlug),
+    fetchFlags(apiKey, vaultSlug),
   ]);
 
   return (
