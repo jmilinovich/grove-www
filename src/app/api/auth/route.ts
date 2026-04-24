@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { encryptKey } from "@/lib/auth";
+import { checkSameOrigin } from "@/lib/csrf";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
 export async function POST(request: NextRequest) {
+  // CSRF / login-CSRF protection. Without this, any page on the
+  // internet could force the victim's browser to submit an
+  // attacker-controlled api_key and take over the session
+  // (attacker's vault, attacker's identity).
+  const csrf = checkSameOrigin(request);
+  if (csrf) {
+    return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
+  }
+
   try {
     const { api_key } = await request.json();
     if (!api_key || typeof api_key !== "string") {
@@ -39,7 +49,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
+  // Defense-in-depth on logout: SameSite=strict covers most of this,
+  // but explicit same-origin check keeps parity with the rest of the
+  // mutating routes.
+  const csrf = checkSameOrigin(request);
+  if (csrf) {
+    return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
+  }
+
   const response = NextResponse.json({ ok: true });
   response.cookies.set("grove_token", "", {
     httpOnly: true,

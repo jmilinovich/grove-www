@@ -16,6 +16,13 @@ export default function MermaidBlock({ source }: { source: string }) {
           startOnLoad: false,
           theme: "dark",
           fontFamily: "var(--font-geist-mono)",
+          // Explicitly pin the strictest security level. Mermaid's
+          // default has drifted across major versions; a library-
+          // default regression would let attacker-authored diagram
+          // source emit unsafe SVG that we inject into the DOM via
+          // `innerHTML` below. "strict" runs the output through
+          // DOMPurify and disables interactive click-bind.
+          securityLevel: "strict",
         });
 
         if (cancelled || !containerRef.current) return;

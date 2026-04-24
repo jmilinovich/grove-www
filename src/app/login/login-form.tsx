@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/primitives/button";
+import { isSafeRelativePath } from "@/lib/role";
 
 export default function LoginForm() {
   const [apiKey, setApiKey] = useState("");
@@ -70,7 +71,12 @@ export default function LoginForm() {
           return;
         }
 
-        const redirect = searchParams.get("redirect") ?? "/";
+        // Validate redirect to prevent open-redirect phishing. A
+        // crafted `?redirect=//evil.com/phish` would otherwise
+        // navigate the post-login user away from grove.md to a
+        // credential-harvesting page with grove.md as referrer.
+        const rawRedirect = searchParams.get("redirect");
+        const redirect = isSafeRelativePath(rawRedirect) ? rawRedirect : "/";
         router.push(redirect);
       } catch {
         setError("Network error — could not reach server");
