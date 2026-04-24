@@ -91,7 +91,17 @@ export default function Header() {
           <PanelLeft size={18} />
         </button>
         <Link
-          href={isNonOwner ? "/home" : "/"}
+          // Logo: trail users → `/home`; scoped viewers → their current
+          // vault dashboard (so clicking it while inside test-vault
+          // doesn't jump them back to personal); otherwise bare `/` which
+          // redirects to MRU.
+          href={
+            isNonOwner
+              ? "/home"
+              : ready && atHandle && vaultSlug
+                ? scopedPath(atHandle, vaultSlug, "/dashboard")
+                : "/"
+          }
           className="font-serif text-base font-medium text-foreground hover:text-accent transition-colors"
         >
           Grove

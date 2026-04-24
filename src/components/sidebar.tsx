@@ -184,12 +184,14 @@ export default function Sidebar() {
   // Handle comes from the shared /api/me context — no per-component fetch.
   const { me } = useMe();
   const handle = useMemo(() => me?.handle ?? me?.username ?? null, [me]);
-  // Resolve the effective vault slug (from `[vaultSlug]` param or the
-  // first segment of `[...path]` when it matches the viewer's vaults).
-  // `useScopedLink` handles both shapes so the sidebar stays scoped on
-  // legacy-catch-all routes.
-  const { vaultSlug: scopedSlug } = useScopedLink();
-  const vaultSlug = scopedSlug ?? undefined;
+  // Resolve the effective vault slug. On vault-scoped routes this comes
+  // straight from the URL; on user-scoped routes (profile,
+  // settings/vaults, shared notes) the `fallbackSlug` picks the
+  // viewer's MRU vault so the sidebar stays pointed at *some* real
+  // vault and its folder links keep the slug, instead of emitting
+  // `/@<handle>/<folder>` that drops through the legacy catch-all.
+  const { vaultSlug: scopedSlug, fallbackSlug } = useScopedLink();
+  const vaultSlug = scopedSlug ?? fallbackSlug ?? undefined;
 
   useEffect(() => {
     const visited = localStorage.getItem("grove_sidebar_hint_shown");
