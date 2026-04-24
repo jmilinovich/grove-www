@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { RelativeTime } from "./primitives/relative-time";
 
 export interface ShareRow {
   id: string;
@@ -19,22 +20,6 @@ export interface ShareRow {
 
 type SortKey = "created_at" | "expires_at" | "view_count" | "note_path" | "status";
 type SortDir = "asc" | "desc";
-
-function relativeTime(iso: string | null): string {
-  if (!iso) return "—";
-  const ms = Date.now() - new Date(iso).getTime();
-  const past = ms >= 0;
-  const abs = Math.abs(ms);
-  const sec = Math.floor(abs / 1000);
-  if (sec < 60) return past ? "just now" : "in <1m";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return past ? `${min}m ago` : `in ${min}m`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return past ? `${hr}h ago` : `in ${hr}h`;
-  const days = Math.floor(hr / 24);
-  if (days < 30) return past ? `${days}d ago` : `in ${days}d`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
 
 function viewsLabel(count: number, max: number | null): string {
   return max === null ? `${count} / ∞` : `${count}/${max}`;
@@ -292,10 +277,10 @@ export default function SharesTable({
                         </span>
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">
-                        {relativeTime(row.created_at)}
+                        <RelativeTime iso={row.created_at} fallback="—" mode="bidirectional" />
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">
-                        {relativeTime(row.expires_at)}
+                        <RelativeTime iso={row.expires_at} fallback="—" mode="bidirectional" />
                       </td>
                       <td className="px-4 py-3 hidden lg:table-cell">
                         {viewsLabel(row.view_count, row.max_views)}

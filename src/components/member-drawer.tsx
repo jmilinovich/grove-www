@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { RelativeTime } from "./primitives/relative-time";
 
 interface UserMeta {
   id: string;
@@ -12,20 +13,6 @@ interface UserMeta {
   last_login_at: string | null;
   key_count: number;
   trails: string[];
-}
-
-function relativeTime(iso: string | null): string {
-  if (!iso) return "Never";
-  const ms = Date.now() - new Date(iso).getTime();
-  const sec = Math.floor(ms / 1000);
-  if (sec < 60) return "Just now";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const days = Math.floor(hr / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export default function MemberDrawer({ memberId }: { memberId: string }) {
@@ -117,11 +104,11 @@ export default function MemberDrawer({ memberId }: { memberId: string }) {
               </div>
               <div>
                 <dt className="text-detail uppercase tracking-[0.1em] text-muted">Last login</dt>
-                <dd className="text-foreground">{relativeTime(user.last_login_at)}</dd>
+                <dd className="text-foreground"><RelativeTime iso={user.last_login_at} /></dd>
               </div>
               <div>
                 <dt className="text-detail uppercase tracking-[0.1em] text-muted">Joined</dt>
-                <dd className="text-foreground">{relativeTime(user.created_at)}</dd>
+                <dd className="text-foreground"><RelativeTime iso={user.created_at} /></dd>
               </div>
               <div>
                 <dt className="text-detail uppercase tracking-[0.1em] text-muted">Keys</dt>
