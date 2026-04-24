@@ -2,7 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
-import { scopedPath, userScopedPath } from "@/lib/vault-context";
+import {
+  activeScopeFromMe,
+  scopedPath,
+  userScopedPath,
+} from "@/lib/vault-context";
 import { useMe } from "@/contexts/me-context";
 
 /**
@@ -57,6 +61,17 @@ export function useScopedLink() {
     return null;
   }, [directSlug, firstSegment, me]);
 
+  // `vaultSlug` is null on genuinely user-scoped routes (profile,
+  // settings/vaults, public share pages). Components that need *some*
+  // vault to build links (sidebar, header icons) fall back to the
+  // viewer's MRU vault so they stay useful instead of emitting
+  // un-scoped `/@<handle>/<folder>` links that drop through the
+  // legacy catch-all.
+  const fallbackSlug = useMemo(() => {
+    if (vaultSlug) return vaultSlug;
+    return activeScopeFromMe(me ?? null)?.slug ?? null;
+  }, [vaultSlug, me]);
+
   const link = useCallback(
     (subPath: string) => {
       if (!atHandle || !vaultSlug) return subPath;
@@ -77,10 +92,18 @@ export function useScopedLink() {
     () => ({
       atHandle,
       vaultSlug,
+      /**
+       * MRU vault slug to use when the current route isn't vault-scoped
+       * (profile, settings/vaults, public share). Same as `vaultSlug`
+       * when the URL already has a scope. Consumers that render chrome
+       * (sidebar, header icons) should prefer this so they never emit
+       * un-scoped `/@<handle>/<folder>` links.
+       */
+      fallbackSlug,
       ready: Boolean(atHandle && vaultSlug),
       link,
       userLink,
     }),
-    [atHandle, vaultSlug, link, userLink],
+    [atHandle, vaultSlug, fallbackSlug, link, userLink],
   );
 }
