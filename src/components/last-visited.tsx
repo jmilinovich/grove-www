@@ -22,9 +22,15 @@ export default function LastVisited() {
       return;
     }
 
-    // On "/": redirect only if logged in (has auth cookie)
+    // On "/": redirect only if logged in (has auth cookie). The session
+    // cookie itself is HttpOnly, so `document.cookie` can't see it; this
+    // probe matches whichever non-HttpOnly tracker happens to coexist on
+    // the same browser (legacy preview deploys, dev reloads). During the
+    // `__Host-` migration we accept either name as a hint.
     if (pathname === "/") {
-      const hasToken = document.cookie.includes("grove_token");
+      const cookieStr = document.cookie;
+      const hasToken =
+        cookieStr.includes("__Host-grove_token") || cookieStr.includes("grove_token");
       if (!hasToken) return; // Let unauthenticated visitors see the landing page
 
       const lastPath = localStorage.getItem("grove_last_path");
