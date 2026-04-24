@@ -1,15 +1,27 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
+import { fetchWhoami, roleFromWhoami } from "@/lib/role";
 
 const BETTERSTACK_API = "https://uptime.betterstack.com/api/v2";
 const BETTERSTACK_KEY = process.env.BETTERSTACK_API_KEY ?? "";
 
-/** GET /api/admin/betterstack — fetch monitor status from BetterStack */
+/**
+ * GET /api/admin/betterstack — fetch monitor status from BetterStack.
+ *
+ * Admin-only. Viewer-role and trail-scoped keys are denied: the monitor
+ * list reveals internal service URLs, check frequencies, and status
+ * history that non-admins shouldn't see.
+ */
 export async function GET() {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  const whoami = await fetchWhoami(apiKey);
+  if (roleFromWhoami(whoami) !== "owner") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
 
   if (!BETTERSTACK_KEY) {
     return NextResponse.json({ error: "BETTERSTACK_API_KEY not configured" }, { status: 503 });

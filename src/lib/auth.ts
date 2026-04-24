@@ -3,7 +3,19 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 const DEV_SECRET = "grove-dev-secret-do-not-use-in-production";
 
 function getSecret(): Buffer {
-  const raw = process.env.AUTH_SECRET ?? DEV_SECRET;
+  const raw = process.env.AUTH_SECRET;
+  if (!raw) {
+    if (process.env.NODE_ENV === "production") {
+      // Falling back to the committed dev string in prod means anyone
+      // who reads the repo can decrypt captured `grove_token` cookies
+      // and recover the raw API key they wrap. Fail loudly at boot
+      // instead of silently downgrading.
+      throw new Error(
+        "AUTH_SECRET is required in production. Refusing to fall back to the dev constant.",
+      );
+    }
+    return createHash("sha256").update(DEV_SECRET).digest();
+  }
   return createHash("sha256").update(raw).digest();
 }
 
