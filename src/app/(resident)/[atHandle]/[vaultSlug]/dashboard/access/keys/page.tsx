@@ -37,7 +37,7 @@ export const metadata = {
 export default async function KeysPage() {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect("/login?redirect=/dashboard/keys");
+  if (!apiKey) redirect("/login?redirect=/dashboard/access/keys");
 
   const keys = await fetchKeys(apiKey);
 

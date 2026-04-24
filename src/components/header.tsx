@@ -5,34 +5,25 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Home,
   LayoutGrid,
-  LogOut,
   PanelLeft,
   Search,
-  User,
   Image as ImageIcon,
 } from "lucide-react";
 import { useSidebar } from "./sidebar-provider";
 import { useSearch } from "./search-provider";
 import { VaultSwitcher, type VaultEntry } from "./vault-switcher";
+import AvatarMenu from "./avatar-menu";
 import { useScopedLink } from "@/hooks/use-scoped-link";
 import { useMe } from "@/contexts/me-context";
 import {
   activeScopeFromMe,
   bareHandle,
   scopedPath,
-  userScopedPath,
 } from "@/lib/vault-context";
 
 interface TrailInfo {
   id: string;
   name: string;
-}
-
-function handleLogout() {
-  fetch("/api/auth", { method: "DELETE" }).then(() => {
-    localStorage.removeItem("grove_last_path");
-    window.location.href = "/login";
-  });
 }
 
 export default function Header() {
@@ -76,18 +67,6 @@ export default function Header() {
     if (active) return scopedPath(active.handle, active.slug, "/dashboard");
     return "/dashboard";
   }, [isNonOwner, ready, atHandle, vaultSlug, me]);
-  // Profile is user-scoped (P8-B6): `/@<handle>/profile`, no vault slug.
-  // Use the route's atHandle when we have it; otherwise fall back to the
-  // viewer's handle from /v1/me; last resort is bare `/profile` which 308s
-  // to the user-scoped canonical via its own shim.
-  const profileHref = useMemo(() => {
-    if (ready && atHandle) {
-      return userScopedPath(atHandle, "/profile");
-    }
-    const active = activeScopeFromMe(me);
-    if (active) return userScopedPath(active.handle, "/profile");
-    return "/profile";
-  }, [ready, atHandle, me]);
   const imagesHref = useMemo(() => {
     if (ready && atHandle && vaultSlug) {
       return scopedPath(atHandle, vaultSlug, "/images");
@@ -154,7 +133,7 @@ export default function Header() {
         <Search size={18} />
       </button>
 
-      {/* Right: images + home/dashboard + profile + logout */}
+      {/* Right: images + home/dashboard + avatar menu */}
       <div className="flex items-center gap-1">
       {roleLoaded && !isNonOwner && (
         <Link
@@ -174,20 +153,7 @@ export default function Header() {
           {isNonOwner ? <Home size={16} /> : <LayoutGrid size={16} />}
         </Link>
       )}
-      <Link
-        href={profileHref}
-        className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
-        aria-label="Profile"
-      >
-        <User size={16} />
-      </Link>
-      <button
-        onClick={handleLogout}
-        className="flex items-center justify-center w-8 h-8 rounded-md text-muted hover:text-foreground hover:bg-surface transition-colors"
-        aria-label="Log out"
-      >
-        <LogOut size={16} />
-      </button>
+      <AvatarMenu />
       </div>
     </header>
   );

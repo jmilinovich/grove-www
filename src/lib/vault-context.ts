@@ -59,6 +59,7 @@ export function resolveActiveVault(vaults: VaultEntry[]): VaultEntry | null {
 export interface MeResponse {
   handle?: string | null;
   username?: string | null;
+  email?: string | null;
   vaults?: VaultEntry[];
 }
 

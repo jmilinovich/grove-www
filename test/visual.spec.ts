@@ -63,8 +63,8 @@ const ROUTES: Route[] = [
   { path: "/home", label: "home", signedIn: true },
   { path: `${SCOPED_PREFIX}/profile`, label: "profile", signedIn: true },
   { path: `${SCOPED_PREFIX}/dashboard`, label: "dashboard", signedIn: true },
-  { path: `${SCOPED_PREFIX}/dashboard/keys`, label: "dashboard-keys", signedIn: true },
-  { path: `${SCOPED_PREFIX}/dashboard/trails`, label: "dashboard-trails", signedIn: true },
+  { path: `${SCOPED_PREFIX}/dashboard/access/keys`, label: "dashboard-keys", signedIn: true },
+  { path: `${SCOPED_PREFIX}/dashboard/access/trails`, label: "dashboard-trails", signedIn: true },
   { path: "/Resources/Concepts/Example", label: "note-viewer", signedIn: true },
 ];
 

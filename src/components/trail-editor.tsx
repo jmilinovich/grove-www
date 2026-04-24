@@ -172,7 +172,7 @@ function flattenTree(nodes: TreeNode[], acc: TreeNode[] = []): TreeNode[] {
 export default function TrailEditor({ initial }: { initial: TrailEditorInitial }) {
   const router = useRouter();
   const { link } = useScopedLink();
-  const trailsHref = link("/dashboard/trails");
+  const trailsHref = link("/dashboard/access/trails");
   const isCreate = initial.id === "new";
 
   const [name, setName] = useState(initial.name);

@@ -337,7 +337,7 @@ export default function ShareModal({
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <a
-                  href={link("/dashboard/shares")}
+                  href={link("/dashboard/access/shares")}
                   className="text-sm text-moss hover:text-moss/60 transition-colors"
                 >
                   Manage all shares →

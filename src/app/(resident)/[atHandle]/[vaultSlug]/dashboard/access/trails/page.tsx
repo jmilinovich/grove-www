@@ -38,13 +38,13 @@ async function fetchTrails(apiKey: string): Promise<Trail[] | null> {
 }
 
 export const metadata = {
-  title: "Trails — Grove",
+  title: "Scoped Keys — Grove",
 };
 
 export default async function TrailsPage() {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect("/login?redirect=/dashboard/trails");
+  if (!apiKey) redirect("/login?redirect=/dashboard/access/trails");
 
   const trails = await fetchTrails(apiKey);
 
