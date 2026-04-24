@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, Folder } from "lucide-react";
 import { useSidebar } from "./sidebar-provider";
@@ -31,10 +31,12 @@ function TreeNode({
   entry,
   depth = 0,
   handle,
+  vaultSlug,
 }: {
   entry: TreeEntry;
   depth?: number;
   handle: string;
+  vaultSlug: string | undefined;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [children, setChildren] = useState<TreeEntry[] | null>(entry.children ?? null);
@@ -44,7 +46,9 @@ function TreeNode({
   // Sidebar only mounts once `handle` is resolved (see Sidebar below), so
   // the prefix is always `/@<handle>`. Rendering earlier would leak bare
   // `/<folder>` URLs that Next.js would prefetch through the legacy shim.
-  const scopedPath = `/@${handle}/${entry.path}`;
+  const scopedPath = vaultSlug
+    ? `/@${handle}/${vaultSlug}/${entry.path}`
+    : `/@${handle}/${entry.path}`;
   const isActive = pathname === scopedPath || pathname.startsWith(`${scopedPath}/`);
 
   const handleToggle = useCallback(async () => {
@@ -58,7 +62,9 @@ function TreeNode({
     if (children === null) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/list?prefix=${encodeURIComponent(entry.path)}`);
+        const params = new URLSearchParams({ prefix: entry.path });
+        if (vaultSlug) params.set("vaultSlug", vaultSlug);
+        const res = await fetch(`/api/list?${params}`);
         if (res.ok) {
           const data = await res.json();
           const subfolders = new Set<string>();
@@ -99,7 +105,7 @@ function TreeNode({
     }
 
     setExpanded(true);
-  }, [entry, expanded, children]);
+  }, [entry, expanded, children, vaultSlug]);
 
   return (
     <li>
@@ -147,7 +153,13 @@ function TreeNode({
       {expanded && children && children.length > 0 && (
         <ul>
           {children.map((child) => (
-            <TreeNode key={child.path} entry={child} depth={depth + 1} handle={handle} />
+            <TreeNode
+              key={child.path}
+              entry={child}
+              depth={depth + 1}
+              handle={handle}
+              vaultSlug={vaultSlug}
+            />
           ))}
         </ul>
       )}
@@ -171,6 +183,15 @@ export default function Sidebar() {
   // Handle comes from the shared /api/me context — no per-component fetch.
   const { me } = useMe();
   const handle = useMemo(() => me?.handle ?? me?.username ?? null, [me]);
+  // Route params expose `vaultSlug` only when the matched page is under
+  // `[atHandle]/[vaultSlug]/...`. Legacy / unscoped routes return undefined
+  // and we fall back to the token's bound vault server-side.
+  const params = useParams();
+  const rawVaultSlug = params?.vaultSlug;
+  const vaultSlug = useMemo(() => {
+    const v = Array.isArray(rawVaultSlug) ? rawVaultSlug[0] : rawVaultSlug;
+    return typeof v === "string" && v.length > 0 ? v : undefined;
+  }, [rawVaultSlug]);
 
   useEffect(() => {
     const visited = localStorage.getItem("grove_sidebar_hint_shown");
@@ -184,7 +205,9 @@ export default function Sidebar() {
   useEffect(() => {
     async function loadFolders() {
       try {
-        const res = await fetch("/api/list?prefix=");
+        const qp = new URLSearchParams({ prefix: "" });
+        if (vaultSlug) qp.set("vaultSlug", vaultSlug);
+        const res = await fetch(`/api/list?${qp}`);
         if (!res.ok) return;
         const data = await res.json();
 
@@ -208,7 +231,7 @@ export default function Sidebar() {
       }
     }
     loadFolders();
-  }, []);
+  }, [vaultSlug]);
 
   return (
     <>
@@ -246,7 +269,12 @@ export default function Sidebar() {
             ) : (
               <ul className="space-y-0.5">
                 {topLevelFolders.map((entry) => (
-                  <TreeNode key={entry.path} entry={entry} handle={handle} />
+                  <TreeNode
+                    key={entry.path}
+                    entry={entry}
+                    handle={handle}
+                    vaultSlug={vaultSlug}
+                  />
                 ))}
               </ul>
             )}
