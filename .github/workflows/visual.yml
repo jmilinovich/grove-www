@@ -22,6 +22,10 @@ on:
       - "test/visual.spec.ts"
       - "playwright.visual.config.ts"
       - ".github/workflows/visual.yml"
+      # next.config.ts changes can reshape rendered pages (redirects,
+      # headers, rewrites) — include it so branch protection's
+      # required "visual" check actually runs on those PRs.
+      - "next.config.ts"
   workflow_dispatch:
     inputs:
       update_baselines:
