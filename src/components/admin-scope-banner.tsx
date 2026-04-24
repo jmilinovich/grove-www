@@ -1,16 +1,11 @@
 /**
- * Banner shown on dashboard admin tabs (Keys / Trails / Shares / Members /
- * Users / Health) when viewing a non-personal vault.
+ * Banner shown on dashboard admin tabs when viewing a non-personal
+ * vault, listing the surfaces that are *still* cross-vault.
  *
- * Why: `/v1/admin/*` endpoints are not yet vault-scoped (Part A of the
- * multi-vault rollout shipped data endpoints only — see HANDOFF.md).
- * When the URL says `/@jm/test-vault/dashboard/users`, the table shows
- * the PERSONAL vault's users regardless, because the backend handlers
- * still operate on the proxy's bound vault. This banner tells the user
- * that's expected so they don't file "broken vault switcher" bugs.
- *
- * Goes away automatically once Part B lands and per-vault admin
- * endpoints route like `/v/<slug>/v1/admin/*`.
+ * As of P20 keys, scoped keys, and shares route via `/v/<slug>/...` and
+ * filter by vault_id. Members + health still read from the proxy's
+ * default context — the banner now only names those two so users aren't
+ * warned about surfaces that already work.
  */
 export default function AdminScopeBanner({ vaultSlug }: { vaultSlug: string }) {
   // The personal vault IS the canonical admin surface today, so no
@@ -22,11 +17,11 @@ export default function AdminScopeBanner({ vaultSlug }: { vaultSlug: string }) {
       role="status"
       className="mb-6 rounded-md border border-harvest/40 bg-harvest/15 px-4 py-3 text-label text-earth"
     >
-      <p className="font-medium">Admin views are shared across vaults today.</p>
+      <p className="font-medium">Some admin views still show personal-vault data.</p>
       <p className="mt-1 text-earth/60">
-        Keys, scoped keys, shares, members, and health show data from your
-        personal vault regardless of which vault you&rsquo;re viewing. Per-vault
-        admin lands in the next phase.
+        Members and health read from your personal vault regardless of which
+        vault you&rsquo;re viewing. Per-vault scoping for those lands next;
+        keys, scoped keys, and shares are already vault-scoped.
       </p>
     </div>
   );

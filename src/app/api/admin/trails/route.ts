@@ -4,13 +4,20 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
-/** GET /api/admin/trails — list trails via grove backend */
-export async function GET() {
+function upstreamTrails(vaultSlug: string | null): string {
+  return vaultSlug
+    ? `${API_URL}/v/${encodeURIComponent(vaultSlug)}/v1/admin/trails`
+    : `${API_URL}/v1/admin/trails`;
+}
+
+/** GET /api/admin/trails[?vaultSlug=<slug>] — list trails for a vault. */
+export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const res = await fetch(`${API_URL}/v1/admin/trails`, {
+  const vaultSlug = request.nextUrl.searchParams.get("vaultSlug");
+  const res = await fetch(upstreamTrails(vaultSlug), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -27,15 +34,16 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
-/** POST /api/admin/trails — proxy create/update/delete/enable/disable to grove backend */
+/** POST /api/admin/trails[?vaultSlug=<slug>] — create/update/delete/enable/disable a trail. */
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const body = await request.json();
+  const vaultSlug = request.nextUrl.searchParams.get("vaultSlug");
 
-  const res = await fetch(`${API_URL}/v1/admin/trails`, {
+  const res = await fetch(upstreamTrails(vaultSlug), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,

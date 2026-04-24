@@ -4,14 +4,28 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
-/** GET /api/admin/keys — list API keys */
-export async function GET() {
+/**
+ * GET /api/admin/keys[?vaultSlug=<slug>] — list API keys.
+ * When `vaultSlug` is present we POST `{action: "list", vault_slug}` so
+ * grove-server filters by that vault. Without it, grove-server returns
+ * every key the caller owns (legacy single-vault behavior).
+ */
+export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
+  const vaultSlug = request.nextUrl.searchParams.get("vaultSlug");
+  const body: Record<string, unknown> = { action: "list" };
+  if (vaultSlug) body.vault_slug = vaultSlug;
+
   const res = await fetch(`${API_URL}/keys`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
@@ -22,13 +36,23 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
-/** POST /api/admin/keys — create or revoke a key */
+/**
+ * POST /api/admin/keys — create or revoke a key. When a `vaultSlug`
+ * query param is present the body gets `vault_slug` appended so
+ * `action: create` mints the key against that vault instead of the
+ * caller's primary vault.
+ */
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const body = await request.json();
+  const vaultSlug = request.nextUrl.searchParams.get("vaultSlug");
+  const upstreamBody =
+    vaultSlug && typeof body === "object" && body !== null
+      ? { ...body, vault_slug: vaultSlug }
+      : body;
 
   const res = await fetch(`${API_URL}/keys`, {
     method: "POST",
@@ -36,7 +60,7 @@ export async function POST(request: NextRequest) {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(upstreamBody),
   });
 
   if (!res.ok) {

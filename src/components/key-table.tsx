@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { Button } from "./primitives/button";
 import { RelativeTime } from "./primitives/relative-time";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 interface KeyMeta {
   id: string;
@@ -23,6 +24,12 @@ function ScopeBadge({ scope }: { scope: string }) {
 
 export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
   const [keys, setKeys] = useState(initialKeys);
+  // Scope list/create/revoke to the current vault when we're inside one
+  // — matches the per-vault shares flow (grove-www#39). Without this
+  // the Keys page shows every vault's keys in one flat list regardless
+  // of which vault the user is viewing.
+  const { vaultSlug } = useScopedLink();
+  const scopeQs = vaultSlug ? `?vaultSlug=${encodeURIComponent(vaultSlug)}` : "";
   const [showCreate, setShowCreate] = useState(false);
   const [createName, setCreateName] = useState("");
   const [createLoading, setCreateLoading] = useState(false);
@@ -33,7 +40,7 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
   const [revokeLoading, setRevokeLoading] = useState(false);
 
   const refreshKeys = useCallback(async () => {
-    const res = await fetch("/api/admin/keys", {
+    const res = await fetch(`/api/admin/keys${scopeQs}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "list" }),
@@ -42,7 +49,7 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
       const data = await res.json();
       setKeys(data.keys ?? []);
     }
-  }, []);
+  }, [scopeQs]);
 
   const handleCreate = useCallback(
     async (e: React.FormEvent) => {
@@ -51,7 +58,7 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
       setCreateLoading(true);
 
       try {
-        const res = await fetch("/api/admin/keys", {
+        const res = await fetch(`/api/admin/keys${scopeQs}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "create", name: createName.trim() }),
@@ -79,7 +86,7 @@ export default function KeyTable({ initialKeys }: { initialKeys: KeyMeta[] }) {
   const handleRevoke = useCallback(async (keyId: string) => {
     setRevokeLoading(true);
     try {
-      const res = await fetch("/api/admin/keys", {
+      const res = await fetch(`/api/admin/keys${scopeQs}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "revoke", id: keyId }),

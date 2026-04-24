@@ -21,16 +21,22 @@ export interface Trail {
   created_at: string;
 }
 
-async function fetchTrails(apiKey: string): Promise<Trail[] | null> {
-  const res = await fetch(`${API_URL}/v1/admin/trails`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+async function fetchTrails(apiKey: string, vaultSlug: string): Promise<Trail[] | null> {
+  // `/v/<slug>/v1/admin/trails` so the list is scoped to the current
+  // vault. The `trails` table has `vault_id`; the legacy unscoped
+  // endpoint would return every vault's trails mashed together.
+  const res = await fetch(
+    `${API_URL}/v/${encodeURIComponent(vaultSlug)}/v1/admin/trails`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action: "list" }),
+      cache: "no-store",
     },
-    body: JSON.stringify({ action: "list" }),
-    cache: "no-store",
-  });
+  );
   if (res.status === 401 || res.status === 403) return null;
   if (!res.ok) return [];
   const data = await res.json();
@@ -41,12 +47,17 @@ export const metadata = {
   title: "Scoped Keys — Grove",
 };
 
-export default async function TrailsPage() {
+interface TrailsPageProps {
+  params: Promise<{ atHandle: string; vaultSlug: string }>;
+}
+
+export default async function TrailsPage({ params }: TrailsPageProps) {
+  const { vaultSlug } = await params;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) redirect("/login?redirect=/dashboard/access/trails");
 
-  const trails = await fetchTrails(apiKey);
+  const trails = await fetchTrails(apiKey, vaultSlug);
 
   if (trails === null) {
     redirect("/");
