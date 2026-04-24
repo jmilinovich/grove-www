@@ -12,7 +12,7 @@ import {
   type ListEntry,
 } from "@/lib/grove-api";
 import { parseAtHandle } from "@/lib/resident-context";
-import { fetchWhoami, roleFromWhoami } from "@/lib/role";
+import { fetchMe, fetchWhoami, roleFromWhoami } from "@/lib/role";
 import NoteView from "@/components/note-view";
 import MetadataBar from "@/components/metadata-bar";
 import Breadcrumbs from "@/components/breadcrumbs";
@@ -46,11 +46,14 @@ function DirectoryListing({
   prefix,
   entries,
   atHandle,
+  vaultSlug,
 }: {
   prefix: string;
   entries: ListEntry[];
   atHandle: string;
+  vaultSlug?: string;
 }) {
+  const base = vaultSlug ? `/${atHandle}/${vaultSlug}` : `/${atHandle}`;
   const directChildren: ListEntry[] = [];
   const subfolders = new Set<string>();
 
@@ -86,7 +89,7 @@ function DirectoryListing({
             {[...subfolders].sort().map((folder) => (
               <Link
                 key={folder}
-                href={`/${atHandle}/${prefix}/${folder}`}
+                href={`${base}/${prefix}/${folder}`}
                 className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-label hover:border-muted hover:text-foreground transition-colors text-muted-light"
               >
                 <Folder size={14} className="shrink-0 text-muted" />
@@ -106,7 +109,7 @@ function DirectoryListing({
             {directChildren.map((entry) => (
               <Link
                 key={entry.path}
-                href={`/${atHandle}/${entry.path.replace(/\.md$/, "")}`}
+                href={`${base}/${entry.path.replace(/\.md$/, "")}`}
                 className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 hover:bg-surface transition-colors group"
               >
                 <div className="flex items-center gap-3 min-w-0">
@@ -168,11 +171,33 @@ function SignInPrompt({ atHandle, vaultPath }: { atHandle: string; vaultPath: st
 
 export default async function ScopedNotePage({ params }: PageProps) {
   const { atHandle, path } = await params;
-  const vaultPath = path.map(decodeURIComponent).join("/");
   const handle = parseAtHandle(atHandle) ?? undefined;
 
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
+
+  // If the first path segment is one of the viewer's vaults, treat this as
+  // a vault-scoped request: peel the slug off, thread it into every API
+  // call so grove-server routes to the right vault, and keep the slug in
+  // sidebar / breadcrumb links so navigation stays in-scope.
+  // Otherwise we're on the legacy single-vault path and the token's bound
+  // vault wins (that's been the behavior since pre-P8 and staying on it
+  // keeps URLs like `/@<handle>/Resources/...` working for old bookmarks).
+  let vaultSlug: string | undefined;
+  let effectivePath = path;
+  if (apiKey && path.length > 0) {
+    const me = await fetchMe(apiKey);
+    const firstSegment = path[0] ? decodeURIComponent(path[0]) : "";
+    if (me?.vaults?.some((v) => v.slug === firstSegment)) {
+      vaultSlug = firstSegment;
+      effectivePath = path.slice(1);
+    }
+  }
+  const vaultPath = effectivePath.map(decodeURIComponent).join("/");
+  const urlPath = vaultSlug
+    ? `/${atHandle}/${vaultSlug}/${vaultPath}`
+    : `/${atHandle}/${vaultPath}`;
+
   if (!apiKey) {
     return <SignInPrompt atHandle={atHandle} vaultPath={vaultPath} />;
   }
@@ -181,27 +206,23 @@ export default async function ScopedNotePage({ params }: PageProps) {
   let entries: ListEntry[] = [];
 
   try {
-    note = await fetchNote(vaultPath, apiKey);
+    note = await fetchNote(vaultPath, apiKey, vaultSlug);
   } catch (err) {
     if (err instanceof AuthError) {
-      redirect(
-        `/login?redirect=${encodeURIComponent(`/${atHandle}/${vaultPath}`)}`,
-      );
+      redirect(`/login?redirect=${encodeURIComponent(urlPath)}`);
     }
     console.error(
-      `[@handle/...path] fetchNote failed for "${vaultPath}", trying listNotes:`,
+      `[@handle/...path] fetchNote failed for "${vaultPath}" (slug=${vaultSlug ?? "-"}), trying listNotes:`,
       err,
     );
   }
 
   if (!note) {
     try {
-      entries = await listNotes(vaultPath, apiKey);
+      entries = await listNotes(vaultPath, apiKey, undefined, vaultSlug);
     } catch (err) {
       if (err instanceof AuthError) {
-        redirect(
-          `/login?redirect=${encodeURIComponent(`/${atHandle}/${vaultPath}`)}`,
-        );
+        redirect(`/login?redirect=${encodeURIComponent(urlPath)}`);
       }
       throw err;
     }
@@ -212,7 +233,7 @@ export default async function ScopedNotePage({ params }: PageProps) {
     const role = roleFromWhoami(whoami);
     return (
       <div className="max-w-3xl mx-auto px-6 py-8">
-        <Breadcrumbs path={vaultPath} atHandle={handle} />
+        <Breadcrumbs path={vaultPath} atHandle={handle} vaultSlug={vaultSlug} />
         <MetadataBar frontmatter={note.frontmatter} path={vaultPath} />
         <Suspense
           fallback={
@@ -236,8 +257,13 @@ export default async function ScopedNotePage({ params }: PageProps) {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
-      <Breadcrumbs path={vaultPath} atHandle={handle} />
-      <DirectoryListing prefix={vaultPath} entries={entries} atHandle={atHandle} />
+      <Breadcrumbs path={vaultPath} atHandle={handle} vaultSlug={vaultSlug} />
+      <DirectoryListing
+        prefix={vaultPath}
+        entries={entries}
+        atHandle={atHandle}
+        vaultSlug={vaultSlug}
+      />
     </div>
   );
 }

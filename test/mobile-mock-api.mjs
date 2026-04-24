@@ -34,7 +34,12 @@ function body(res, obj, status = 200) {
 
 const server = http.createServer((req, res) => {
   const u = new URL(req.url ?? "/", `http://localhost:${PORT}`);
-  const p = u.pathname;
+  // Strip the multi-vault `/v/<slug>` scope prefix before routing so
+  // every scoped request (`/v/personal/v1/notes/foo`) reuses the same
+  // fixture data as the legacy unscoped shape (`/v1/notes/foo`). The
+  // mock has a single vault ("personal"), so scope only affects the
+  // URL — the payloads are identical.
+  const p = u.pathname.replace(/^\/v\/[^/]+(\/v1\/)/, "$1");
 
   // Test control plane — allow Playwright to mutate per-test scenarios.
   if (p === "/mock/config" && req.method === "POST") {
