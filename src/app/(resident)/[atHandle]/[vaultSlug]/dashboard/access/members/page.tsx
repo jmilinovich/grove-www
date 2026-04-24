@@ -23,27 +23,34 @@ interface Trail {
   enabled: boolean;
 }
 
-async function fetchUsers(apiKey: string): Promise<UserMeta[] | null> {
-  const res = await fetch(`${API_URL}/v1/admin/users`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
-    cache: "no-store",
-  });
+async function fetchUsers(apiKey: string, vaultSlug: string): Promise<UserMeta[] | null> {
+  // `/v/<slug>/v1/admin/users` so grove-server filters by vault_members.
+  const res = await fetch(
+    `${API_URL}/v/${encodeURIComponent(vaultSlug)}/v1/admin/users`,
+    {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+    },
+  );
   if (res.status === 403 || res.status === 401) return null;
   if (!res.ok) return null;
   const data = await res.json();
   return data.users;
 }
 
-async function fetchTrails(apiKey: string): Promise<Trail[]> {
-  const res = await fetch(`${API_URL}/v1/admin/trails`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+async function fetchTrails(apiKey: string, vaultSlug: string): Promise<Trail[]> {
+  const res = await fetch(
+    `${API_URL}/v/${encodeURIComponent(vaultSlug)}/v1/admin/trails`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action: "list" }),
+      cache: "no-store",
     },
-    body: JSON.stringify({ action: "list" }),
-    cache: "no-store",
-  });
+  );
   if (!res.ok) return [];
   const data = await res.json();
   return data.trails ?? [];
@@ -53,14 +60,19 @@ export const metadata = {
   title: "Members — Grove",
 };
 
-export default async function MembersPage() {
+interface MembersPageProps {
+  params: Promise<{ atHandle: string; vaultSlug: string }>;
+}
+
+export default async function MembersPage({ params }: MembersPageProps) {
+  const { vaultSlug } = await params;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) redirect("/login?redirect=/dashboard/access/members");
 
   const [users, trails] = await Promise.all([
-    fetchUsers(apiKey),
-    fetchTrails(apiKey),
+    fetchUsers(apiKey, vaultSlug),
+    fetchTrails(apiKey, vaultSlug),
   ]);
 
   if (users === null) {
