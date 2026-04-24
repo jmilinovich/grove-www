@@ -39,7 +39,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
-  const res = await fetch(`${API_URL}/v1/admin/share`, {
+  // Forward through the vault-scoped path when the caller was inside a
+  // vault. Without this the mint lands on grove-server's default
+  // context (the token's bound vault) and the share DB row ends up
+  // anchored to the wrong vault.
+  const vaultSlug = request.nextUrl.searchParams.get("vaultSlug");
+  const upstream = vaultSlug
+    ? `${API_URL}/v/${encodeURIComponent(vaultSlug)}/v1/admin/share`
+    : `${API_URL}/v1/admin/share`;
+
+  const res = await fetch(upstream, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
