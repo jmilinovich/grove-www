@@ -172,6 +172,10 @@ describe("scoped note viewer (P16-2)", () => {
 
   it("renders the note when the API returns it", async () => {
     cookiesStore.get.mockReturnValue({ value: "api-key-abc" });
+    // Page now pre-fetches /v1/me to detect whether the first URL segment
+    // names one of the viewer's vaults. "concepts" isn't a vault slug here,
+    // so the page falls through to the legacy single-vault flow.
+    fetchMock.mockResolvedValueOnce(okJson({ handle: "jm", vaults: [] }));
     fetchMock.mockResolvedValueOnce(
       okJson({
         path: "concepts/taste-graph.md",
