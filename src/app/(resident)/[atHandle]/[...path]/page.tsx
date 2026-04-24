@@ -242,7 +242,15 @@ export default async function ScopedNotePage({ params }: PageProps) {
       if (err instanceof AuthError) {
         redirect(`/login?redirect=${encodeURIComponent(urlPath)}`);
       }
-      throw err;
+      // grove-server rejects e.g. path-traversal attempts with 400; we
+      // don't want to surface that as a Next 500 page. Treat any
+      // non-auth listNotes failure as "this URL points at nothing" and
+      // fall through to the notFound() branch below.
+      console.error(
+        `[@handle/...path] listNotes failed for "${vaultPath}" (slug=${vaultSlug ?? "-"}):`,
+        err,
+      );
+      entries = [];
     }
   }
 
