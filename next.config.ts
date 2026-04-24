@@ -30,7 +30,12 @@ import type { NextConfig } from "next";
  *   thing that consumes them. Blocking them would break hydration on
  *   every page. `'unsafe-inline'` here permits those data-pushes;
  *   external scripts are still confined to `'self'`. No
- *   `'unsafe-eval'`, no third-party origins. Tightening path: route
+ *   `'unsafe-eval'` in production, no third-party origins. In
+ *   development we add `'unsafe-eval'` because React Fast Refresh and
+ *   Next's dev overlay both call `eval()`/`new Function()` to wire up
+ *   HMR and reconstruct error stacks; without it `next dev` and the
+ *   visual-regression Playwright suite (which runs against `next dev`)
+ *   blow up. Production builds never carry it. Tightening path: route
  *   responses through middleware that mints a per-request nonce and
  *   pin `script-src 'self' 'nonce-<n>' 'strict-dynamic'`. Cost: every
  *   page becomes dynamic.
@@ -71,9 +76,14 @@ import type { NextConfig } from "next";
  * endpoint, and standing one up just for this is more code than the
  * directive earns. Add when there's somewhere to send reports.
  */
+const isDev = process.env.NODE_ENV !== "production";
+const scriptSrc = isDev
+  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+  : "script-src 'self' 'unsafe-inline'";
+
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  scriptSrc,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self' data:",
