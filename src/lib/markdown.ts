@@ -78,6 +78,7 @@ const WIKILINK_RE = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
 function remarkWikilinks(
   links: Record<string, { path: string | null; exists: boolean }>,
   atHandle?: string,
+  vaultSlug?: string,
 ): Plugin<[], MdastRoot> {
   return () => {
     return (tree: MdastRoot) => {
@@ -105,10 +106,15 @@ function remarkWikilinks(
           const linkInfo = links[target];
 
           if (linkInfo?.exists && linkInfo.path) {
-            // Strip .md extension; scope the URL under /@<handle>/ when the
-            // current view is a resident-scoped page so wikilinks stay within
-            // that scope (and don't fall through to the legacy catch-all).
-            const prefix = atHandle ? `/@${atHandle}` : "";
+            // Strip .md extension; scope the URL under /@<handle>/<slug>/
+            // (or /@<handle>/ when not inside a vault) so wikilinks stay
+            // within the current scope and don't fall through to the legacy
+            // catch-all or the wrong vault.
+            const prefix = atHandle
+              ? vaultSlug
+                ? `/@${atHandle}/${vaultSlug}`
+                : `/@${atHandle}`
+              : "";
             const href = prefix + "/" + linkInfo.path.replace(/\.md$/, "");
             children.push({
               type: "wikilink",
@@ -490,11 +496,12 @@ export async function renderMarkdown(
   content: string,
   links: Record<string, { path: string | null; exists: boolean }>,
   atHandle?: string,
+  vaultSlug?: string,
 ): Promise<string> {
   const result = await unified()
     .use(remarkParse)
     .use(remarkGfm)
-    .use(remarkWikilinks(links, atHandle))
+    .use(remarkWikilinks(links, atHandle, vaultSlug))
     .use(remarkStripDataview())
     .use(remarkStripEmptySections())
     .use(remarkCallouts())

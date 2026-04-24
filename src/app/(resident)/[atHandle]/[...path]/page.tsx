@@ -245,7 +245,7 @@ export default async function ScopedNotePage({ params }: PageProps) {
             </div>
           }
         >
-          <NoteView note={note} atHandle={handle} role={role} />
+          <NoteView note={note} atHandle={handle} vaultSlug={vaultSlug} role={role} />
         </Suspense>
       </div>
     );
