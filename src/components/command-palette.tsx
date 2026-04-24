@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { useSearch } from "./search-provider";
 import { useMe } from "@/contexts/me-context";
+import { useScopedLink } from "@/hooks/use-scoped-link";
 
 interface SearchResult {
   path: string;
@@ -25,6 +26,10 @@ export default function CommandPalette() {
   const router = useRouter();
   const { me } = useMe();
   const handle = useMemo(() => me?.handle ?? me?.username ?? null, [me]);
+  // Scope search + result URLs to the current vault when the viewer is
+  // inside one. Without this the dropdown returns the token-bound vault's
+  // matches regardless of which vault page they searched from.
+  const { vaultSlug } = useScopedLink();
 
   const resetState = useCallback(() => {
     setQuery("");
@@ -75,7 +80,9 @@ export default function CommandPalette() {
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        const qp = new URLSearchParams({ q: query.trim() });
+        if (vaultSlug) qp.set("vaultSlug", vaultSlug);
+        const res = await fetch(`/api/search?${qp}`);
         if (res.ok) {
           const data = await res.json();
           setResults(data.results || []);
@@ -89,14 +96,18 @@ export default function CommandPalette() {
     }, 200);
 
     return () => clearTimeout(debounceRef.current);
-  }, [query]);
+  }, [query, vaultSlug]);
 
   // Navigate to result. Emit canonical `/@<handle>/<path>` so we don't
   // round-trip through the legacy `[...path]` shim, whose /v1/me lookup
   // races with cookie propagation and occasionally 404s.
   function navigateTo(path: string) {
     const trimmed = path.replace(/\.md$/, "");
-    const href = handle ? `/@${handle}/${trimmed}` : `/${trimmed}`;
+    const href = handle
+      ? vaultSlug
+        ? `/@${handle}/${vaultSlug}/${trimmed}`
+        : `/@${handle}/${trimmed}`
+      : `/${trimmed}`;
     closeSearch();
     resetState();
     router.push(href);
