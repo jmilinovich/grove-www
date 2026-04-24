@@ -49,12 +49,14 @@ function RoleBadge({ role }: { role: string }) {
   );
 }
 
-export default function UserTable({
+export default function MemberTable({
   initialUsers,
   trails,
+  onRowClick,
 }: {
   initialUsers: UserMeta[];
   trails: Trail[];
+  onRowClick?: (userId: string) => void;
 }) {
   const { vaultSlug } = useScopedLink();
   const [users, setUsers] = useState(initialUsers);
@@ -135,7 +137,7 @@ export default function UserTable({
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-serif text-title font-medium tracking-[-0.015em]">Users</h1>
+        <h1 className="font-serif text-title font-medium tracking-[-0.015em]">Members</h1>
         <Button onClick={() => setShowInvite(!showInvite)} size="sm">
           {showInvite ? "Cancel" : "Invite"}
         </Button>
@@ -265,7 +267,14 @@ export default function UserTable({
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-b border-surface-border last:border-b-0 hover:bg-surface/40 transition-colors">
+              <tr
+                key={user.id}
+                onClick={onRowClick ? () => onRowClick(user.id) : undefined}
+                className={[
+                  "border-b border-surface-border last:border-b-0 hover:bg-surface/40 transition-colors",
+                  onRowClick ? "cursor-pointer" : "",
+                ].join(" ")}
+              >
                 <td className="px-6 py-3 text-foreground">
                   {user.email ?? user.username ?? user.id}
                 </td>
@@ -281,7 +290,10 @@ export default function UserTable({
                 <td className="px-6 py-3 text-muted hidden md:table-cell">
                   {user.key_count}
                 </td>
-                <td className="px-6 py-3 text-right">
+                <td
+                  className="px-6 py-3 text-right"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {user.role !== "owner" && (
                     <>
                       {confirmDelete === user.id ? (
@@ -317,7 +329,7 @@ export default function UserTable({
             {users.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-muted">
-                  No users yet. Invite someone to get started.
+                  No members yet. Invite someone to get started.
                 </td>
               </tr>
             )}

@@ -328,7 +328,7 @@ export default function ProfileView({ initialProfile }: { initialProfile: Profil
                     {k.scopes.filter(Boolean).join(" · ")} · Last used {relativeTime(k.last_used_at)}
                   </div>
                 </div>
-                <a href={link("/dashboard/keys")} className="text-detail text-moss hover:underline ml-4 shrink-0">
+                <a href={link("/dashboard/access/keys")} className="text-detail text-moss hover:underline ml-4 shrink-0">
                   Manage
                 </a>
               </li>

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { getApiKey } from "@/lib/auth";
-import UserTable from "@/components/user-table";
+import MembersView from "@/components/members-view";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -50,13 +50,13 @@ async function fetchTrails(apiKey: string): Promise<Trail[]> {
 }
 
 export const metadata = {
-  title: "Users — Grove",
+  title: "Members — Grove",
 };
 
-export default async function UsersPage() {
+export default async function MembersPage() {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect("/login?redirect=/dashboard/users");
+  if (!apiKey) redirect("/login?redirect=/dashboard/access/members");
 
   const [users, trails] = await Promise.all([
     fetchUsers(apiKey),
@@ -69,7 +69,7 @@ export default async function UsersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      <UserTable initialUsers={users} trails={trails} />
+      <MembersView initialUsers={users} trails={trails} />
     </div>
   );
 }

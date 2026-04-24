@@ -182,7 +182,7 @@ function TrailCard({
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
           <Link
-            href={link(`/dashboard/trails/${encodeURIComponent(trail.id)}`)}
+            href={link(`/dashboard/access/trails/${encodeURIComponent(trail.id)}`)}
             className="text-detail font-medium text-moss hover:text-moss/60 transition-colors"
           >
             Edit
@@ -327,7 +327,7 @@ export default function TrailList({ initialTrails }: { initialTrails: Trail[] })
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-serif text-title font-medium tracking-[-0.015em]">Trails</h1>
         <Link
-          href={link("/dashboard/trails/new")}
+          href={link("/dashboard/access/trails/new")}
           className={buttonClasses({ variant: "primary", size: "lg" })}
         >
           Create trail

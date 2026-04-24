@@ -495,3 +495,68 @@ describe("legacy bare-route → MRU vault shims (P8-B3)", () => {
     );
   });
 });
+
+// ── next.config.ts redirects() — Phase 20A ───────────────────────────
+//
+// Six permanent edge redirects compiled into Next.js config. Tested by
+// importing the config directly (no HTTP spin-up) so they assert the
+// source/destination/permanent contract statically.
+
+describe("next.config.ts redirects (P20-A2)", () => {
+  async function loadRedirects() {
+    const mod = await import("../next.config");
+    const redirects = mod.default.redirects;
+    if (!redirects) throw new Error("next.config.ts has no redirects()");
+    return redirects();
+  }
+
+  const expected = [
+    {
+      source: "/@:atHandle/:vaultSlug/dashboard/keys",
+      destination: "/@:atHandle/:vaultSlug/dashboard/access/keys",
+    },
+    {
+      source: "/@:atHandle/:vaultSlug/dashboard/trails",
+      destination: "/@:atHandle/:vaultSlug/dashboard/access/trails",
+    },
+    {
+      source: "/@:atHandle/:vaultSlug/dashboard/shares",
+      destination: "/@:atHandle/:vaultSlug/dashboard/access/shares",
+    },
+    {
+      source: "/@:atHandle/:vaultSlug/dashboard/users",
+      destination: "/@:atHandle/:vaultSlug/dashboard/access/members",
+    },
+    {
+      source: "/@:atHandle/:vaultSlug/dashboard/graph",
+      destination: "/@:atHandle/:vaultSlug/dashboard",
+    },
+    {
+      source: "/@:atHandle/:vaultSlug/dashboard/lifecycle",
+      destination: "/@:atHandle/:vaultSlug/dashboard",
+    },
+  ];
+
+  for (const { source, destination } of expected) {
+    it(`${source} → ${destination} (permanent: true)`, async () => {
+      const all = await loadRedirects();
+      const match = all.find((r: { source: string }) => r.source === source);
+      expect(match, `missing redirect for ${source}`).toBeDefined();
+      expect(match!.destination).toBe(destination);
+      expect(match!.permanent).toBe(true);
+    });
+  }
+
+  it("has no chained redirects — no source appears as another destination", async () => {
+    const all = await loadRedirects();
+    const sources = new Set(
+      all.map((r: { source: string }) => r.source),
+    );
+    for (const r of all) {
+      expect(
+        sources.has(r.destination),
+        `redirect chain detected: ${r.source} → ${r.destination} → ...`,
+      ).toBe(false);
+    }
+  });
+});

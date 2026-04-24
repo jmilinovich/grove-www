@@ -43,7 +43,7 @@ export default async function TrailEditorPage({ params }: PageProps) {
   const { id } = await params;
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect(`/login?redirect=/dashboard/trails/${encodeURIComponent(id)}`);
+  if (!apiKey) redirect(`/login?redirect=/dashboard/access/trails/${encodeURIComponent(id)}`);
 
   let initial: TrailEditorInitial;
 

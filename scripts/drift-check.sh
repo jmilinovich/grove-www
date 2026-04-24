@@ -22,16 +22,13 @@ inline_style_whitelist=(
   "src/components/sidebar.tsx"
   "src/components/trail-editor.tsx"
   "src/components/image-grid.tsx"
-  "src/components/lifecycle-view.tsx"
   "src/app/(resident)/[atHandle]/[vaultSlug]/dashboard/page.tsx"
-  "src/app/(resident)/[atHandle]/[vaultSlug]/dashboard/graph/graph-explorer.tsx"
 )
 
 # Files where hand-rolled SVG or hardcoded colors are expected (data viz,
 # or an inline HTML template served from a proxy where Tailwind classes
 # don't reach).
 svg_whitelist=(
-  "src/app/(resident)/[atHandle]/[vaultSlug]/dashboard/graph/graph-explorer.tsx"
   "src/components/health-view.tsx"
   "src/proxy.ts"
 )

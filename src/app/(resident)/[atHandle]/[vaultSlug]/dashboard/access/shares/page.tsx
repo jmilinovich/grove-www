@@ -30,7 +30,7 @@ export const metadata = {
 export default async function SharesPage() {
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
-  if (!apiKey) redirect("/login?redirect=/dashboard/shares");
+  if (!apiKey) redirect("/login?redirect=/dashboard/access/shares");
 
   const shares = await fetchShares(apiKey);
   if (shares === null) redirect("/");
