@@ -54,16 +54,18 @@ function escapeHtml(s: string): string {
 export default async function NoteView({
   note,
   atHandle,
+  vaultSlug,
   role,
 }: {
   note: NoteResponse;
   atHandle?: string;
+  vaultSlug?: string;
   role?: "owner" | "non-owner";
 }) {
   let html: string;
   let renderFailed = false;
   try {
-    html = await renderMarkdown(note.content, note.links, atHandle);
+    html = await renderMarkdown(note.content, note.links, atHandle, vaultSlug);
   } catch (err) {
     console.error("renderMarkdown failed for", note.path, err);
     renderFailed = true;
@@ -115,7 +117,11 @@ export default async function NoteView({
           <ul className="space-y-1">
             {note.backlinks.map((bl) => {
               const name = bl.replace(/\.md$/, "").split("/").pop() ?? bl;
-              const prefix = atHandle ? `/@${bareHandle(atHandle)}` : "";
+              const prefix = atHandle
+                ? vaultSlug
+                  ? `/@${bareHandle(atHandle)}/${vaultSlug}`
+                  : `/@${bareHandle(atHandle)}`
+                : "";
               const href = prefix + "/" + bl.replace(/\.md$/, "");
               return (
                 <li key={bl}>
