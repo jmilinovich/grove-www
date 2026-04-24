@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { renderMarkdown } from "@/lib/markdown";
 import { bareHandle } from "@/lib/vault-context";
+import { parseAtHandle } from "@/lib/resident-context";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -14,6 +15,10 @@ interface ShareData {
   expires_at: string;
   view_count: number;
   max_views: number;
+  /** Bare handle of the share's creator. Used to 404 mismatched URLs
+   *  so an attacker can't craft `/@victim/s/<attacker-share>` to
+   *  phish under a trusted handle. */
+  owner_handle?: string | null;
 }
 
 type FetchResult =
@@ -79,6 +84,16 @@ export default async function ScopedSharePage({ params }: PageProps) {
 
   const share = result.share;
   if (!share.content) notFound();
+
+  // Ensure the URL's @handle segment actually names the share's
+  // creator. Without this, `/@anyone/s/<id>` renders the note under
+  // whichever handle is in the URL — a phishing surface where a
+  // link under `/@trusted/s/<attacker_share>` renders attacker
+  // content as if the trusted user published it.
+  const urlHandle = parseAtHandle(atHandle);
+  if (share.owner_handle && urlHandle && urlHandle !== share.owner_handle) {
+    notFound();
+  }
 
   const content = share.content.replace(/^---[\s\S]*?---\n*/, "");
   const html = await renderMarkdown(content, {});

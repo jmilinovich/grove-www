@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiKey } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { checkSameOrigin } from "@/lib/csrf";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -22,8 +23,11 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
-/** DELETE /api/admin/users?id=<userId> — remove a user */
+/** DELETE /api/admin/users?id=<userId> — remove a user. CSRF-protected. */
 export async function DELETE(request: NextRequest) {
+  const csrf = checkSameOrigin(request);
+  if (csrf) return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
+
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
@@ -45,8 +49,11 @@ export async function DELETE(request: NextRequest) {
   return NextResponse.json(data);
 }
 
-/** POST /api/admin/users — invite a user */
+/** POST /api/admin/users — invite a user. CSRF-protected. */
 export async function POST(request: NextRequest) {
+  const csrf = checkSameOrigin(request);
+  if (csrf) return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
+
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });

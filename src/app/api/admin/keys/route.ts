@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiKey } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { checkSameOrigin } from "@/lib/csrf";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -37,12 +38,15 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/admin/keys — create or revoke a key. When a `vaultSlug`
- * query param is present the body gets `vault_slug` appended so
- * `action: create` mints the key against that vault instead of the
- * caller's primary vault.
+ * POST /api/admin/keys — create or revoke a key. CSRF-protected.
+ * When a `vaultSlug` query param is present the body gets
+ * `vault_slug` appended so `action: create` mints the key against
+ * that vault instead of the caller's primary vault.
  */
 export async function POST(request: NextRequest) {
+  const csrf = checkSameOrigin(request);
+  if (csrf) return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
+
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (!apiKey) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
