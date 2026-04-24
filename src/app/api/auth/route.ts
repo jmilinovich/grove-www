@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { encryptKey } from "@/lib/auth";
 import { checkSameOrigin } from "@/lib/csrf";
+import { clearSessionCookies, setSessionCookie } from "@/lib/session-cookie";
+import { bodyLimitErrorResponse, readJsonBody } from "@/lib/body-limit";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -14,14 +16,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
   }
 
+  let body: { api_key?: unknown };
   try {
-    const { api_key } = await request.json();
-    if (!api_key || typeof api_key !== "string") {
+    body = await readJsonBody<{ api_key?: unknown }>(request);
+  } catch (err) {
+    const limitResponse = bodyLimitErrorResponse(err);
+    if (limitResponse) return limitResponse;
+    return NextResponse.json({ error: "Authentication failed" }, { status: 500 });
+  }
+
+  try {
+    const apiKey = body.api_key;
+    if (!apiKey || typeof apiKey !== "string") {
       return NextResponse.json({ error: "API key is required" }, { status: 400 });
     }
 
     // Validate the key by hitting an authenticated endpoint
-    const cleanKey = api_key.trim().replace(/\s+/g, "");
+    const cleanKey = apiKey.trim().replace(/\s+/g, "");
     const res = await fetch(`${API_URL}/v1/list?prefix=Resources&limit=1`, {
       headers: { Authorization: `Bearer ${cleanKey}` },
     });
@@ -35,13 +46,7 @@ export async function POST(request: NextRequest) {
 
     const encrypted = encryptKey(cleanKey);
     const response = NextResponse.json({ ok: true });
-    response.cookies.set("grove_token", encrypted, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    });
+    setSessionCookie(response, encrypted);
 
     return response;
   } catch {
@@ -59,12 +64,9 @@ export async function DELETE(request: NextRequest) {
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set("grove_token", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
-    maxAge: 0,
-  });
+  // Clear both the prefixed cookie (current rollout) and the legacy
+  // unprefixed cookie so a stale legacy session doesn't survive logout
+  // during the migration window.
+  clearSessionCookies(response);
   return response;
 }

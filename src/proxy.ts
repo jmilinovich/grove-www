@@ -73,8 +73,11 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for grove_token cookie
-  const token = request.cookies.get("grove_token");
+  // Check for the session cookie. Prefer the `__Host-` prefixed name and
+  // fall back to the legacy unprefixed cookie so existing sessions keep
+  // working through the migration window.
+  const token =
+    request.cookies.get("__Host-grove_token") ?? request.cookies.get("grove_token");
   if (!token?.value) {
     const loginUrl = new URL("/login", request.url);
     // Preserve query string so /dashboard?tab=keys survives the login trip.
