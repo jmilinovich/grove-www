@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkSameOrigin } from "@/lib/csrf";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
 export async function POST(request: NextRequest) {
+  // Same-origin gate. Without this, any third-party page can POST
+  // to this route and trigger a magic-link email to an arbitrary
+  // address with an attacker-chosen `redirect`. Upstream rate-limits
+  // by email, but defense-in-depth + parity with every other mutating
+  // route in this app: cross-origin POSTs get 403'd before they
+  // reach the backend.
+  const csrf = checkSameOrigin(request);
+  if (csrf) {
+    return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
+  }
+
   try {
     const body = await request.json();
     const res = await fetch(`${API_URL}/auth/magic-link`, {
