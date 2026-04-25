@@ -98,7 +98,12 @@ async function requestMagicLink(email: string, callbackUrl: string): Promise<Res
   const req = new NextRequest(new URL("http://localhost/api/auth/magic-link"), {
     method: "POST",
     body: JSON.stringify({ email, redirect: callbackUrl }),
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      // Same-origin headers — the route now CSRF-checks via Origin/Host parity.
+      host: "localhost",
+      origin: "http://localhost",
+    },
   });
   return POST(req);
 }
