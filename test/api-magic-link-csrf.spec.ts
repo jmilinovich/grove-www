@@ -76,4 +76,28 @@ describe("/api/auth/magic-link — POST (CSRF)", () => {
     const forwardedBody = JSON.parse(calls[0]!.init!.body as string);
     expect(forwardedBody).toEqual({ email: "user@example.com", redirect: "/dashboard" });
   });
+
+  it("rejects oversized body with 413 and never forwards upstream", async () => {
+    const { calls } = installFetch(() => new Response("{}", { status: 200 }));
+    const { POST } = await import("@/app/api/auth/magic-link/route");
+    // Construct a body larger than the 64 KiB default limit by stuffing a
+    // junk field. Same-origin request, so the body-size guard is the only
+    // thing that should reject it.
+    const giantPayload = JSON.stringify({
+      email: "user@example.com",
+      junk: "A".repeat(128 * 1024),
+    });
+    const req = new NextRequest(new URL("http://grove.md/api/auth/magic-link"), {
+      method: "POST",
+      headers: {
+        host: "grove.md",
+        origin: "http://grove.md",
+        "content-type": "application/json",
+      },
+      body: giantPayload,
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(413);
+    expect(calls).toHaveLength(0);
+  });
 });

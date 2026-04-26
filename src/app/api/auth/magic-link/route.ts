@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkSameOrigin } from "@/lib/csrf";
+import { bodyLimitErrorResponse, readJsonBody } from "@/lib/body-limit";
 
 const API_URL = process.env.GROVE_API_URL ?? "https://api.grove.md";
 
@@ -15,8 +16,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "forbidden", reason: csrf }, { status: 403 });
   }
 
+  // Bound the body so a same-origin caller can't OOM the function with a
+  // multi-megabyte payload before our handler runs. Magic-link payloads are
+  // tiny (`{email, redirect}`); the default 64 KiB ceiling is well above any
+  // legitimate caller and well below "this hurts memory."
+  let body: unknown;
   try {
-    const body = await request.json();
+    body = await readJsonBody(request);
+  } catch (err) {
+    const limitResponse = bodyLimitErrorResponse(err);
+    if (limitResponse) return limitResponse;
+    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+  }
+
+  try {
     const res = await fetch(`${API_URL}/auth/magic-link`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
