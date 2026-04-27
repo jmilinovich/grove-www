@@ -173,15 +173,16 @@ grove whoami    # confirm it works`}
           This is the step that makes the rest worth doing. Point{" "}
           <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">grove ingest</code>{" "}
           at the directory of <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">.md</code> files
-          you want to import. Each file becomes a note, each write becomes a
-          git commit, and duplicates are skipped.
+          you want to import, with <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">--recursive</code>{" "}
+          so subfolders come along too. Each file becomes a note, each write
+          becomes a git commit, and duplicates are skipped.
         </p>
         <CodeBlock>
 {`# dry-run first to see what would happen
-grove ingest ~/my-notes --dry-run
+grove ingest ~/my-notes --recursive --dry-run
 
 # then run for real
-grove ingest ~/my-notes`}
+grove ingest ~/my-notes --recursive`}
         </CodeBlock>
         <ul className="text-base text-ink/60 leading-[1.6] space-y-2 list-disc pl-5 marker:text-ink/40">
           <li>
@@ -196,11 +197,13 @@ grove ingest ~/my-notes`}
             <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">tags:</code> carry through.
           </li>
           <li>
-            <strong className="text-ink">Not recursive.</strong> Ingest reads{" "}
-            <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">.md</code> and{" "}
-            <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">.txt</code> at the top
-            level of the directory you pass. For nested folders, run it once
-            per subfolder or flatten first.
+            <strong className="text-ink">Recursive is opt-in.</strong> Without{" "}
+            <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">--recursive</code>{" "}
+            (or <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">-r</code>),
+            ingest reads only the top level of the directory you pass.
+            Hidden folders like <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">.git</code>{" "}
+            and <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">.obsidian</code>{" "}
+            are always skipped.
           </li>
           <li>
             <strong className="text-ink">Snapshot before writes.</strong> A
@@ -221,6 +224,34 @@ grove search "something you know is in there"`}
   },
   {
     num: "05",
+    title: "Let the graph build itself",
+    body: (
+      <>
+        <p className="text-base text-ink/60 leading-[1.6]">
+          Every note that lands via <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">ingest</code>{" "}
+          (or any subsequent write from your AI) is enqueued for{" "}
+          <strong className="text-ink">discovery</strong> &mdash; a background
+          worker on the server that reads each new note, extracts the concepts
+          and people it mentions, creates stub notes for entities that
+          don&apos;t exist yet, and wires up wikilinks between related ideas.
+        </p>
+        <p className="text-base text-ink/60 leading-[1.6]">
+          You don&apos;t have to do anything to trigger it. After a large
+          ingest the queue takes a few minutes to drain. Watch the progress:
+        </p>
+        <CodeBlock>{`grove inspect --mode=discovery`}</CodeBlock>
+        <p className="text-base text-ink/60 leading-[1.6]">
+          That returns the queue depth, the last-processed timestamp, and a
+          window of recent extractions and surprising connections. When{" "}
+          <code className="px-1 py-0.5 bg-surface border border-surface-border rounded-sm text-detail font-mono">queue_depth</code>{" "}
+          drops to zero, your graph has caught up. Every discovery action is a
+          git commit, so you can audit or roll back exactly like a hand-edit.
+        </p>
+      </>
+    ),
+  },
+  {
+    num: "06",
     title: "Connect Claude",
     body: (
       <>
@@ -254,7 +285,7 @@ function Steps() {
       className="py-20 px-6 max-w-5xl mx-auto border-t border-surface-border"
     >
       <p className="text-ink/40 text-label tracking-[0.15em] uppercase mb-4">
-        Five steps
+        Six steps
       </p>
       <h2 className="sr-only">Setup steps</h2>
 
