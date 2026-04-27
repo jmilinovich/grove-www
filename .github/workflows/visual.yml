@@ -20,6 +20,7 @@ on:
       - "public/**"
       - "package*.json"
       - "test/visual.spec.ts"
+      - "test/__screenshots__/**"
       - "playwright.visual.config.ts"
       - ".github/workflows/visual.yml"
       # next.config.ts changes can reshape rendered pages (redirects,

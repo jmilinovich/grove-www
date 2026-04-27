@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import Header from "./header";
 import Sidebar from "./sidebar";
 
-const CHROME_HIDDEN_PATHS = ["/login", "/"];
+const CHROME_HIDDEN_PATHS = ["/login", "/", "/getting-started"];
 
 export default function AppShell({
   children,

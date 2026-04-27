@@ -50,6 +50,9 @@ function Nav() {
         Grove
       </span>
       <div className="flex items-center gap-6 text-ink/40">
+        <a href="/getting-started" className="hover:text-ink transition-colors">
+          Getting started
+        </a>
         <a href={GITHUB_URL} className="hover:text-ink transition-colors">
           GitHub
         </a>
