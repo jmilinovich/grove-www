@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Paths that never require auth
-const PUBLIC_PATHS = ["/", "/login", "/api/auth"];
+const PUBLIC_PATHS = ["/", "/login", "/getting-started", "/api/auth"];
 // `/@` covers every scoped resident route (/@handle, /@handle/s/<id>,
 // /@handle/trails/<slug>, /@handle/<path>). The pages themselves decide
 // whether content is public (profile, share, trail) or auth-gated
