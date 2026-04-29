@@ -61,6 +61,36 @@ describe("markdown link safety", () => {
   });
 });
 
+describe("data: URI stripping in img src", () => {
+  it("strips data:text/html from img src", async () => {
+    const html = await renderMarkdown(
+      `![evil](data:text/html,<script>alert(1)</script>)`,
+      noLinks,
+    );
+    expect(html).not.toMatch(/data:text\/html/);
+  });
+
+  it("strips data:image/svg+xml;base64 from img src", async () => {
+    // base64(<svg onload="alert(1)"></svg>)
+    const b64 = Buffer.from('<svg onload="alert(1)"></svg>').toString("base64");
+    const html = await renderMarkdown(
+      `![evil](data:image/svg+xml;base64,${b64})`,
+      noLinks,
+    );
+    // The src should be stripped (sanitizer drops the data: URI), so no img
+    // tag with a data: src should survive.
+    expect(html).not.toMatch(/src="data:/);
+  });
+
+  it("strips data: URIs from img src but preserves https image URLs", async () => {
+    const html = await renderMarkdown(
+      `![ok](https://example.com/image.png)`,
+      noLinks,
+    );
+    expect(html).toMatch(/src="https:\/\/example\.com\/image\.png"/);
+  });
+});
+
 describe("markdown id clobbering defense", () => {
   it("strips author-supplied id attributes globally", async () => {
     const html = await renderMarkdown(

@@ -532,7 +532,16 @@ const sanitizeSchema = {
   },
   protocols: {
     href: ["http", "https", "mailto"],
-    src: ["http", "https", "data"],
+    // `data:` is intentionally excluded from `src`.  A vault author can write
+    // `![x](data:image/svg+xml,...)` or `![x](data:text/html,...)` and the
+    // sanitizer would emit the data-URI verbatim into the `<img src>` attribute.
+    // Modern browsers do not execute data:text/html from an img src, but
+    // data:image/svg+xml can carry inline event handlers that execute in some
+    // browser contexts, and the pairing with `img-src data:` in the CSP means
+    // both layers permit it simultaneously — eliminating defense-in-depth.
+    // Vault notes embed images via external URLs; there is no legitimate use
+    // case for base64-inlined images here.
+    src: ["http", "https"],
   },
   strip: ["script"],
 };
