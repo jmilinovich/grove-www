@@ -52,11 +52,15 @@ import type { NextConfig } from "next";
  *   token classes; convert the 410 page to a CSS class on the
  *   stylesheet; rely on mermaid's strict mode + a class-only theme.
  *
- * - `img-src 'self' data: https:`
- *   Vault notes embed external image URLs (Wikipedia, S3, etc.) and
- *   KaTeX uses `data:` SVGs in some glyphs. `https:` is the loose
- *   bound; tightening would require an allowlist per vault, which is
- *   out of scope here.
+ * - `img-src 'self' https:`
+ *   Vault notes embed external image URLs (Wikipedia, S3, etc.).
+ *   `data:` was previously allowed for KaTeX glyphs but KaTeX actually
+ *   uses inline SVG elements in the DOM — not `<img src="data:...">` —
+ *   so `data:` in img-src was buying nothing while opening a CSP bypass
+ *   path for attacker-authored notes (pair `data:image/svg+xml` with
+ *   `img-src data:` and some browser configurations execute inline
+ *   event handlers in the SVG). Removed alongside the matching sanitizer
+ *   change that dropped `data:` from `protocols.src`.
  *
  * - `connect-src 'self'`
  *   All client fetches hit `/api/*` on the same origin; the
@@ -85,7 +89,7 @@ const cspDirectives = [
   "default-src 'self'",
   scriptSrc,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https:",
+  "img-src 'self' https:",
   "font-src 'self' data:",
   "connect-src 'self'",
   "frame-ancestors 'none'",
