@@ -6,6 +6,7 @@
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import remarkMath from "remark-math";
 import remarkRehype from "remark-rehype";
 import rehypeKatex from "rehype-katex";
@@ -604,6 +605,7 @@ export async function renderMarkdown(
   const result = await unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkBreaks)
     .use(remarkWikilinks(links, atHandle, vaultSlug))
     .use(remarkStripDataview())
     .use(remarkStripEmptySections())
