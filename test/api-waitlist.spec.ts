@@ -17,21 +17,12 @@ function installFetch(handler: (call: FetchCall) => Response): { calls: FetchCal
   return { calls };
 }
 
-const originalKey = process.env.RESEND_API_KEY;
-const originalNotify = process.env.WAITLIST_NOTIFY_EMAIL;
-
 beforeEach(() => {
   vi.resetModules();
-  process.env.RESEND_API_KEY = "re_test_key";
-  process.env.WAITLIST_NOTIFY_EMAIL = "ops@example.com";
 });
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
-  if (originalKey === undefined) delete process.env.RESEND_API_KEY;
-  else process.env.RESEND_API_KEY = originalKey;
-  if (originalNotify === undefined) delete process.env.WAITLIST_NOTIFY_EMAIL;
-  else process.env.WAITLIST_NOTIFY_EMAIL = originalNotify;
 });
 
 function buildReq(body: unknown, headers: Record<string, string>): NextRequest {
@@ -45,8 +36,8 @@ function buildReq(body: unknown, headers: Record<string, string>): NextRequest {
   });
 }
 
-describe("/api/waitlist — POST", () => {
-  it("rejects cross-origin POST with 403 and never calls Resend", async () => {
+describe("/api/waitlist — POST (proxy)", () => {
+  it("rejects cross-origin POST with 403 and never forwards upstream", async () => {
     const { calls } = installFetch(() => new Response("{}", { status: 200 }));
     const { POST } = await import("@/app/api/waitlist/route");
     const req = buildReq(
@@ -67,7 +58,7 @@ describe("/api/waitlist — POST", () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("rejects oversized body with 413 and never calls Resend", async () => {
+  it("rejects oversized body with 413 and never forwards upstream", async () => {
     const { calls } = installFetch(() => new Response("{}", { status: 200 }));
     const { POST } = await import("@/app/api/waitlist/route");
     const giant = JSON.stringify({
@@ -80,53 +71,42 @@ describe("/api/waitlist — POST", () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("rejects malformed email with 400 and never calls Resend", async () => {
-    const { calls } = installFetch(() => new Response("{}", { status: 200 }));
-    const { POST } = await import("@/app/api/waitlist/route");
-    const req = buildReq(
-      { email: "not-an-email" },
-      { host: "grove.md", origin: "http://grove.md" },
-    );
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    expect(calls).toHaveLength(0);
-  });
-
-  it("rejects missing email with 400", async () => {
-    const { calls } = installFetch(() => new Response("{}", { status: 200 }));
-    const { POST } = await import("@/app/api/waitlist/route");
-    const req = buildReq({}, { host: "grove.md", origin: "http://grove.md" });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    expect(calls).toHaveLength(0);
-  });
-
-  it("forwards a valid signup to Resend with the notify recipient", async () => {
+  it("forwards a valid signup body to the upstream /waitlist endpoint", async () => {
     const { calls } = installFetch(
-      () => new Response(JSON.stringify({ id: "msg_123" }), { status: 200 }),
+      () => new Response(JSON.stringify({ ok: true, added: true }), { status: 200 }),
     );
     const { POST } = await import("@/app/api/waitlist/route");
     const req = buildReq(
-      { email: "Hello@Example.com  ", source: "hero" },
+      { email: "user@example.com", source: "hero" },
       { host: "grove.md", origin: "http://grove.md" },
     );
     const res = await POST(req);
     expect(res.status).toBe(200);
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.url).toBe("https://api.resend.com/emails");
-
-    const headers = (calls[0]!.init!.headers ?? {}) as Record<string, string>;
-    expect(headers["Authorization"]).toBe("Bearer re_test_key");
-
-    const sent = JSON.parse(calls[0]!.init!.body as string) as Record<string, string>;
-    expect(sent.to).toBe("ops@example.com");
-    expect(sent.reply_to).toBe("hello@example.com");
-    expect(sent.subject).toContain("hello@example.com");
-    expect(sent.text).toContain("Source: hero");
+    expect(calls[0]!.url).toContain("/waitlist");
+    expect(JSON.parse(calls[0]!.init!.body as string)).toEqual({
+      email: "user@example.com",
+      source: "hero",
+    });
   });
 
-  it("returns 502 when Resend errors", async () => {
-    const { calls } = installFetch(() => new Response("rate limited", { status: 429 }));
+  it("propagates upstream 400 (invalid email) verbatim", async () => {
+    installFetch(
+      () => new Response(JSON.stringify({ error: "invalid email" }), { status: 400 }),
+    );
+    const { POST } = await import("@/app/api/waitlist/route");
+    const req = buildReq(
+      { email: "nope" },
+      { host: "grove.md", origin: "http://grove.md" },
+    );
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 502 when upstream is unreachable", async () => {
+    globalThis.fetch = (async () => {
+      throw new Error("connection refused");
+    }) as unknown as typeof fetch;
     const { POST } = await import("@/app/api/waitlist/route");
     const req = buildReq(
       { email: "user@example.com" },
@@ -134,19 +114,5 @@ describe("/api/waitlist — POST", () => {
     );
     const res = await POST(req);
     expect(res.status).toBe(502);
-    expect(calls).toHaveLength(1);
-  });
-
-  it("succeeds without RESEND_API_KEY (dev fallback)", async () => {
-    delete process.env.RESEND_API_KEY;
-    const { calls } = installFetch(() => new Response("{}", { status: 200 }));
-    const { POST } = await import("@/app/api/waitlist/route");
-    const req = buildReq(
-      { email: "user@example.com" },
-      { host: "grove.md", origin: "http://grove.md" },
-    );
-    const res = await POST(req);
-    expect(res.status).toBe(200);
-    expect(calls).toHaveLength(0);
   });
 });
