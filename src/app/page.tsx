@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getApiKey } from "@/lib/auth";
-import { buttonClasses } from "@/components/primitives/button";
+import WaitlistForm from "@/components/waitlist-form";
 import { fetchWhoami, landingPathForRole, roleFromWhoami } from "@/lib/role";
 
 const GITHUB_URL = "https://github.com/jmilinovich/grove";
@@ -81,17 +81,26 @@ function Hero() {
 
         <p className="mt-8 text-base text-ink/60 max-w-[60ch] leading-[1.6] fade-up delay-1">
           You take notes. You journal. You save ideas. Then you talk to your AI
-          and it knows none of it. Grove connects them &mdash; your AI reads your
-          notes, writes back, and the knowledge grows together.
+          and it knows none of it. Grove gives every Claude, ChatGPT, or Cursor
+          session a way in &mdash; your vault, searchable and writable, from
+          any device.
         </p>
 
-        <div className="mt-10 flex flex-wrap gap-4 fade-up delay-2">
-          <a href={WAITLIST_URL} className={buttonClasses({ variant: "primary", size: "lg" })}>
-            Get early access
-          </a>
-          <a href={GITHUB_URL} className={buttonClasses({ variant: "secondary", size: "lg" })}>
-            Self-host &rarr;
-          </a>
+        <div className="mt-10 fade-up delay-2">
+          <p className="text-detail text-ink/40 uppercase tracking-[0.15em] mb-3">
+            Hosted Grove &mdash; early access
+          </p>
+          <WaitlistForm source="hero" size="lg" />
+          <p className="mt-4 text-label text-ink/60">
+            Or{" "}
+            <a
+              href={GITHUB_URL}
+              className="text-moss hover:text-earth underline underline-offset-2 transition-colors"
+            >
+              self-host today
+            </a>
+            {" "}&mdash; MIT licensed, your server, your data.
+          </p>
         </div>
       </div>
     </section>
@@ -458,34 +467,23 @@ function BottomCTA() {
         <h2 className="text-title sm:text-heading font-serif font-medium tracking-[-0.015em] text-pretty">
           Your AI should know what you know.
         </h2>
-        <p className="mt-3 text-muted">
-          Connect your notes. Every conversation gets better.
+        <p className="mt-3 text-ink/60">
+          Connect your vault. Every conversation builds on the last one.
         </p>
 
-        <form className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md" action="https://formspree.io/f/placeholder" method="POST">
-          <input
-            type="email"
-            name="email"
-            placeholder="you@example.com"
-            required
-            className="flex-1 bg-cream border border-ink/15 rounded-md px-6 py-3 text-label text-ink placeholder:text-ink/40 focus:border-moss focus:outline-none"
-          />
-          <button
-            type="submit"
-            className={buttonClasses({ variant: "primary", size: "md" })}
-          >
-            Get early access
-          </button>
-        </form>
+        <div className="mt-8">
+          <WaitlistForm source="bottom-cta" size="md" />
+        </div>
+
         <a
           href={GITHUB_URL}
-          className="mt-3 inline-flex items-center text-label text-muted hover:text-foreground transition-colors"
+          className="mt-4 inline-flex items-center text-label text-ink/60 hover:text-ink transition-colors"
         >
           Or self-host now &rarr;
         </a>
 
-        <p className="mt-6 text-detail text-muted">
-          Open source &middot; MIT licensed &middot; Privacy-first &middot; Git-native
+        <p className="mt-6 text-detail text-ink/60">
+          Open source &middot; MIT licensed &middot; Self-hosted embeddings &middot; Git-native
         </p>
       </div>
     </section>
