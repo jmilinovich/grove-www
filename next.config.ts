@@ -109,6 +109,13 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  // Cache Components (Next.js 16) — opt in to `'use cache'` directives so v2
+  // dashboard data layer (`src/lib/grove-api.v2.ts`) can mark `fetchBacklog`
+  // and `fetchThroughput` cacheable with `cacheTag` for surgical invalidation
+  // from Server Actions. See PLAN.md D-13.
+  experimental: {
+    cacheComponents: true,
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

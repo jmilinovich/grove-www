@@ -15,6 +15,30 @@ deprecation notices.
   to the list.
 - `GOAL.md` for product intent and the landing-page structure.
 - `README.md` for dev commands and the mobile baseline.
+- `SPEC.md` + `PLAN.md` for v2 dashboard work (the backlog homepage). If
+  you're touching `src/app/(resident)/[atHandle]/[vaultSlug]/page.tsx`,
+  `src/components/backlog/*`, `src/components/primitives/*`, or
+  `src/lib/grove-api.v2*`, read both first.
+
+## Mock mode (v2 dashboard)
+
+The v2 dashboard data layer (`src/lib/grove-api.v2.ts`) routes via mock or
+live impl based on `GROVE_API_MODE`:
+
+- `GROVE_API_MODE=mock` (default) — in-memory fixtures from
+  `src/lib/grove-api.v2.mock.ts`. Module-level singleton; restart resets
+  state. Used during v2 build-out until `api.grove.md` exposes the v2
+  endpoints. Run `npm run probe:api -- --vault=<slug>` to check current
+  backend readiness.
+- `GROVE_API_MODE=live` — calls real `api.grove.md`. Currently a stub
+  that throws "not yet implemented" — wire up when W0-PROBE-1 reports
+  ≥80% VERIFIED on the v2 contract.
+
+Mock fixtures live alongside the mock module (no separate `__fixtures__/`
+folder yet — kept inline for v0). For Playwright visual baselines, the
+mock module is read at server-render time; no separate Playwright mock
+server entry is needed for v2 routes (the existing `test/mobile-mock-api.mjs`
+covers v1 routes only).
 
 ## Non-negotiables
 
