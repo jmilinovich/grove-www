@@ -25,6 +25,7 @@ The thesis: knowledge graphs generate an ongoing supply of AI work; the rate at 
 - Server Actions for all mutations
 - Cache Components for backlog/throughput reads
 - Accessibility spec at primitive level (week 1, not phase 6)
+- **Keyboard-first on desktop** — full triage / run / review without touching the mouse (week 1 primitive)
 - Auto-run-on-signup that produces surface-only artifacts (no vault writes without explicit consent)
 - Two tiers: Free + Pro
 - Mobile-aware responsive layout (one UI; desktop-primary in practice — acknowledged)
@@ -186,6 +187,46 @@ t=30s   User sees: 1 surface-only review item, 3-5 pending, capacity strip alive
 
 Garden-voiced names (Cultivator / Steward) deferred. Free / Pro is recognizable and ships.
 
+### 15. Keyboard-first on desktop
+
+The desktop bias of "broad view" is also a **keyboard-native** experience. Power users should be able to triage the entire backlog, run skills, and disposition review items without touching the mouse. The keyboard map is a primitive concern (week 1, alongside other a11y), not a phase 6 polish item.
+
+**Global shortcuts:**
+- `⌘K` (`Ctrl+K` on Windows/Linux) — command palette / quick "run a skill"
+- `⌘/` — shortcuts cheatsheet overlay
+- `Esc` — dismiss modal / close detail / unfocus
+- `g` then `b` — go to backlog (homepage)
+- `g` then `s` — go to skills
+- `?` — help
+
+**Backlog navigation (focused on `<BacklogList />` or `<NeedsReviewList />`):**
+- `j` / `k` (or `↓` / `↑`) — next / prev task in current section
+- `Tab` / `Shift+Tab` — between sections (Needs Review → Pending → Cleared)
+- `Enter` — open task detail
+- `r` — run task (when on pending) / refine (when on review)
+- `e` — defer
+- `d` — dismiss
+
+**Review actions (when a review item is focused):**
+- `c` — confirm durable
+- `r` — open refine inline
+- `x` — dismiss
+- `s` — mark stale
+
+**Task detail:**
+- `↑` / `↓` — cycle related notes
+- `Enter` — primary action (run / confirm)
+- `Esc` — back to backlog
+
+**Skill management:**
+- `i` — install (browse — v3, but slot reserved)
+- `c` — configure cadence (installed)
+- `r` — run now
+
+Implementation: a `useKeyboardShortcuts(map)` hook + a `<KeyboardShortcut />` helper component that registers context-specific bindings. Visible shortcut hints in the UI (small Inter chips at the end of each affordance, e.g., a TaskCard footer that reads `[r] run  [e] defer  [d] dismiss`).
+
+Mobile gracefully ignores keyboard shortcuts (no chip display, no hotkey bindings registered). One UI, flexed by surface — desktop unlocks the keyboard layer.
+
 ---
 
 ## Specification
@@ -195,29 +236,45 @@ Garden-voiced names (Cultivator / Steward) deferred. Free / Pro is recognizable 
 ```typescript
 type TaskState = 'pending' | 'running' | 'review' | 'done' | 'dismissed' | 'failed';
 
+type Cadence = 'daily' | 'weekly' | 'on-trigger' | 'on-demand';
+
+// Provenance shape matching api.grove.md's commit trailer schema
+interface GroveProvenance {
+  voice: 'durable' | 'perishable' | 'legacy-unknown';
+  by?: string;                        // model id or 'human'
+  writtenAt?: string;                 // ISO-8601 UTC
+  source?: string;                    // free-text session id
+  basis?: string[];                   // paths / URLs the content derives from
+  reason?: string;                    // one-line rationale
+}
+
 interface Task {
   id: string;
   skillId: string;
   title: string;
   description: string;
-  state: TaskState;
+  state: TaskState;                   // see TaskState above; 'failed' is the terminal-failure state
   scheduledFor: ISO8601 | null;       // null = on-demand
   startedAt: ISO8601 | null;
   completedAt: ISO8601 | null;
   estimatedMinutes: number;
   actualMinutes: number | null;
-  result: TaskResult | null;
+  result: TaskResult | null;          // null when state === 'failed' or task hasn't run
   needsReviewReason?: string;
-  sourceNotes?: string[];             // wikipaths to source notes for "from your graph" badge
+  sourceNotes?: string[];             // wikipaths for "from your graph" badge
+  errorMessage?: string;              // populated when state === 'failed'
 }
 
+// When a task SUCCEEDS, its result.artifact.type is one of the SUCCESS kinds.
+// (Failure is communicated via TaskState === 'failed' + Task.errorMessage,
+// NOT via artifact.type — earlier draft had a 'failed' artifact type that
+// collided with the task state; removed.)
 type TaskArtifactType =
   | 'surface'       // read-only insight; v2 default for auto-runs (no vault write)
   | 'note-change'   // proposed diff; requires user confirmation in review
   | 'note-create'   // proposed new note; requires user confirmation
   | 'note-link'     // proposed wikilink addition; requires user confirmation
-  | 'concept-merge' // proposed concept dedupe; requires user confirmation
-  | 'failed';
+  | 'concept-merge';// proposed concept dedupe; requires user confirmation
 
 interface TaskResult {
   artifact: {
@@ -226,7 +283,7 @@ interface TaskResult {
     notePath?: string;
     surfaceText?: string;
   };
-  provenance: GroveProvenance;        // voice, basis, source, reason
+  provenance: GroveProvenance;
 }
 
 interface Skill {
