@@ -238,6 +238,36 @@ components:
   focus-ring:
     outline: "2px solid {colors.moss}"
     outlineOffset: "2px"
+
+  provenance-badge-durable:
+    backgroundColor: "{colors.surface}"
+    color: "{colors.moss}"
+    border: "1px solid {colors.surface-border}"
+    borderRadius: "{rounded.sm}"
+    paddingX: "0.4rem"
+    paddingY: "0.1rem"
+    fontFamily: "{typography.families.mono}"
+    fontSize: "0.7rem"
+
+  provenance-badge-perishable:
+    backgroundColor: "{colors.surface}"
+    color: "{colors.harvest}"
+    border: "1px solid var(--harvest-15)"  # registered in globals.css; not a raw rgba
+    borderRadius: "{rounded.sm}"
+    paddingX: "0.4rem"
+    paddingY: "0.1rem"
+    fontFamily: "{typography.families.mono}"
+    fontSize: "0.7rem"
+
+  shortcut-chip:
+    backgroundColor: "{colors.surface}"
+    color: "{colors.text-secondary}"
+    border: "1px solid {colors.surface-border}"
+    borderRadius: "{rounded.sm}"
+    paddingX: "0.3rem"
+    paddingY: "0.05rem"
+    fontFamily: "{typography.families.mono}"
+    fontSize: "0.625rem"
 ---
 
 # Grove — Design System
@@ -580,6 +610,46 @@ Regular links are **moss, underlined, 2px offset**. Wikilinks in prose are
 distinction matters: external = moss immediately; internal = reveal moss
 on interaction.
 
+### Provenance Badge
+
+Read-only attribution marks for AI-authored content. Every surface that
+shows machine-written text — note segments, review queue items, task
+artifacts — must carry one of two variants:
+
+- **Durable** (`provenance-badge-durable`) — moss text on surface, hairline
+  surface-border. Use when the AI output has been confirmed by the
+  resident, or when provenance metadata names it as durable voice. Moss
+  signals "this is part of the standing record."
+- **Perishable** (`provenance-badge-perishable`) — harvest text on surface,
+  border at `var(--harvest-15)` (the only sanctioned harvest-tinted
+  hairline in the system). Use when the artifact is moment-in-time AI
+  synthesis or prediction — anything that needs review before it earns
+  durable status. Harvest signals "warmth, but not yet settled."
+
+Both variants render in Geist Mono at 0.7rem with 0.4rem × 0.1rem padding
+and a 4px radius — the same chip silhouette as `shortcut-chip`, sized
+slightly larger because they carry semantic weight, not navigational
+hint. Badges are read-only in v2 (no inline write actions); tapping
+toggles a popover with provenance metadata.
+
+A `legacy-unknown` voice (notes written before provenance was tracked)
+renders nothing. Absence of a badge is the third state — never a question
+mark, never a "?" pill.
+
+### Shortcut Chip
+
+Keyboard-hint markers that surface inline next to actionable rows on
+desktop. Rendered in Geist Mono at 0.625rem with tight 0.3rem × 0.05rem
+padding — the smallest chip in the system, because it's a hint, not a
+control. Background and border match the surface tier; color uses
+`text-secondary` (ink @ 60) so the chip recedes when the row isn't
+focused.
+
+Chips are **hidden on mobile** via CSS `@media (hover: none)` — the
+keyboard isn't there, the hint shouldn't be either. Parent lists pass
+shortcut props down to row primitives (TaskCard, SkillCard); the row
+renders the chip when the prop is present.
+
 ---
 
 ## Voice
@@ -663,9 +733,11 @@ Direct · calm · precise · warm · dry.
 ### Components
 - **Do** reach for the `Button`, `Card`, `Input` primitives — once they exist.
 - **Do** build a primitive the second time you see a pattern, not the third.
+- **Do** use the `provenance-badge-*` tokens for any AI-authorship attribution surface.
 - **Don't** re-invent button, input, or card styling inline. Every new variant is drift.
 - **Don't** use filled icons. Stroke only.
 - **Don't** install icon libraries other than Lucide.
+- **Don't** use raw color stops on AI-authored marks — they should always carry `moss` (durable) or `harvest` (perishable) at the prescribed opacity.
 
 ### Motion
 - **Do** fade things in over 500ms with `ease-out`.
