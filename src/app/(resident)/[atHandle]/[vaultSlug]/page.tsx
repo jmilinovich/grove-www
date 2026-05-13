@@ -1,4 +1,6 @@
-import ClientShell from "./_client-shell";
+import { fetchBacklog } from "@/lib/grove-api.v2";
+import { CapacityStrip } from "@/components/primitives/capacity-strip";
+import ClientShell, { BacklogIsland } from "./_client-shell";
 
 export const metadata = {
   title: "Backlog — Grove",
@@ -9,48 +11,45 @@ interface PageProps {
 }
 
 /**
- * v2 vault homepage — server component scaffold (W1-ROUTE-1).
+ * v2 vault homepage (W2-PAGE-1).
  *
- * Lives at `/@<atHandle>/<vaultSlug>`. This route did not exist before
- * W1 — v1 currently lands on `/dashboard`. W3-SWAP-1 is the single PR
- * that promotes this route to the canonical landing surface.
+ * Server-renders the cached backlog payload, then composes:
  *
- * In W1 the body is intentionally a placeholder. W2-PAGE-1 replaces
- * the inner card with the real backlog composition
- * (`<CapacityStrip />`, `<NeedsReviewList />`, `<BacklogList />`).
- * Auth + slug validation are handled upstream by the parent layout
- * (`layout.tsx` in this directory), so this page just renders.
+ *   <ClientShell>        ← global keymap + 15s polling
+ *     <CapacityStrip />  ← throughput strip (top-of-page)
+ *     <BacklogIsland>    ← client-side action handlers + the two lists
+ *       <NeedsReviewList />
+ *       <BacklogList />
+ *     </BacklogIsland>
+ *   </ClientShell>
  *
- * Architecture note (Architect panel, D):
- * The placeholder is server-rendered; the client island
- * (`<ClientShell>`) wraps it to mount `useBacklogPolling()` and the
- * global keyboard shortcuts. Keeping the server/client seam at the
- * shell boundary preserves RSC streaming for everything else W2 adds
- * on top.
+ * Cache wiring (D-13): `fetchBacklog` is a `'use cache'` function tagged
+ * `vault:<slug>/backlog`. Server Actions (`runTask`, `deferTask`,
+ * `dismissTask`) call `updateTag(...)` on the same tag so the next RSC
+ * render serves fresh data — this is what makes the optimistic-UI loop
+ * in W2-ACTIONS reconcile correctly against canonical state.
+ *
+ * Auth + slug shape are handled upstream by the parent layout (`layout.tsx`
+ * in this directory) which runs `notFound()` for malformed slugs and
+ * lets the page assume a valid `vaultSlug` string.
+ *
+ * Per-vault membership authorization is intentionally NOT enforced here
+ * (parent layout's note already covers this). The mock implementation
+ * accepts any slug; the live implementation will surface 401/403 on the
+ * fetch itself.
  */
 export default async function VaultHomepage({ params }: PageProps) {
   const { vaultSlug } = await params;
+  const data = await fetchBacklog(vaultSlug);
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-12">
-      <ClientShell>
-        <section
-          aria-label="v2 dashboard placeholder"
-          className="rounded-lg border border-ink/15 bg-paper px-6 py-10"
-        >
-          <p className="text-detail uppercase tracking-[0.15em] text-ink/40 mb-3">
-            Vault · {vaultSlug}
-          </p>
-          <h1 className="font-serif font-medium text-title text-ink">
-            v2 dashboard — under construction (W2 will fill this in)
-          </h1>
-          <p className="mt-3 text-label text-ink/60 leading-relaxed">
-            The new backlog homepage scaffold is in place. The real
-            composition — capacity strip, needs-review list, and backlog
-            list — lands in W2.
-          </p>
-        </section>
-      </ClientShell>
-    </main>
+    <ClientShell>
+      <main className="min-h-screen bg-cream text-ink">
+        <CapacityStrip throughput={data.throughput} planTier={data.planTier} />
+        <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col gap-12">
+          <BacklogIsland data={data} vaultSlug={vaultSlug} />
+        </div>
+      </main>
+    </ClientShell>
   );
 }
