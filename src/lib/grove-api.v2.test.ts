@@ -10,12 +10,6 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-// `next/cache` directives + tags don't have a runtime outside Next.js's
-// request context; stub them so the v2 module loads.
-vi.mock("next/cache", () => ({
-  cacheTag: vi.fn(),
-}));
-
 describe("assertV2Available — v2 prod guard", () => {
   beforeEach(() => {
     vi.resetModules();
