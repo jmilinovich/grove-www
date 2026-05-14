@@ -15,6 +15,54 @@ deprecation notices.
   to the list.
 - `GOAL.md` for product intent and the landing-page structure.
 - `README.md` for dev commands and the mobile baseline.
+- `SPEC.md` + `PLAN.md` for v2 dashboard work (the backlog homepage). If
+  you're touching `src/app/(resident)/[atHandle]/[vaultSlug]/page.tsx`,
+  `src/components/backlog/*`, `src/components/primitives/*`, or
+  `src/lib/grove-api.v2*`, read both first.
+
+## Mock mode (v2 dashboard)
+
+The v2 dashboard data layer (`src/lib/grove-api.v2.ts`) routes via mock or
+live impl based on `GROVE_API_MODE`:
+
+- `GROVE_API_MODE=mock` (default) — in-memory fixtures from
+  `src/lib/grove-api.v2.mock.ts`. Module-level singleton; restart resets
+  state. Used during v2 build-out until `api.grove.md` exposes the v2
+  endpoints. Run `npm run probe:api -- --vault=<slug>` to check current
+  backend readiness.
+- `GROVE_API_MODE=live` — calls real `api.grove.md`. Currently a stub
+  that throws "not yet implemented" — wire up when W0-PROBE-1 reports
+  ≥80% VERIFIED on the v2 contract.
+
+Mock fixtures live alongside the mock module (no separate `__fixtures__/`
+folder yet — kept inline for v0). For Playwright visual baselines, the
+mock module is read at server-render time; no separate Playwright mock
+server entry is needed for v2 routes (the existing `test/mobile-mock-api.mjs`
+covers v1 routes only).
+
+### Prod guard
+
+Every v2 page entry point (`page.tsx`, `task/[id]/page.tsx`,
+`skills/page.tsx`, `skills/[slug]/page.tsx`) calls
+`assertV2Available()` from `src/lib/grove-api.v2.ts` before reading
+from any v2 fetcher. The guard behaves like this:
+
+| `VERCEL_ENV`   | `GROVE_API_MODE` | Result                           |
+|----------------|------------------|----------------------------------|
+| `production`   | `live`           | renders against api.grove.md     |
+| `production`   | `mock` / unset   | **404** (guard fires)            |
+| `preview`      | anything         | renders (mock-mode dogfood path) |
+| unset (dev/CI) | anything         | renders (mock-mode)              |
+
+Shipping mock data to real users is worse than a 404 — it's a lie. The
+guard exists so a `main` deploy without `GROVE_API_MODE=live` configured
+in Vercel can't accidentally expose fake tasks. To open v2 in prod:
+flip `GROVE_API_MODE=live` in the Vercel production environment after
+api.grove.md ships the v2 contract (W0-PROBE-1 must report ≥80%
+VERIFIED first).
+
+The Vercel preview channel intentionally renders mock data so dogfood
+paths and PR-preview review still work end-to-end.
 
 ## Non-negotiables
 

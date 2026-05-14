@@ -16,6 +16,7 @@
     "test:visual:update": "playwright test --config=playwright.visual.config.ts --update-snapshots",
     "typecheck": "tsc --noEmit",
     "lint:drift": "bash scripts/drift-check.sh",
+    "probe:api": "node --experimental-strip-types scripts/probe-grove-api.ts",
     "check": "npm run lint:drift && npm run typecheck && npm run test",
     "check:full": "npm run check && npm run test:mobile && npm run test:visual"
   },

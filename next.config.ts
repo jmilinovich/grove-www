@@ -109,6 +109,15 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  // Cache Components (Next.js 16) was enabled in W0-MOCK-1 to support
+  // `'use cache'` on `fetchBacklog` (PLAN D-13). It's been removed
+  // for now — the flag is mutually exclusive with `export const
+  // dynamic` and every v1 route reads cookies eagerly, so the
+  // prerender step fails. Re-introduce when the v2 surface is
+  // user-visible and we've done the per-route Suspense migration
+  // (~17 routes). Until then, `fetchBacklog`'s `'use cache'` directive
+  // is a no-op; the v2 surface is behind a prod guard anyway and
+  // caching isn't load-bearing for the prod-404 state.
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

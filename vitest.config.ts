@@ -11,7 +11,12 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["test/**/*.spec.ts", "test/**/*.spec.tsx"],
+    include: [
+      "test/**/*.spec.ts",
+      "test/**/*.spec.tsx",
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+    ],
     exclude: [
       "**/node_modules/**",
       "test/mobile.spec.ts",
