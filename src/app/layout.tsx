@@ -31,13 +31,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Grove — your knowledge, everywhere your AI is",
+  title: "Grove — every AI session knows your vault",
   description:
-    "A hosted MCP server that wraps your git-tracked Obsidian vault. Search, read, write-back, graph analysis. Works from any MCP client.",
+    "Grove turns your git-tracked Obsidian vault into an MCP endpoint with hybrid search, write-back, and a daily backlog of work the AI proposes against your graph. Hosted or self-hosted, MIT licensed.",
   openGraph: {
-    title: "Grove — your knowledge, everywhere your AI is",
+    title: "Grove — every AI session knows your vault",
     description:
-      "Give your AI a persistent memory that works from every surface. One vault. Every client.",
+      "An MCP endpoint over your git-tracked Obsidian vault. Hybrid search, validated write-back, and a daily backlog of skill-driven work. From every device.",
     type: "website",
   },
 };
