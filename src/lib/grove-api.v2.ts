@@ -16,6 +16,7 @@
 // route-handler fetch — there is no route handler in v2).
 
 import { cacheTag } from "next/cache";
+import { notFound } from "next/navigation";
 import * as mock from "./grove-api.v2.mock";
 
 // Live module is a stub for now — api.grove.md endpoints are still being
@@ -98,3 +99,27 @@ export type {
 } from "./grove-api.v2.types";
 
 export const GROVE_API_MODE = mode;
+
+/**
+ * Prod guard for the v2 surface.
+ *
+ * v2 ships behind a wall until api.grove.md serves the v2 contract
+ * end-to-end (W0-PROBE-1 currently reports zero of five endpoints
+ * VERIFIED). Shipping mock data to real users is worse than a 404 —
+ * it's a lie.
+ *
+ * Behavior matrix:
+ *   VERCEL_ENV=production + GROVE_API_MODE=mock  → 404 (the guard)
+ *   VERCEL_ENV=production + GROVE_API_MODE=live  → renders against real api
+ *   VERCEL_ENV=preview   + anything              → renders (dogfood path)
+ *   local dev / CI       + anything              → renders
+ *
+ * Every v2 page entry point must call this before reading from any v2
+ * fetcher. To open v2 on prod: set GROVE_API_MODE=live in the Vercel
+ * production environment after api.grove.md ships /v1/tasks et al.
+ */
+export function assertV2Available(): void {
+  if (process.env.VERCEL_ENV === "production" && mode !== "live") {
+    notFound();
+  }
+}

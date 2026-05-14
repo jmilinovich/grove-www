@@ -1,4 +1,4 @@
-import { fetchBacklog } from "@/lib/grove-api.v2";
+import { assertV2Available, fetchBacklog } from "@/lib/grove-api.v2";
 import { CapacityStrip } from "@/components/primitives/capacity-strip";
 import ClientShell, { BacklogIsland } from "./_client-shell";
 
@@ -39,6 +39,7 @@ interface PageProps {
  * fetch itself.
  */
 export default async function VaultHomepage({ params }: PageProps) {
+  assertV2Available();
   const { vaultSlug } = await params;
   const data = await fetchBacklog(vaultSlug);
 

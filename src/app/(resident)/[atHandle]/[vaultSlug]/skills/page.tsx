@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { fetchSkills } from "@/lib/grove-api.v2";
+import { assertV2Available, fetchSkills } from "@/lib/grove-api.v2";
 import { SkillsListClient } from "./skills-list-client";
 
 export const metadata = {
@@ -30,6 +30,7 @@ interface PageProps {
 // slugs); per-vault membership authorization is enforced by the v2
 // grove-api on the live path. Mock mode accepts any slug.
 export default async function SkillsPage({ params }: PageProps): Promise<JSX.Element> {
+  assertV2Available();
   const { atHandle, vaultSlug } = await params;
   const skills = await fetchSkills(vaultSlug);
 
