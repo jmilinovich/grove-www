@@ -31,7 +31,7 @@ const apiFetchTask = groveApi.fetchTask as (taskId: string) => Promise<Task>;
  * shape, not a 500.
  */
 export default async function TaskDetailPage({ params }: PageProps) {
-  groveApi.assertV2Available();
+  await groveApi.assertV2Authed();
   const { atHandle, vaultSlug, id } = await params;
 
   let task: Task;

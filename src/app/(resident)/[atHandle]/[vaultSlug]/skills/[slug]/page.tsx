@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { assertV2Available, fetchSkills } from "@/lib/grove-api.v2";
+import { assertV2Authed, fetchSkills } from "@/lib/grove-api.v2";
 import { SkillDetailClient } from "../skills-list-client";
 
 export const metadata = {
@@ -32,7 +32,7 @@ interface PageProps {
 export default async function SkillDetailPage({
   params,
 }: PageProps): Promise<JSX.Element> {
-  assertV2Available();
+  await assertV2Authed();
   const { atHandle, vaultSlug, slug } = await params;
   const skills = await fetchSkills(vaultSlug);
   const skill = skills.find((s) => s.slug === slug);

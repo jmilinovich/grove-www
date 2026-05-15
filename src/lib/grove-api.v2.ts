@@ -14,7 +14,9 @@
 // plain re-export — `fetchBacklog` is uncached. The prod guard means
 // nothing user-facing relies on caching today.
 
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { getApiKey } from "@/lib/auth";
 import * as mock from "./grove-api.v2.mock";
 import * as live from "./grove-api.v2.live";
 
@@ -71,4 +73,26 @@ export function assertV2Available(): void {
   if (process.env.VERCEL_ENV === "production" && mode !== "live") {
     notFound();
   }
+}
+
+/**
+ * Guard a v2 page entry point: prod-guard + auth-check.
+ *
+ * Live mode requires the API key cookie. Pages call this before any
+ * v2 fetcher so unauthenticated requests redirect to `/login` instead
+ * of crashing into a 500 inside `fetchBacklog`. In mock mode the auth
+ * check is skipped (Vercel previews + local dev have no cookie).
+ *
+ * Returns the resolved API key for the caller's convenience when it
+ * needs to thread auth into other paths.
+ */
+export async function assertV2Authed(): Promise<string | null> {
+  assertV2Available();
+  if (mode !== "live") return null;
+  const cookieStore = await cookies();
+  const apiKey = getApiKey(cookieStore);
+  if (!apiKey) {
+    redirect("/login");
+  }
+  return apiKey;
 }
