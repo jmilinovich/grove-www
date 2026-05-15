@@ -16,49 +16,11 @@
 
 import { notFound } from "next/navigation";
 import * as mock from "./grove-api.v2.mock";
-
-// Live module is a stub for now — api.grove.md endpoints are still being
-// stood up (per W0-PROBE-1). When the backend lands, fill these in with
-// real fetch calls (Bearer GROVE_TOKEN, base GROVE_API_URL).
-const liveStub = {
-  fetchBacklog: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  fetchTask: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  runTask: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  deferTask: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  dismissTask: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  reviewTask: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  fetchSkills: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  fetchThroughput: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  configureSkill: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  enableSkill: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-  disableSkill: async () => {
-    throw new Error("live grove-api mode not yet implemented — see W0-PROBE-1");
-  },
-};
+import * as live from "./grove-api.v2.live";
 
 const mode = process.env.GROVE_API_MODE === "live" ? "live" : "mock";
 
-const impl = mode === "live" ? liveStub : mock;
+const impl = mode === "live" ? live : mock;
 
 export const fetchBacklog = impl.fetchBacklog;
 export const fetchTask = impl.fetchTask;
