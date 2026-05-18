@@ -461,13 +461,13 @@ export async function fetchBacklog(_vault: string): Promise<BacklogPayload> {
   };
 }
 
-export async function fetchTask(taskId: string): Promise<Task> {
+export async function fetchTask(_vault: string, taskId: string): Promise<Task> {
   const task = mockStore.tasks.find((t) => t.id === taskId);
   if (!task) throw new Error(`task ${taskId} not found in mock store`);
   return task;
 }
 
-export async function runTask(taskId: string): Promise<void> {
+export async function runTask(_vault: string, taskId: string): Promise<void> {
   const task = mockStore.tasks.find((t) => t.id === taskId);
   if (!task) throw new Error(`task ${taskId} not found in mock store`);
   task.state = "done";
@@ -485,19 +485,24 @@ export async function runTask(taskId: string): Promise<void> {
   };
 }
 
-export async function deferTask(taskId: string, until: string): Promise<void> {
+export async function deferTask(
+  _vault: string,
+  taskId: string,
+  until: string,
+): Promise<void> {
   const task = mockStore.tasks.find((t) => t.id === taskId);
   if (!task) throw new Error(`task ${taskId} not found in mock store`);
   task.scheduledFor = until;
 }
 
-export async function dismissTask(taskId: string): Promise<void> {
+export async function dismissTask(_vault: string, taskId: string): Promise<void> {
   const task = mockStore.tasks.find((t) => t.id === taskId);
   if (!task) throw new Error(`task ${taskId} not found in mock store`);
   task.state = "dismissed";
 }
 
 export async function reviewTask(
+  _vault: string,
   taskId: string,
   action:
     | { kind: "confirm-durable" }
@@ -522,17 +527,21 @@ export async function fetchThroughput(_vault: string): Promise<ThroughputView> {
   return computeThroughput();
 }
 
-export async function configureSkill(slug: string, _cadence: Cadence): Promise<void> {
+export async function configureSkill(
+  _vault: string,
+  slug: string,
+  _cadence: Cadence,
+): Promise<void> {
   if (!MOCK_SKILLS.find((s) => s.slug === slug)) throw new Error(`skill ${slug} not found`);
 }
 
-export async function enableSkill(slug: string): Promise<void> {
+export async function enableSkill(_vault: string, slug: string): Promise<void> {
   const skill = MOCK_SKILLS.find((s) => s.slug === slug);
   if (!skill) throw new Error(`skill ${slug} not found`);
   skill.installState = "installed";
 }
 
-export async function disableSkill(slug: string): Promise<void> {
+export async function disableSkill(_vault: string, slug: string): Promise<void> {
   const skill = MOCK_SKILLS.find((s) => s.slug === slug);
   if (!skill) throw new Error(`skill ${slug} not found`);
   skill.installState = "disabled";

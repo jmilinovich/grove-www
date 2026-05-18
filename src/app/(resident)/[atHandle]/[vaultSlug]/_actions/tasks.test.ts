@@ -59,7 +59,7 @@ describe("runTask Server Action", () => {
     await runTask("task-101", "main");
 
     expect(mockedRunTask).toHaveBeenCalledTimes(1);
-    expect(mockedRunTask).toHaveBeenCalledWith("task-101");
+    expect(mockedRunTask).toHaveBeenCalledWith("main", "task-101");
     expect(mockedUpdateTag).toHaveBeenCalledTimes(1);
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");
   });
@@ -79,7 +79,7 @@ describe("deferTask Server Action", () => {
     await deferTask("task-103", "2026-05-20T00:00:00Z", "main");
 
     expect(mockedDeferTask).toHaveBeenCalledTimes(1);
-    expect(mockedDeferTask).toHaveBeenCalledWith("task-103", "2026-05-20T00:00:00Z");
+    expect(mockedDeferTask).toHaveBeenCalledWith("main", "task-103", "2026-05-20T00:00:00Z");
     expect(mockedUpdateTag).toHaveBeenCalledTimes(1);
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");
   });
@@ -99,7 +99,7 @@ describe("dismissTask Server Action", () => {
     await dismissTask("task-102", "main");
 
     expect(mockedDismissTask).toHaveBeenCalledTimes(1);
-    expect(mockedDismissTask).toHaveBeenCalledWith("task-102");
+    expect(mockedDismissTask).toHaveBeenCalledWith("main", "task-102");
     expect(mockedUpdateTag).toHaveBeenCalledTimes(1);
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");
   });
@@ -117,7 +117,7 @@ describe("retryTask Server Action", () => {
     await retryTask("task-failed", "main");
 
     expect(mockedRunTask).toHaveBeenCalledTimes(1);
-    expect(mockedRunTask).toHaveBeenCalledWith("task-failed");
+    expect(mockedRunTask).toHaveBeenCalledWith("main", "task-failed");
     expect(mockedUpdateTag).toHaveBeenCalledTimes(1);
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");
   });

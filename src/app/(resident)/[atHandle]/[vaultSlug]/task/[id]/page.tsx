@@ -11,10 +11,8 @@ export const metadata = {
   title: "Task — Grove",
 };
 
-// grove-api.v2.ts re-exports the typed fetchTask under a union with the
-// liveStub signature; cast through the mock signature here for the same
-// reason `_actions/tasks.ts` does. Runtime call is exactly correct.
-const apiFetchTask = groveApi.fetchTask as (taskId: string) => Promise<Task>;
+// grove-api.v2.ts now exposes a unified (vault, taskId) signature across
+// mock + live, so we call fetchTask directly with no type laundering.
 
 /**
  * W3-TASK-1 — task detail route.
@@ -36,7 +34,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
 
   let task: Task;
   try {
-    task = await apiFetchTask(id);
+    task = await groveApi.fetchTask(vaultSlug, id);
   } catch {
     notFound();
   }
