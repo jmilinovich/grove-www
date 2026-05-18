@@ -35,15 +35,18 @@ export default async function ResidentProfilePage({ params }: PageProps) {
   const resident = await fetchResident(handle);
   if (!resident) notFound();
 
-  // Signed-in visitors at the bare `/@<handle>` land on the MRU vault
-  // dashboard rather than the public profile. `redirect()` issues a 307 by
-  // default (temporary) — not 308, because the MRU target is mutable per
-  // the user's activity and a cached 308 would pin the first-visited vault
-  // forever. See SPEC.md P8-B6 design decision #4.
+  // Signed-in visitors at the bare `/@<handle>` land on the MRU vault's
+  // v2 backlog homepage (the vault root) rather than the public profile.
+  // `redirect()` issues a 307 (temporary) — not 308, because the MRU target
+  // is mutable per the user's activity and a cached 308 would pin the
+  // first-visited vault forever. See SPEC.md P8-B6 design decision #4.
+  // W3-SWAP-1: was redirecting to `/dashboard` (v1 stats); now lands at the
+  // vault root which is the v2 backlog homepage. v1 dashboard is still
+  // reachable at `/{atHandle}/{vault}/dashboard` for vault admin.
   const cookieStore = await cookies();
   const apiKey = getApiKey(cookieStore);
   if (apiKey) {
-    const target = await resolveScopedRedirect(apiKey, "/dashboard", "", "");
+    const target = await resolveScopedRedirect(apiKey, "", "", "");
     if (target) redirect(target);
   }
 

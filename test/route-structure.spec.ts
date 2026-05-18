@@ -235,7 +235,7 @@ describe("bare /@<handle> handle-root redirect (P8-B6)", () => {
     });
   }
 
-  it("signed-in visitor → redirect to MRU dashboard (307, NOT 308)", async () => {
+  it("signed-in visitor → redirect to MRU vault root (307, NOT 308)", async () => {
     cookiesStore.get.mockReturnValue({ value: "api-key" });
     // fetchResident first, then /v1/me for the scope resolution.
     fetchMock.mockResolvedValueOnce(residentPayload("jm"));
@@ -244,10 +244,12 @@ describe("bare /@<handle> handle-root redirect (P8-B6)", () => {
     await expect(
       Page({ params: Promise.resolve({ atHandle: "@jm" }) }),
     ).rejects.toThrow(/NEXT_REDIRECT/);
-    // Crucially uses `redirect()` (307), NOT `permanentRedirect()` (308).
-    // MRU is a mutable target — a cached 308 would pin the first-visited
+    // W3-SWAP-1: signed-in handle owners land on the v2 backlog homepage
+    // (the vault root `/{handle}/{vault}`), not the v1 stats `/dashboard`.
+    // Still uses `redirect()` (307), NOT `permanentRedirect()` (308) — MRU
+    // is a mutable target and a cached 308 would pin the first-visited
     // vault forever.
-    expect(redirectSpy).toHaveBeenCalledWith("/@jm/personal/dashboard");
+    expect(redirectSpy).toHaveBeenCalledWith("/@jm/personal");
     expect(permanentRedirectSpy).not.toHaveBeenCalled();
   });
 

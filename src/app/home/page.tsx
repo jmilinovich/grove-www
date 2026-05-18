@@ -66,10 +66,11 @@ export default async function HomePage() {
   const whoami = await fetchWhoami(apiKey);
   if (!whoami) redirect("/login?redirect=/home");
 
-  // Owners go to the scoped dashboard of their MRU vault directly — skip the
-  // /dashboard shim hop. Fall through to the shim if MRU resolution fails.
+  // Owners land on the v2 backlog homepage at the vault root (`/{atHandle}/{vault}`).
+  // The v1 stats dashboard still lives at `/dashboard` for vault admin; the swap
+  // here updates only the default landing route. W3-SWAP-1.
   if (roleFromWhoami(whoami) === "owner") {
-    const target = await resolveScopedRedirect(apiKey, "/dashboard", "", "");
+    const target = await resolveScopedRedirect(apiKey, "", "", "");
     redirect(target ?? "/dashboard");
   }
 
