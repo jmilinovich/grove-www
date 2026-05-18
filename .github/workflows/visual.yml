@@ -46,6 +46,21 @@ permissions:
 jobs:
   visual:
     runs-on: ubuntu-latest
+    # Visual regression is INFORMATIONAL only. Pixel-level font rendering
+    # drifts between local + Linux CI even on UI-untouching PRs — three
+    # PRs in a row in mid-May 2026 false-positived on landing-page jitter
+    # while making zero visual changes (PR #64 lib refactor, PR #66
+    # route swap, PR #67 multi-vault refactor). The constant baseline-
+    # regen cadence was burning more time than the gate caught.
+    #
+    # `continue-on-error: true` keeps the run going — screenshots still
+    # generate, diffs upload as artifacts, you can eyeball regressions
+    # in the Actions UI — but a red visual no longer gates auto-merge.
+    # The `drift-check.sh` grep linter (in `check` workflow) remains the
+    # blocking signal for design-system violations; visual is now a
+    # backstop for catastrophic layout regressions you'd notice from
+    # the diff thumbnail.
+    continue-on-error: true
     # Pinned Playwright Docker image — exact same env every run, matches
     # the @playwright/test version in package.json. Bump both together.
     container:
