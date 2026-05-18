@@ -22,19 +22,10 @@
 // surface a Toast.
 
 import { updateTag } from "next/cache";
-import * as groveApi from "@/lib/grove-api.v2";
+import { reviewTask as apiReviewTask } from "@/lib/grove-api.v2";
 
-// Same casting pattern as tasks.ts — the v2 grove-api re-exports through
-// a union of mock+liveStub signatures, which TS narrows to `never[]`.
-// Cast through the mock-side signature; the runtime value is real.
-const apiReviewTask = groveApi.reviewTask as (
-  taskId: string,
-  action:
-    | { kind: "confirm-durable" }
-    | { kind: "refine"; refinement: string }
-    | { kind: "dismiss" }
-    | { kind: "mark-stale" },
-) => Promise<void>;
+// grove-api.v2.ts exposes a unified signature (vault: string, ...) across
+// mock + live, so we import directly without type-laundering casts.
 
 function backlogTag(vaultSlug: string): string {
   return `vault:${vaultSlug}/backlog`;
@@ -49,6 +40,6 @@ export async function reviewTask(
     | { kind: "mark-stale" },
   vaultSlug: string,
 ): Promise<void> {
-  await apiReviewTask(taskId, action);
+  await apiReviewTask(vaultSlug, taskId, action);
   updateTag(backlogTag(vaultSlug));
 }

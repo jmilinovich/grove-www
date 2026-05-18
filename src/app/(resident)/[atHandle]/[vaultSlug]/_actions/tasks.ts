@@ -26,26 +26,19 @@
 // useOptimistic is intentionally NOT here — it's a client concern per D-21.
 
 import { updateTag } from "next/cache";
-import * as groveApi from "@/lib/grove-api.v2";
+import { runTask as apiRunTask, deferTask as apiDeferTask, dismissTask as apiDismissTask } from "@/lib/grove-api.v2";
 
-// grove-api.v2.ts re-exports functions through a union of mock+liveStub
-// signatures, which TypeScript narrows the parameter list of to the
-// intersection (i.e. `never[]`). Cast through the mock-side signatures —
-// the values are real at runtime; this just unblocks the type checker
-// until the liveStub module is parameterised correctly.
-const apiRunTask = groveApi.runTask as (taskId: string) => Promise<void>;
-const apiDeferTask = groveApi.deferTask as (
-  taskId: string,
-  until: string,
-) => Promise<void>;
-const apiDismissTask = groveApi.dismissTask as (taskId: string) => Promise<void>;
+// grove-api.v2.ts now exposes a unified signature (vault: string, ...)
+// across mock + live, so we import the functions directly without
+// type-laundering casts. Earlier drafts had to `as` through mock
+// signatures because the live module was a stub returning `never`.
 
 function backlogTag(vaultSlug: string): string {
   return `vault:${vaultSlug}/backlog`;
 }
 
 export async function runTask(taskId: string, vaultSlug: string): Promise<void> {
-  await apiRunTask(taskId);
+  await apiRunTask(vaultSlug, taskId);
   updateTag(backlogTag(vaultSlug));
 }
 
@@ -54,12 +47,12 @@ export async function deferTask(
   until: string,
   vaultSlug: string,
 ): Promise<void> {
-  await apiDeferTask(taskId, until);
+  await apiDeferTask(vaultSlug, taskId, until);
   updateTag(backlogTag(vaultSlug));
 }
 
 export async function dismissTask(taskId: string, vaultSlug: string): Promise<void> {
-  await apiDismissTask(taskId);
+  await apiDismissTask(vaultSlug, taskId);
   updateTag(backlogTag(vaultSlug));
 }
 
@@ -68,6 +61,6 @@ export async function dismissTask(taskId: string, vaultSlug: string): Promise<vo
 // and the live API will treat it the same way (post to /tasks/{id}/run
 // regardless of prior state). Same revalidation.
 export async function retryTask(taskId: string, vaultSlug: string): Promise<void> {
-  await apiRunTask(taskId);
+  await apiRunTask(vaultSlug, taskId);
   updateTag(backlogTag(vaultSlug));
 }

@@ -50,7 +50,7 @@ describe("reviewTask Server Action — confirm-durable", () => {
     await reviewTask("task-001", { kind: "confirm-durable" }, "main");
 
     expect(mockedReviewTask).toHaveBeenCalledTimes(1);
-    expect(mockedReviewTask).toHaveBeenCalledWith("task-001", {
+    expect(mockedReviewTask).toHaveBeenCalledWith("main", "task-001", {
       kind: "confirm-durable",
     });
     expect(mockedUpdateTag).toHaveBeenCalledTimes(1);
@@ -75,7 +75,7 @@ describe("reviewTask Server Action — refine", () => {
       "main",
     );
 
-    expect(mockedReviewTask).toHaveBeenCalledWith("task-002", {
+    expect(mockedReviewTask).toHaveBeenCalledWith("main", "task-002", {
       kind: "refine",
       refinement: "rephrase as durable, drop the hedge",
     });
@@ -96,7 +96,7 @@ describe("reviewTask Server Action — dismiss", () => {
   it("calls grove-api.v2.reviewTask and invalidates the vault backlog tag", async () => {
     await reviewTask("task-003", { kind: "dismiss" }, "main");
 
-    expect(mockedReviewTask).toHaveBeenCalledWith("task-003", {
+    expect(mockedReviewTask).toHaveBeenCalledWith("main", "task-003", {
       kind: "dismiss",
     });
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");
@@ -116,7 +116,7 @@ describe("reviewTask Server Action — mark-stale", () => {
   it("calls grove-api.v2.reviewTask and invalidates the vault backlog tag", async () => {
     await reviewTask("task-004", { kind: "mark-stale" }, "main");
 
-    expect(mockedReviewTask).toHaveBeenCalledWith("task-004", {
+    expect(mockedReviewTask).toHaveBeenCalledWith("main", "task-004", {
       kind: "mark-stale",
     });
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");

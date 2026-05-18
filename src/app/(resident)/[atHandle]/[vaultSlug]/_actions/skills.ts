@@ -24,21 +24,15 @@
 // per D-21. The skills detail page wires `useOptimistic` itself.
 
 import { updateTag } from "next/cache";
-import * as groveApi from "@/lib/grove-api.v2";
+import {
+  configureSkill as apiConfigureSkill,
+  enableSkill as apiEnableSkill,
+  disableSkill as apiDisableSkill,
+} from "@/lib/grove-api.v2";
 import type { Cadence } from "@/lib/grove-api.v2.types";
 
-// grove-api.v2.ts re-exports functions through a union of mock+liveStub
-// signatures, which TypeScript narrows the parameter list of to the
-// intersection (i.e. `never[]`). Cast through the mock-side signatures —
-// the values are real at runtime; this just unblocks the type checker
-// until the liveStub module is parameterised correctly. Same pattern
-// as `_actions/tasks.ts`.
-const apiConfigureSkill = groveApi.configureSkill as (
-  slug: string,
-  cadence: Cadence,
-) => Promise<void>;
-const apiEnableSkill = groveApi.enableSkill as (slug: string) => Promise<void>;
-const apiDisableSkill = groveApi.disableSkill as (slug: string) => Promise<void>;
+// grove-api.v2.ts exposes a unified signature (vault: string, ...) across
+// mock + live, so we import directly without type-laundering casts.
 
 function backlogTag(vaultSlug: string): string {
   return `vault:${vaultSlug}/backlog`;
@@ -49,7 +43,7 @@ export async function configureSkill(
   cadence: Cadence,
   vaultSlug: string,
 ): Promise<void> {
-  await apiConfigureSkill(slug, cadence);
+  await apiConfigureSkill(vaultSlug, slug, cadence);
   updateTag(backlogTag(vaultSlug));
 }
 
@@ -57,7 +51,7 @@ export async function enableSkill(
   slug: string,
   vaultSlug: string,
 ): Promise<void> {
-  await apiEnableSkill(slug);
+  await apiEnableSkill(vaultSlug, slug);
   updateTag(backlogTag(vaultSlug));
 }
 
@@ -65,6 +59,6 @@ export async function disableSkill(
   slug: string,
   vaultSlug: string,
 ): Promise<void> {
-  await apiDisableSkill(slug);
+  await apiDisableSkill(vaultSlug, slug);
   updateTag(backlogTag(vaultSlug));
 }

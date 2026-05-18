@@ -58,6 +58,7 @@ describe("configureSkill Server Action", () => {
 
     expect(mockedConfigureSkill).toHaveBeenCalledTimes(1);
     expect(mockedConfigureSkill).toHaveBeenCalledWith(
+      "main",
       "daily-vault-review",
       "daily",
     );
@@ -77,6 +78,7 @@ describe("configureSkill Server Action", () => {
   it("threads the cadence value through verbatim", async () => {
     await configureSkill("journal-patterns", "weekly", "main");
     expect(mockedConfigureSkill).toHaveBeenCalledWith(
+      "main",
       "journal-patterns",
       "weekly",
     );
@@ -86,6 +88,7 @@ describe("configureSkill Server Action", () => {
 
     await configureSkill("journal-patterns", "on-demand", "main");
     expect(mockedConfigureSkill).toHaveBeenCalledWith(
+      "main",
       "journal-patterns",
       "on-demand",
     );
@@ -97,7 +100,7 @@ describe("enableSkill Server Action", () => {
     await enableSkill("vault-health", "main");
 
     expect(mockedEnableSkill).toHaveBeenCalledTimes(1);
-    expect(mockedEnableSkill).toHaveBeenCalledWith("vault-health");
+    expect(mockedEnableSkill).toHaveBeenCalledWith("main", "vault-health");
     expect(mockedUpdateTag).toHaveBeenCalledTimes(1);
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");
   });
@@ -115,7 +118,7 @@ describe("disableSkill Server Action", () => {
     await disableSkill("vault-health", "main");
 
     expect(mockedDisableSkill).toHaveBeenCalledTimes(1);
-    expect(mockedDisableSkill).toHaveBeenCalledWith("vault-health");
+    expect(mockedDisableSkill).toHaveBeenCalledWith("main", "vault-health");
     expect(mockedUpdateTag).toHaveBeenCalledTimes(1);
     expect(mockedUpdateTag).toHaveBeenCalledWith("vault:main/backlog");
   });

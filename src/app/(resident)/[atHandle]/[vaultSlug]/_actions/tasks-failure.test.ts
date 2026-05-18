@@ -44,12 +44,12 @@ describe("retryTask end-to-end against the real mock store", () => {
     // the same transition.
     const TASK_ID = "task-101";
 
-    const before = await groveApi.fetchTask(TASK_ID);
+    const before = await groveApi.fetchTask("main", TASK_ID);
     expect(before.state).toBe("pending");
 
     await retryTask(TASK_ID, "main");
 
-    const after = await groveApi.fetchTask(TASK_ID);
+    const after = await groveApi.fetchTask("main", TASK_ID);
     expect(after.state).toBe("done");
     expect(after.completedAt).not.toBeNull();
   });
@@ -79,13 +79,13 @@ describe("retryTask end-to-end against the real mock store", () => {
     // and the live API will treat it the same way"). Pin that with a
     // direct comparison.
     await runTask("task-103", "main");
-    const afterRun = await groveApi.fetchTask("task-103");
+    const afterRun = await groveApi.fetchTask("main", "task-103");
 
     __resetMockStore();
     mockedUpdateTag.mockReset();
 
     await retryTask("task-103", "main");
-    const afterRetry = await groveApi.fetchTask("task-103");
+    const afterRetry = await groveApi.fetchTask("main", "task-103");
 
     expect(afterRetry.state).toBe(afterRun.state);
     // result.artifact.surfaceText is the visible artifact the mock
