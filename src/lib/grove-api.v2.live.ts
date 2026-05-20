@@ -146,11 +146,20 @@ export async function reviewTask(
     | { kind: "dismiss" }
     | { kind: "mark-stale" },
 ): Promise<void> {
+  // The api.grove.md `/v1/tasks/<id>/review` endpoint expects a flat
+  // `{ action, refinement? }` body (see grove `src/v2-tasks.ts`
+  // parseReviewBody + `src/v2-task-review.ts` ReviewAction). The client
+  // signature uses the discriminated `{ kind, ... }` shape because that
+  // matches the mock store and stays a stable export for the Server
+  // Actions; we translate to the wire shape here so callers stay
+  // shape-agnostic.
+  const body: { action: string; refinement?: string } = { action: action.kind };
+  if (action.kind === "refine") body.refinement = action.refinement;
   await call<unknown>(
     vault,
     "POST",
     `/v1/tasks/${encodeURIComponent(taskId)}/review`,
-    action,
+    body,
   );
 }
 
