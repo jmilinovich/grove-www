@@ -11,12 +11,6 @@ import { Button } from "@/components/primitives/button";
 import { ProvenanceBadge } from "@/components/primitives/provenance-badge";
 import { ShortcutChip } from "@/components/primitives/shortcut-chip";
 import { RefineModal } from "./refine-modal";
-import { FirstWriteModal } from "./first-write-modal";
-import {
-  WRITE_ARTIFACT_TYPES,
-  readFirstWriteAck,
-  writeFirstWriteAck,
-} from "./first-write-ack";
 
 // W3-REVIEW-1 — ReviewItem.
 //
@@ -24,32 +18,22 @@ import {
 // the compact row from NeedsReviewList (that's the dashboard glance). It's
 // the dedicated review canvas — used on the task-detail page and from
 // "see all" expansion of needs-review. It renders the AI artifact in full
-// fidelity, exposes the review actions with shortcut chips, and handles
-// the first-write confirmation gate per-skill, per-vault.
+// fidelity, exposes the review actions with shortcut chips, and dispatches
+// the user's pick on a decision-backed task.
 //
 // Per Scope Cop (PLAN.md W3-REVIEW-1): refine opens a MODAL with a
-// <textarea> + Submit / Cancel — NOT an inline textarea. Confirmation
-// for write-type artifacts is a one-time modal per (vault, skill), with
-// the preference stored in localStorage so subsequent confirms skip the
-// prompt.
+// <textarea> + Submit / Cancel — NOT an inline textarea.
 //
-// W-INBOX-2: action footer is dynamic. Decision-backed review tasks
-// (with `task.options[]`) render one button per option plus refine +
-// dismiss. Legacy review tasks (no `options`) keep the original four-
-// verb set (confirm / refine / dismiss / mark-stale) so see-all keeps
-// working during rollout. See needs-review-list.tsx for the matching
-// rationale on the compact row.
+// Every review-state task ships with `task.options` (S-INBOX-9 bridge
+// guarantees this on the server). The action footer renders one button
+// per option plus refine + dismiss. The legacy four-verb fallback
+// (confirm / refine / dismiss / mark-stale) was retired in C-INBOX-1
+// after M-INBOX-1 dismissed the last legacy queue on prod.
 //
-// The RefineModal, FirstWriteModal, and first-write ack helpers are
-// extracted to sibling files so BacklogIsland and TaskDetailClient can
-// share the same gate behavior — see refine-modal.tsx,
-// first-write-modal.tsx, first-write-ack.ts.
+// The RefineModal is extracted to a sibling file so BacklogIsland and
+// TaskDetailClient can share the same modal — see refine-modal.tsx.
 
 const MAX_OPTION_SHORTCUTS = 9;
-
-function hasDynamicOptions(task: Task): boolean {
-  return Array.isArray(task.options) && task.options.length > 0;
-}
 
 export interface ReviewItemProps {
   task: Task;
@@ -60,49 +44,19 @@ export interface ReviewItemProps {
    * with `optionId` matching one of the `task.options[].id` values.
    * Wired to `applyReviewTask` in the parent client island.
    */
-  onApplyOption?: (optionId: string) => void;
-  onConfirmDurable: () => void;
+  onApplyOption: (optionId: string) => void;
   onRefine: (refinement: string) => void;
   onDismiss: () => void;
-  onMarkStale: () => void;
 }
 
 export function ReviewItem({
   task,
   skill,
-  vaultSlug,
   onApplyOption,
-  onConfirmDurable,
   onRefine,
   onDismiss,
-  onMarkStale,
 }: ReviewItemProps): JSX.Element {
   const [refineOpen, setRefineOpen] = useState(false);
-  const [firstWriteOpen, setFirstWriteOpen] = useState(false);
-
-  // We hold the artifact type at the call site so the modal copy can
-  // mention the right surface ("write to your vault"). Computed once.
-  const isWriteArtifact = task.result
-    ? WRITE_ARTIFACT_TYPES.has(task.result.artifact.type)
-    : false;
-
-  const handleConfirmDurableClick = useCallback(() => {
-    if (isWriteArtifact && !readFirstWriteAck(vaultSlug, skill.id)) {
-      setFirstWriteOpen(true);
-      return;
-    }
-    onConfirmDurable();
-  }, [isWriteArtifact, vaultSlug, skill.id, onConfirmDurable]);
-
-  const handleFirstWriteConfirm = useCallback(() => {
-    writeFirstWriteAck(vaultSlug, skill.id);
-    setFirstWriteOpen(false);
-    onConfirmDurable();
-  }, [vaultSlug, skill.id, onConfirmDurable]);
-
-  const handleFirstWriteCancel = useCallback(() => {
-    setFirstWriteOpen(false);
-  }, []);
 
   const handleRefineSubmit = useCallback(
     (refinement: string) => {
@@ -118,70 +72,70 @@ export function ReviewItem({
 
   const handleApplyOption = useCallback(
     (optionId: string) => {
-      if (!onApplyOption) return;
       onApplyOption(optionId);
     },
     [onApplyOption],
   );
 
-  // If there's no result yet (shouldn't happen for review-state tasks
-  // since they have to have run to be in review, but defensive), render
-  // a placeholder rather than crash.
+  // Every review task should have `options` post-C-INBOX-1; assert in
+  // dev so a schema regression surfaces loudly.
+  const options = task.options;
+  if (process.env.NODE_ENV !== "production" && (!options || options.length === 0)) {
+    throw new Error(
+      `ReviewItem: review task ${task.id} has no options. Every review task must have task.options populated server-side (S-INBOX-9 bridge).`,
+    );
+  }
+  if (!options || options.length === 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `ReviewItem: review task ${task.id} has no options; rendering header-only card`,
+    );
+  }
+
+  // If there's no result yet (decision-backed disambiguation / link
+  // suggestions legitimately have no `result` — only `options`), render
+  // the header + dynamic footer.
   if (!task.result) {
-    // Some decision-backed tasks (disambiguation / link suggestions)
-    // also legitimately have no `result` — only `options`. Render the
-    // header + dynamic footer in that case so the user can still pick.
-    if (hasDynamicOptions(task)) {
-      return (
-        <article
-          className="bg-surface border border-surface-border rounded-md p-6"
-          data-task-id={task.id}
-          data-task-state={task.state}
-          data-row-mode="dynamic"
-        >
-          <header className="flex items-baseline gap-2 flex-wrap">
-            <span className="font-sans font-medium text-label text-moss">
-              {skill.name}
-            </span>
-            <h2 className="font-serif font-medium text-subhead text-ink leading-snug">
-              {task.title}
-            </h2>
-          </header>
-          {task.needsReviewReason ? (
-            <p className="mt-2 font-sans text-detail text-ink/60">
-              {task.needsReviewReason}
-            </p>
-          ) : null}
-          <DynamicActionFooter
-            options={task.options ?? []}
-            onApplyOption={handleApplyOption}
-            onRefine={() => setRefineOpen(true)}
-            onDismiss={onDismiss}
-          />
-          {refineOpen ? (
-            <RefineModal
-              onSubmit={handleRefineSubmit}
-              onCancel={handleRefineCancel}
-            />
-          ) : null}
-        </article>
-      );
-    }
     return (
       <article
         className="bg-surface border border-surface-border rounded-md p-6"
         data-task-id={task.id}
+        data-task-state={task.state}
+        data-row-mode="dynamic"
       >
-        <p className="font-sans text-detail text-ink/60">
-          this task has no result yet
-        </p>
+        <header className="flex items-baseline gap-2 flex-wrap">
+          <span className="font-sans font-medium text-label text-moss">
+            {skill.name}
+          </span>
+          <h2 className="font-serif font-medium text-subhead text-ink leading-snug">
+            {task.title}
+          </h2>
+        </header>
+        {task.needsReviewReason ? (
+          <p className="mt-2 font-sans text-detail text-ink/60">
+            {task.needsReviewReason}
+          </p>
+        ) : null}
+        {options && options.length > 0 ? (
+          <DynamicActionFooter
+            options={options}
+            onApplyOption={handleApplyOption}
+            onRefine={() => setRefineOpen(true)}
+            onDismiss={onDismiss}
+          />
+        ) : null}
+        {refineOpen ? (
+          <RefineModal
+            onSubmit={handleRefineSubmit}
+            onCancel={handleRefineCancel}
+          />
+        ) : null}
       </article>
     );
   }
 
   const artifact = task.result.artifact;
   const provenance = task.result.provenance;
-  const dynamic = hasDynamicOptions(task);
 
   return (
     <article
@@ -189,7 +143,7 @@ export function ReviewItem({
       data-task-id={task.id}
       data-task-state={task.state}
       data-artifact-type={artifact.type}
-      data-row-mode={dynamic ? "dynamic" : "legacy"}
+      data-row-mode="dynamic"
     >
       {/* Header: skill + title + provenance badge */}
       <header className="flex items-baseline gap-2 flex-wrap">
@@ -251,34 +205,19 @@ export function ReviewItem({
       </div>
 
       {/* Action footer */}
-      {dynamic ? (
+      {options && options.length > 0 ? (
         <DynamicActionFooter
-          options={task.options ?? []}
+          options={options}
           onApplyOption={handleApplyOption}
           onRefine={() => setRefineOpen(true)}
           onDismiss={onDismiss}
         />
-      ) : (
-        <LegacyActionFooter
-          onConfirm={handleConfirmDurableClick}
-          onRefine={() => setRefineOpen(true)}
-          onDismiss={onDismiss}
-          onMarkStale={onMarkStale}
-        />
-      )}
+      ) : null}
 
       {refineOpen ? (
         <RefineModal
           onSubmit={handleRefineSubmit}
           onCancel={handleRefineCancel}
-        />
-      ) : null}
-
-      {firstWriteOpen ? (
-        <FirstWriteModal
-          skillName={skill.name}
-          onConfirm={handleFirstWriteConfirm}
-          onCancel={handleFirstWriteCancel}
         />
       ) : null}
     </article>
@@ -325,32 +264,6 @@ function DynamicActionFooter({
         : null}
       <GhostFooterAction onClick={onRefine} label="refine" shortcut="r" />
       <GhostFooterAction onClick={onDismiss} label="dismiss" shortcut="d" />
-    </div>
-  );
-}
-
-interface LegacyActionFooterProps {
-  onConfirm: () => void;
-  onRefine: () => void;
-  onDismiss: () => void;
-  onMarkStale: () => void;
-}
-
-function LegacyActionFooter({
-  onConfirm,
-  onRefine,
-  onDismiss,
-  onMarkStale,
-}: LegacyActionFooterProps): JSX.Element {
-  return (
-    <div
-      className="mt-6 flex items-center justify-end gap-4 font-sans text-label"
-      data-testid="review-actions-legacy"
-    >
-      <FooterAction onClick={onConfirm} label="confirm" shortcut="c" />
-      <FooterAction onClick={onRefine} label="refine" shortcut="r" />
-      <FooterAction onClick={onDismiss} label="dismiss" shortcut="x" />
-      <FooterAction onClick={onMarkStale} label="stale" shortcut="s" />
     </div>
   );
 }
@@ -475,28 +388,5 @@ function SurfaceView({ text, sourceNotes }: SurfaceViewProps): JSX.Element {
         </p>
       ) : null}
     </div>
-  );
-}
-
-interface FooterActionProps {
-  onClick: () => void;
-  label: string;
-  shortcut: string;
-}
-
-function FooterAction({
-  onClick,
-  label,
-  shortcut,
-}: FooterActionProps): JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-1.5 text-ink/60 hover:text-ink transition-colors"
-    >
-      <ShortcutChip keys={shortcut} />
-      <span>{label}</span>
-    </button>
   );
 }

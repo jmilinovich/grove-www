@@ -15,28 +15,19 @@ import { TaskDetailClient } from "./task-detail-client";
 // so this component can stay a server component and ship as much HTML
 // as possible on first paint.
 //
-// Primary-action mapping (per W3-TASK-1 spec):
-//   pending  → Run     (calls runTask)
-//   review   → Confirm (will call confirm-durable in W3-REVIEW-1; stub today)
-//   failed   → Retry   (calls retryTask)
-//   done     → none
-//   dismissed → none
-//   running  → none (transient; UI shows the state but no action)
+// Primary-action mapping (per W3-TASK-1 spec, post-C-INBOX-1):
+//   pending  → Run    (calls runTask)
+//   failed   → Retry  (calls retryTask)
+//   review   → none   (driven from the review queue's options instead)
+//   done / dismissed / running → none
 
 interface TaskDetailProps {
   task: Task;
   vaultSlug: string;
   backHref: string;
-  /**
-   * Human-readable skill name for the first-write confirmation modal.
-   * When the caller has loaded the skill registry, pass the resolved
-   * name. Optional — TaskDetailClient falls back to `task.skillId` when
-   * absent so the modal still names a source.
-   */
-  skillName?: string;
 }
 
-export function TaskDetail({ task, vaultSlug, backHref, skillName }: TaskDetailProps): JSX.Element {
+export function TaskDetail({ task, vaultSlug, backHref }: TaskDetailProps): JSX.Element {
   const provenance = task.result?.provenance ?? null;
   const sourceNotes = task.sourceNotes ?? [];
 
@@ -179,7 +170,6 @@ export function TaskDetail({ task, vaultSlug, backHref, skillName }: TaskDetailP
         vaultSlug={vaultSlug}
         backHref={backHref}
         relatedCount={sourceNotes.length}
-        skillName={skillName}
       />
     </article>
   );

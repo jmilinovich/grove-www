@@ -21,6 +21,11 @@ vi.mock("next/link", () => ({
     React.createElement("a", { href, onClick, ...rest }, children),
 }));
 
+const DEFAULT_OPTIONS: ReviewOption[] = [
+  { id: "opt-1", label: "confirm", source: "schema" },
+  { id: "opt-2", label: "dismiss", source: "schema" },
+];
+
 function buildTask(overrides: Partial<Task> = {}): Task {
   return {
     id: `task-${Math.random().toString(36).slice(2, 8)}`,
@@ -36,6 +41,8 @@ function buildTask(overrides: Partial<Task> = {}): Task {
     result: null,
     needsReviewReason: "name-similarity ≥ 0.85",
     sourceNotes: ["Resources/People/Pappu.md"],
+    itemType: "enrichment",
+    options: DEFAULT_OPTIONS,
     ...overrides,
   };
 }
@@ -88,10 +95,8 @@ function dispatchKey(key: string): KeyboardEvent {
 function noopHandlers() {
   return {
     onApplyOption: vi.fn(),
-    onConfirmDurable: vi.fn(),
     onRefine: vi.fn(),
     onDismiss: vi.fn(),
-    onMarkStale: vi.fn(),
   };
 }
 
@@ -159,46 +164,7 @@ describe("NeedsReviewList (W2-LIST-1)", () => {
     expect(screen.getByText(/see all 8/i)).toBeTruthy();
   });
 
-  it("clicking a legacy row reveals the four-verb action footer", () => {
-    const tasks = [
-      buildTask({ id: "t1", title: "first" }),
-      buildTask({ id: "t2", title: "second" }),
-    ];
-    const { container } = render(
-      <NeedsReviewList
-        reviewTasks={tasks}
-        skillsBySlug={SKILLS_BY_SLUG}
-        {...noopHandlers()}
-      />,
-    );
-
-    // Initially no row is focused — no action footer
-    expect(container.querySelector("[data-focused='true']")).toBeNull();
-    expect(container.querySelectorAll("kbd").length).toBe(0);
-
-    const secondRow = container.querySelector(
-      "[data-task-id='t2']",
-    ) as HTMLElement;
-    expect(secondRow).toBeTruthy();
-    fireEvent.click(secondRow);
-
-    expect(secondRow.getAttribute("data-focused")).toBe("true");
-    expect(secondRow.getAttribute("data-row-mode")).toBe("legacy");
-    // Legacy footer present
-    expect(
-      container.querySelector("[data-testid='review-actions-legacy']"),
-    ).toBeTruthy();
-    expect(
-      container.querySelector("[data-testid='review-actions-dynamic']"),
-    ).toBeNull();
-    // Action footer with 4 ShortcutChips for c/r/x/s
-    const chips = container.querySelectorAll("kbd");
-    expect(chips.length).toBe(4);
-    const chipTexts = Array.from(chips).map((c) => c.textContent);
-    expect(chipTexts).toEqual(["c", "r", "x", "s"]);
-  });
-
-  // ─── W-INBOX-2: dynamic options ─────────────────────────────────
+  // ─── Dynamic options (the only row shape post-C-INBOX-1) ──────────
 
   it("focused decision-backed row renders N option buttons + refine + dismiss", () => {
     const tasks = [buildDecisionTask({ id: "tDec" })];
@@ -269,7 +235,6 @@ describe("NeedsReviewList (W2-LIST-1)", () => {
 
     expect(handlers.onApplyOption).toHaveBeenCalledTimes(1);
     expect(handlers.onApplyOption).toHaveBeenCalledWith("tDec", "opt-2");
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
   });
 
   it("number keys 1..N dispatch onApplyOption for the focused decision-backed row", () => {
@@ -316,58 +281,9 @@ describe("NeedsReviewList (W2-LIST-1)", () => {
     dispatchKey("d");
     expect(handlers.onDismiss).toHaveBeenCalledTimes(1);
     expect(handlers.onDismiss).toHaveBeenCalledWith("tDec");
-    // c / s are dropped on decision-backed rows
-    dispatchKey("c");
-    dispatchKey("s");
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
-    expect(handlers.onMarkStale).not.toHaveBeenCalled();
   });
 
-  it("number keys do nothing on a focused legacy row", () => {
-    const handlers = noopHandlers();
-    const tasks = [buildTask({ id: "tLegacy" })];
-    const { container } = render(
-      <NeedsReviewList
-        reviewTasks={tasks}
-        skillsBySlug={SKILLS_BY_SLUG}
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(
-      container.querySelector("[data-task-id='tLegacy']") as HTMLElement,
-    );
-
-    dispatchKey("1");
-    dispatchKey("2");
-    expect(handlers.onApplyOption).not.toHaveBeenCalled();
-  });
-
-  // ─── Legacy keymap retained ─────────────────────────────────────
-
-  it("`c` key fires onConfirmDurable for the focused legacy task", () => {
-    const handlers = noopHandlers();
-    const tasks = [buildTask({ id: "tA" }), buildTask({ id: "tB" })];
-    const { container } = render(
-      <NeedsReviewList
-        reviewTasks={tasks}
-        skillsBySlug={SKILLS_BY_SLUG}
-        {...handlers}
-      />,
-    );
-
-    const firstRow = container.querySelector(
-      "[data-task-id='tA']",
-    ) as HTMLElement;
-    fireEvent.click(firstRow);
-
-    dispatchKey("c");
-    expect(handlers.onConfirmDurable).toHaveBeenCalledTimes(1);
-    expect(handlers.onConfirmDurable).toHaveBeenCalledWith("tA");
-    expect(handlers.onRefine).not.toHaveBeenCalled();
-  });
-
-  it("`r` key fires onRefine for the focused task", () => {
+  it("r key fires onRefine for the focused row", () => {
     const handlers = noopHandlers();
     const tasks = [buildTask({ id: "tA" }), buildTask({ id: "tB" })];
     const { container } = render(
@@ -385,44 +301,6 @@ describe("NeedsReviewList (W2-LIST-1)", () => {
     dispatchKey("r");
     expect(handlers.onRefine).toHaveBeenCalledTimes(1);
     expect(handlers.onRefine).toHaveBeenCalledWith("tB");
-  });
-
-  it("`x` key fires onDismiss for the focused legacy task", () => {
-    const handlers = noopHandlers();
-    const tasks = [buildTask({ id: "tA" })];
-    const { container } = render(
-      <NeedsReviewList
-        reviewTasks={tasks}
-        skillsBySlug={SKILLS_BY_SLUG}
-        {...handlers}
-      />,
-    );
-    fireEvent.click(
-      container.querySelector("[data-task-id='tA']") as HTMLElement,
-    );
-
-    dispatchKey("x");
-    expect(handlers.onDismiss).toHaveBeenCalledTimes(1);
-    expect(handlers.onDismiss).toHaveBeenCalledWith("tA");
-  });
-
-  it("`s` key fires onMarkStale for the focused legacy task", () => {
-    const handlers = noopHandlers();
-    const tasks = [buildTask({ id: "tA" })];
-    const { container } = render(
-      <NeedsReviewList
-        reviewTasks={tasks}
-        skillsBySlug={SKILLS_BY_SLUG}
-        {...handlers}
-      />,
-    );
-    fireEvent.click(
-      container.querySelector("[data-task-id='tA']") as HTMLElement,
-    );
-
-    dispatchKey("s");
-    expect(handlers.onMarkStale).toHaveBeenCalledTimes(1);
-    expect(handlers.onMarkStale).toHaveBeenCalledWith("tA");
   });
 
   it("`j` increments focused index; `k` decrements (capped at edges)", () => {
@@ -511,17 +389,12 @@ describe("NeedsReviewList (W2-LIST-1)", () => {
     );
 
     // No click → focusedIndex stays at -1
-    dispatchKey("c");
     dispatchKey("r");
-    dispatchKey("x");
-    dispatchKey("s");
     dispatchKey("d");
     dispatchKey("1");
 
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
     expect(handlers.onRefine).not.toHaveBeenCalled();
     expect(handlers.onDismiss).not.toHaveBeenCalled();
-    expect(handlers.onMarkStale).not.toHaveBeenCalled();
     expect(handlers.onApplyOption).not.toHaveBeenCalled();
   });
 

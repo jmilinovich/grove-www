@@ -8,21 +8,14 @@ import {
 } from "@/lib/use-keyboard-shortcuts";
 import { NeedsReviewList } from "@/components/backlog/needs-review-list";
 import { BacklogList } from "@/components/backlog/backlog-list";
-import type { BacklogPayload, Skill, Task } from "@/lib/grove-api.v2.types";
+import type { BacklogPayload, Skill } from "@/lib/grove-api.v2.types";
 import { RefineModal } from "@/components/task/refine-modal";
-import { FirstWriteModal } from "@/components/task/first-write-modal";
-import {
-  WRITE_ARTIFACT_TYPES,
-  readFirstWriteAck,
-  writeFirstWriteAck,
-} from "@/components/task/first-write-ack";
 import {
   runTask,
   deferTask,
   dismissTask,
 } from "./_actions/tasks";
 import {
-  reviewTask,
   applyReviewTask,
   refineReviewTask,
   dismissReviewTask,
@@ -73,8 +66,8 @@ export default function ClientShell({ children }: ClientShellProps) {
           // refine modal, etc.) lands alongside W3-SHORT-1.
           // Lists already own their own Esc semantics where they need
           // them (e.g. CapacityStrip collapses its panel on Esc).
-          // The refine/first-write modals on this page bind Esc to
-          // their own dialog root, so they handle their own dismiss.
+          // The refine modal on this page binds Esc to its own dialog
+          // root, so it handles its own dismiss.
         },
       },
     ],
@@ -91,10 +84,10 @@ export default function ClientShell({ children }: ClientShellProps) {
 // Bridge from the server-rendered page to the two client lists. Owns:
 //  - Task-domain action wrappers (run / defer / dismiss) that call into
 //    `_actions/tasks.ts` Server Actions with the vaultSlug closed over.
-//  - Review-domain action wrappers (confirm-durable / refine / dismiss /
-//    mark-stale) that call into `_actions/review.ts`. The refine modal
-//    and the first-write confirmation modal live at this layer so the
-//    compact NeedsReviewList rows don't have to host their own dialogs.
+//  - Review-domain action wrappers (apply / refine / dismiss) that call
+//    into `_actions/review.ts`. The refine modal lives at this layer so
+//    the compact NeedsReviewList rows don't have to host their own
+//    dialog.
 
 export interface BacklogIslandProps {
   data: BacklogPayload;
@@ -111,30 +104,10 @@ export function BacklogIsland({
     return Object.fromEntries(data.skills.map((s) => [s.slug, s]));
   }, [data.skills]);
 
-  // Index by both id and slug — `Task.skillId` is the skill's id in the
-  // mock fixtures, but live api.grove.md may emit either. Indexing by
-  // both lets us look up safely from a review-action callback regardless
-  // of which surface the upstream task came from.
-  const skillsByKey = useMemo<Record<string, Skill>>(() => {
-    const out: Record<string, Skill> = {};
-    for (const s of data.skills) {
-      out[s.id] = s;
-      out[s.slug] = s;
-    }
-    return out;
-  }, [data.skills]);
-
-  const reviewTasksById = useMemo<Record<string, Task>>(() => {
-    return Object.fromEntries(data.reviewTasks.map((t) => [t.id, t]));
-  }, [data.reviewTasks]);
-
   // ─── Modal state ────────────────────────────────────────────────
   // `refineForTaskId` holds the id of the review task the refine modal
-  // is collecting input for; null means closed. Same for first-write.
+  // is collecting input for; null means closed.
   const [refineForTaskId, setRefineForTaskId] = useState<string | null>(null);
-  const [firstWriteForTaskId, setFirstWriteForTaskId] = useState<string | null>(
-    null,
-  );
 
   // ─── Task-domain handlers ───────────────────────────────────────
   const handleRun = (taskId: string) => {
@@ -161,26 +134,11 @@ export function BacklogIsland({
   };
 
   // ─── Review-domain handlers ─────────────────────────────────────
-  // W-INBOX-2: decision-backed tasks (with `task.options`) flow
-  // through `applyReviewTask(taskId, optionId)`; refine routes to
-  // `refineReviewTask(taskId, refinement)`; dismiss routes to
-  // `dismissReviewTask(taskId)`. Legacy review tasks (no `options`)
-  // still hit the v1 `reviewTask` action with the old verb-shape so
-  // nothing in the live inbox breaks during rollout — the grove
-  // server (S-INBOX-10) accepts both shapes side-by-side via its
-  // compat layer.
-
-  const fireConfirmDurable = useCallback(
-    (taskId: string) => {
-      void reviewTask(taskId, { kind: "confirm-durable" }, vaultSlug).catch(
-        (err: unknown) => {
-          // eslint-disable-next-line no-console
-          console.error("reviewTask(confirm-durable) failed", err);
-        },
-      );
-    },
-    [vaultSlug],
-  );
+  // Decision-backed tasks flow through `applyReviewTask(taskId, optionId)`;
+  // refine routes to `refineReviewTask(taskId, refinement)`; dismiss
+  // routes to `dismissReviewTask(taskId)`. The legacy verb-shape path
+  // was retired in C-INBOX-1 after M-INBOX-1 mass-dismissed the prod
+  // legacy queue.
 
   const handleApplyOption = useCallback(
     (taskId: string, optionId: string) => {
@@ -192,23 +150,6 @@ export function BacklogIsland({
       );
     },
     [vaultSlug],
-  );
-
-  const handleConfirmDurable = useCallback(
-    (taskId: string) => {
-      const task = reviewTasksById[taskId];
-      const skill = task ? skillsByKey[task.skillId] : undefined;
-      const skillKey = skill?.id ?? task?.skillId;
-      const isWrite =
-        task?.result != null &&
-        WRITE_ARTIFACT_TYPES.has(task.result.artifact.type);
-      if (isWrite && skillKey && !readFirstWriteAck(vaultSlug, skillKey)) {
-        setFirstWriteForTaskId(taskId);
-        return;
-      }
-      fireConfirmDurable(taskId);
-    },
-    [reviewTasksById, skillsByKey, vaultSlug, fireConfirmDurable],
   );
 
   const handleRefine = useCallback((taskId: string) => {
@@ -240,43 +181,6 @@ export function BacklogIsland({
     [vaultSlug],
   );
 
-  const handleMarkStale = useCallback(
-    (taskId: string) => {
-      void reviewTask(taskId, { kind: "mark-stale" }, vaultSlug).catch(
-        (err: unknown) => {
-          // eslint-disable-next-line no-console
-          console.error("reviewTask(mark-stale) failed", err);
-        },
-      );
-    },
-    [vaultSlug],
-  );
-
-  const handleFirstWriteConfirm = useCallback(() => {
-    const taskId = firstWriteForTaskId;
-    if (!taskId) return;
-    const task = reviewTasksById[taskId];
-    const skill = task ? skillsByKey[task.skillId] : undefined;
-    const skillKey = skill?.id ?? task?.skillId;
-    if (skillKey) writeFirstWriteAck(vaultSlug, skillKey);
-    fireConfirmDurable(taskId);
-    setFirstWriteForTaskId(null);
-  }, [
-    firstWriteForTaskId,
-    reviewTasksById,
-    skillsByKey,
-    vaultSlug,
-    fireConfirmDurable,
-  ]);
-
-  const firstWriteSkillName = useMemo(() => {
-    const task = firstWriteForTaskId
-      ? reviewTasksById[firstWriteForTaskId]
-      : null;
-    const skill = task ? skillsByKey[task.skillId] : undefined;
-    return skill?.name ?? task?.skillId ?? "this skill";
-  }, [firstWriteForTaskId, reviewTasksById, skillsByKey]);
-
   return (
     <>
       <NeedsReviewList
@@ -284,10 +188,8 @@ export function BacklogIsland({
         skillsBySlug={skillsBySlug}
         seeAllHref={seeAllReviewHref}
         onApplyOption={handleApplyOption}
-        onConfirmDurable={handleConfirmDurable}
         onRefine={handleRefine}
         onDismiss={handleReviewDismiss}
-        onMarkStale={handleMarkStale}
       />
       <BacklogList
         pendingTasks={data.pendingTasks}
@@ -302,13 +204,6 @@ export function BacklogIsland({
         <RefineModal
           onSubmit={handleRefineSubmit}
           onCancel={() => setRefineForTaskId(null)}
-        />
-      ) : null}
-      {firstWriteForTaskId ? (
-        <FirstWriteModal
-          skillName={firstWriteSkillName}
-          onConfirm={handleFirstWriteConfirm}
-          onCancel={() => setFirstWriteForTaskId(null)}
         />
       ) : null}
     </>
