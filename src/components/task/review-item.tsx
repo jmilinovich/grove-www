@@ -4,8 +4,10 @@ import {
   useCallback,
   useState,
   type JSX,
+  type MouseEvent as ReactMouseEvent,
 } from "react";
-import type { Task } from "@/lib/grove-api.v2.types";
+import type { ReviewOption, Task } from "@/lib/grove-api.v2.types";
+import { Button } from "@/components/primitives/button";
 import { ProvenanceBadge } from "@/components/primitives/provenance-badge";
 import { ShortcutChip } from "@/components/primitives/shortcut-chip";
 import { RefineModal } from "./refine-modal";
@@ -22,8 +24,8 @@ import {
 // the compact row from NeedsReviewList (that's the dashboard glance). It's
 // the dedicated review canvas — used on the task-detail page and from
 // "see all" expansion of needs-review. It renders the AI artifact in full
-// fidelity, exposes the four review actions with shortcut chips, and
-// handles the first-write confirmation gate per-skill, per-vault.
+// fidelity, exposes the review actions with shortcut chips, and handles
+// the first-write confirmation gate per-skill, per-vault.
 //
 // Per Scope Cop (PLAN.md W3-REVIEW-1): refine opens a MODAL with a
 // <textarea> + Submit / Cancel — NOT an inline textarea. Confirmation
@@ -31,20 +33,34 @@ import {
 // the preference stored in localStorage so subsequent confirms skip the
 // prompt.
 //
-// Action vocabulary: `c` confirm-durable, `r` refine, `x` dismiss,
-// `s` mark-stale. Same as NeedsReviewList — see needs-review-list.tsx
-// for the rationale on why the review surface doesn't map onto the
-// run/defer/dismiss vocabulary of TaskCard.
+// W-INBOX-2: action footer is dynamic. Decision-backed review tasks
+// (with `task.options[]`) render one button per option plus refine +
+// dismiss. Legacy review tasks (no `options`) keep the original four-
+// verb set (confirm / refine / dismiss / mark-stale) so see-all keeps
+// working during rollout. See needs-review-list.tsx for the matching
+// rationale on the compact row.
 //
 // The RefineModal, FirstWriteModal, and first-write ack helpers are
 // extracted to sibling files so BacklogIsland and TaskDetailClient can
 // share the same gate behavior — see refine-modal.tsx,
 // first-write-modal.tsx, first-write-ack.ts.
 
+const MAX_OPTION_SHORTCUTS = 9;
+
+function hasDynamicOptions(task: Task): boolean {
+  return Array.isArray(task.options) && task.options.length > 0;
+}
+
 export interface ReviewItemProps {
   task: Task;
   skill: { id: string; slug: string; name: string };
   vaultSlug: string;
+  /**
+   * Dispatch the user's pick on a decision-backed review task. Called
+   * with `optionId` matching one of the `task.options[].id` values.
+   * Wired to `applyReviewTask` in the parent client island.
+   */
+  onApplyOption?: (optionId: string) => void;
   onConfirmDurable: () => void;
   onRefine: (refinement: string) => void;
   onDismiss: () => void;
@@ -55,6 +71,7 @@ export function ReviewItem({
   task,
   skill,
   vaultSlug,
+  onApplyOption,
   onConfirmDurable,
   onRefine,
   onDismiss,
@@ -99,10 +116,57 @@ export function ReviewItem({
     setRefineOpen(false);
   }, []);
 
+  const handleApplyOption = useCallback(
+    (optionId: string) => {
+      if (!onApplyOption) return;
+      onApplyOption(optionId);
+    },
+    [onApplyOption],
+  );
+
   // If there's no result yet (shouldn't happen for review-state tasks
   // since they have to have run to be in review, but defensive), render
   // a placeholder rather than crash.
   if (!task.result) {
+    // Some decision-backed tasks (disambiguation / link suggestions)
+    // also legitimately have no `result` — only `options`. Render the
+    // header + dynamic footer in that case so the user can still pick.
+    if (hasDynamicOptions(task)) {
+      return (
+        <article
+          className="bg-surface border border-surface-border rounded-md p-6"
+          data-task-id={task.id}
+          data-task-state={task.state}
+          data-row-mode="dynamic"
+        >
+          <header className="flex items-baseline gap-2 flex-wrap">
+            <span className="font-sans font-medium text-label text-moss">
+              {skill.name}
+            </span>
+            <h2 className="font-serif font-medium text-subhead text-ink leading-snug">
+              {task.title}
+            </h2>
+          </header>
+          {task.needsReviewReason ? (
+            <p className="mt-2 font-sans text-detail text-ink/60">
+              {task.needsReviewReason}
+            </p>
+          ) : null}
+          <DynamicActionFooter
+            options={task.options ?? []}
+            onApplyOption={handleApplyOption}
+            onRefine={() => setRefineOpen(true)}
+            onDismiss={onDismiss}
+          />
+          {refineOpen ? (
+            <RefineModal
+              onSubmit={handleRefineSubmit}
+              onCancel={handleRefineCancel}
+            />
+          ) : null}
+        </article>
+      );
+    }
     return (
       <article
         className="bg-surface border border-surface-border rounded-md p-6"
@@ -117,6 +181,7 @@ export function ReviewItem({
 
   const artifact = task.result.artifact;
   const provenance = task.result.provenance;
+  const dynamic = hasDynamicOptions(task);
 
   return (
     <article
@@ -124,6 +189,7 @@ export function ReviewItem({
       data-task-id={task.id}
       data-task-state={task.state}
       data-artifact-type={artifact.type}
+      data-row-mode={dynamic ? "dynamic" : "legacy"}
     >
       {/* Header: skill + title + provenance badge */}
       <header className="flex items-baseline gap-2 flex-wrap">
@@ -185,20 +251,21 @@ export function ReviewItem({
       </div>
 
       {/* Action footer */}
-      <div className="mt-6 flex items-center justify-end gap-4 font-sans text-label">
-        <FooterAction
-          onClick={handleConfirmDurableClick}
-          label="confirm"
-          shortcut="c"
+      {dynamic ? (
+        <DynamicActionFooter
+          options={task.options ?? []}
+          onApplyOption={handleApplyOption}
+          onRefine={() => setRefineOpen(true)}
+          onDismiss={onDismiss}
         />
-        <FooterAction
-          onClick={() => setRefineOpen(true)}
-          label="refine"
-          shortcut="r"
+      ) : (
+        <LegacyActionFooter
+          onConfirm={handleConfirmDurableClick}
+          onRefine={() => setRefineOpen(true)}
+          onDismiss={onDismiss}
+          onMarkStale={onMarkStale}
         />
-        <FooterAction onClick={onDismiss} label="dismiss" shortcut="x" />
-        <FooterAction onClick={onMarkStale} label="stale" shortcut="s" />
-      </div>
+      )}
 
       {refineOpen ? (
         <RefineModal
@@ -219,6 +286,124 @@ export function ReviewItem({
 }
 
 // ─── Sub-components ────────────────────────────────────────────────────
+
+interface DynamicActionFooterProps {
+  options: ReviewOption[];
+  onApplyOption: (optionId: string) => void;
+  onRefine: () => void;
+  onDismiss: () => void;
+}
+
+function DynamicActionFooter({
+  options,
+  onApplyOption,
+  onRefine,
+  onDismiss,
+}: DynamicActionFooterProps): JSX.Element {
+  return (
+    <div
+      className="mt-6 flex flex-wrap items-center justify-end gap-3"
+      data-testid="review-actions-dynamic"
+    >
+      {options.slice(0, MAX_OPTION_SHORTCUTS).map((option, idx) => (
+        <OptionButton
+          key={option.id}
+          option={option}
+          shortcut={String(idx + 1)}
+          onClick={() => onApplyOption(option.id)}
+        />
+      ))}
+      {options.length > MAX_OPTION_SHORTCUTS
+        ? options.slice(MAX_OPTION_SHORTCUTS).map((option) => (
+            <OptionButton
+              key={option.id}
+              option={option}
+              shortcut={null}
+              onClick={() => onApplyOption(option.id)}
+            />
+          ))
+        : null}
+      <GhostFooterAction onClick={onRefine} label="refine" shortcut="r" />
+      <GhostFooterAction onClick={onDismiss} label="dismiss" shortcut="d" />
+    </div>
+  );
+}
+
+interface LegacyActionFooterProps {
+  onConfirm: () => void;
+  onRefine: () => void;
+  onDismiss: () => void;
+  onMarkStale: () => void;
+}
+
+function LegacyActionFooter({
+  onConfirm,
+  onRefine,
+  onDismiss,
+  onMarkStale,
+}: LegacyActionFooterProps): JSX.Element {
+  return (
+    <div
+      className="mt-6 flex items-center justify-end gap-4 font-sans text-label"
+      data-testid="review-actions-legacy"
+    >
+      <FooterAction onClick={onConfirm} label="confirm" shortcut="c" />
+      <FooterAction onClick={onRefine} label="refine" shortcut="r" />
+      <FooterAction onClick={onDismiss} label="dismiss" shortcut="x" />
+      <FooterAction onClick={onMarkStale} label="stale" shortcut="s" />
+    </div>
+  );
+}
+
+interface OptionButtonProps {
+  option: ReviewOption;
+  shortcut: string | null;
+  onClick: () => void;
+}
+
+function OptionButton({ option, shortcut, onClick }: OptionButtonProps): JSX.Element {
+  const handleClick = (e: ReactMouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    onClick();
+  };
+  return (
+    <Button
+      variant="secondary"
+      size="sm"
+      onClick={handleClick}
+      data-testid={`review-option-${option.id}`}
+      data-option-source={option.source}
+      title={option.description ?? undefined}
+    >
+      {shortcut ? <ShortcutChip keys={shortcut} /> : null}
+      <span>{option.label}</span>
+    </Button>
+  );
+}
+
+interface GhostFooterActionProps {
+  onClick: () => void;
+  label: string;
+  shortcut: string;
+}
+
+function GhostFooterAction({
+  onClick,
+  label,
+  shortcut,
+}: GhostFooterActionProps): JSX.Element {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onClick}
+      data-testid={`review-ghost-${label}`}
+    >
+      <ShortcutChip keys={shortcut} />
+      <span>{label}</span>
+    </Button>
+  );
+}
 
 interface NoteChangeViewProps {
   notePath: string | undefined;

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { ReviewItem } from "./review-item";
-import type { Task } from "@/lib/grove-api.v2.types";
+import type { ReviewOption, Task } from "@/lib/grove-api.v2.types";
 
 // next/link stub — ProvenanceBadge / ReviewItem don't render Links right
 // now, but the mock is harmless and matches the convention in
@@ -86,12 +86,43 @@ const VAULT_HEALTH_SKILL = {
 
 function makeHandlers() {
   return {
+    onApplyOption: vi.fn(),
     onConfirmDurable: vi.fn(),
     onRefine: vi.fn(),
     onDismiss: vi.fn(),
     onMarkStale: vi.fn(),
   };
 }
+
+const DECISION_OPTIONS: ReviewOption[] = [
+  { id: "opt-1", label: "link to Anna Chen", source: "schema" },
+  { id: "opt-2", label: "link to Anna Kim", source: "schema" },
+  { id: "opt-3", label: "do not link", source: "schema" },
+];
+
+const DECISION_TASK: Task = {
+  id: "task-decision-1",
+  skillId: "skill-concept-graph-cleanup",
+  title: "disambiguate Anna in Journal/2026-05-19.md",
+  description: "ambiguous reference",
+  state: "review",
+  scheduledFor: null,
+  startedAt: "2026-05-19T18:00:00Z",
+  completedAt: "2026-05-19T18:00:12Z",
+  estimatedMinutes: 1,
+  actualMinutes: 1,
+  result: null,
+  needsReviewReason: "ambiguous reference; LLM cannot pick without context",
+  sourceNotes: ["Journal/2026-05-19.md"],
+  itemType: "disambiguation",
+  options: DECISION_OPTIONS,
+};
+
+const CLEANUP_SKILL = {
+  id: "skill-concept-graph-cleanup",
+  slug: "concept-graph-cleanup",
+  name: "Concept Graph Cleanup",
+};
 
 // happy-dom in this project doesn't ship localStorage out of the box
 // (it's gated behind a CLI flag we don't pass). Define a minimal
@@ -473,6 +504,117 @@ describe("ReviewItem — first-write confirmation for write artifacts", () => {
 
     expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
     expect(screen.getByTestId("first-write-modal")).toBeTruthy();
+  });
+});
+
+describe("ReviewItem — W-INBOX-2 dynamic options", () => {
+  it("renders N option buttons + refine + dismiss for a decision-backed task", () => {
+    const { container } = render(
+      <ReviewItem
+        task={DECISION_TASK}
+        skill={CLEANUP_SKILL}
+        vaultSlug="main"
+        {...makeHandlers()}
+      />,
+    );
+
+    const dynamicFooter = container.querySelector(
+      "[data-testid='review-actions-dynamic']",
+    );
+    expect(dynamicFooter).toBeTruthy();
+    expect(
+      container.querySelector("[data-testid='review-actions-legacy']"),
+    ).toBeNull();
+
+    const optionButtons = container.querySelectorAll(
+      "[data-testid^='review-option-']",
+    );
+    expect(optionButtons.length).toBe(3);
+    expect(optionButtons[0].textContent).toContain("link to Anna Chen");
+    expect(optionButtons[1].textContent).toContain("link to Anna Kim");
+    expect(optionButtons[2].textContent).toContain("do not link");
+
+    expect(
+      container.querySelector("[data-testid='review-ghost-refine']"),
+    ).toBeTruthy();
+    expect(
+      container.querySelector("[data-testid='review-ghost-dismiss']"),
+    ).toBeTruthy();
+  });
+
+  it("clicking an option button fires onApplyOption with the option id", () => {
+    const handlers = makeHandlers();
+    const { container } = render(
+      <ReviewItem
+        task={DECISION_TASK}
+        skill={CLEANUP_SKILL}
+        vaultSlug="main"
+        {...handlers}
+      />,
+    );
+
+    const second = container.querySelector(
+      "[data-testid='review-option-opt-2']",
+    ) as HTMLButtonElement;
+    fireEvent.click(second);
+
+    expect(handlers.onApplyOption).toHaveBeenCalledTimes(1);
+    expect(handlers.onApplyOption).toHaveBeenCalledWith("opt-2");
+    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
+  });
+
+  it("clicking the dismiss ghost button fires onDismiss directly (no first-write modal)", () => {
+    const handlers = makeHandlers();
+    const { container } = render(
+      <ReviewItem
+        task={DECISION_TASK}
+        skill={CLEANUP_SKILL}
+        vaultSlug="main"
+        {...handlers}
+      />,
+    );
+
+    fireEvent.click(
+      container.querySelector(
+        "[data-testid='review-ghost-dismiss']",
+      ) as HTMLButtonElement,
+    );
+
+    expect(handlers.onDismiss).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("first-write-modal")).toBeNull();
+  });
+
+  it("clicking the refine ghost button opens the modal; submitting fires onRefine with trimmed text", () => {
+    const handlers = makeHandlers();
+    const { container } = render(
+      <ReviewItem
+        task={DECISION_TASK}
+        skill={CLEANUP_SKILL}
+        vaultSlug="main"
+        {...handlers}
+      />,
+    );
+
+    fireEvent.click(
+      container.querySelector(
+        "[data-testid='review-ghost-refine']",
+      ) as HTMLButtonElement,
+    );
+
+    const modal = screen.getByTestId("refine-modal");
+    expect(modal).toBeTruthy();
+
+    const textarea = screen.getByTestId("refine-textarea") as HTMLTextAreaElement;
+    fireEvent.change(textarea, {
+      target: { value: "  actually merge into Anna Kim  " },
+    });
+    fireEvent.click(screen.getByTestId("refine-submit"));
+
+    expect(handlers.onRefine).toHaveBeenCalledTimes(1);
+    expect(handlers.onRefine).toHaveBeenCalledWith(
+      "actually merge into Anna Kim",
+    );
+    expect(screen.queryByTestId("refine-modal")).toBeNull();
   });
 });
 
