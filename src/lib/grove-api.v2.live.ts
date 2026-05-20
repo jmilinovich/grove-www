@@ -137,43 +137,16 @@ export async function dismissTask(vault: string, taskId: string): Promise<void> 
   );
 }
 
-export async function reviewTask(
-  vault: string,
-  taskId: string,
-  action:
-    | { kind: "confirm-durable" }
-    | { kind: "refine"; refinement: string }
-    | { kind: "dismiss" }
-    | { kind: "mark-stale" },
-): Promise<void> {
-  // The api.grove.md `/v1/tasks/<id>/review` endpoint expects a flat
-  // `{ action, refinement? }` body (see grove `src/v2-tasks.ts`
-  // parseReviewBody + `src/v2-task-review.ts` ReviewAction). The client
-  // signature uses the discriminated `{ kind, ... }` shape because that
-  // matches the mock store and stays a stable export for the Server
-  // Actions; we translate to the wire shape here so callers stay
-  // shape-agnostic.
-  const body: { action: string; refinement?: string } = { action: action.kind };
-  if (action.kind === "refine") body.refinement = action.refinement;
-  await call<unknown>(
-    vault,
-    "POST",
-    `/v1/tasks/${encodeURIComponent(taskId)}/review`,
-    body,
-  );
-}
-
-// ─── V2 review actions (Inbox v2 — W-INBOX-1) ────────────────────────────
+// ─── V2 review actions (Inbox v2) ────────────────────────────────────────
 //
-// These POST to the same `/v1/tasks/<id>/review` endpoint as the legacy
-// `reviewTask` above, but use the V2 wire shape S-INBOX-10 added:
+// POST to `/v1/tasks/<id>/review` with the V2 wire shape S-INBOX-10 added:
 //   apply:   {kind: "apply", option_id}
 //   refine:  {kind: "refine", refinement}
 //   dismiss: {kind: "dismiss"}
 //
-// The endpoint dispatches on `kind` (not on the legacy `action` verb).
-// Both shapes coexist server-side until W-INBOX-2/3 migrate the UI off
-// the legacy verbs; until then `reviewTask` (legacy) stays untouched.
+// The endpoint dispatches on `kind`. The legacy `{action}` body shape
+// (and the matching client) was retired in C-INBOX-1 once M-INBOX-1
+// dismissed the last legacy review-state rows on prod.
 
 export async function applyTask(
   vault: string,

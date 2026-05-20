@@ -3,27 +3,25 @@
 // Server Actions — review domain.
 //
 // Per D-19 (split per-domain) and the W3-REVIEW-1 contract. The review
-// surface has its own action vocabulary (confirm-durable / refine /
-// dismiss / mark-stale) that doesn't map cleanly onto tasks.ts'
-// run/defer/dismiss — see needs-review-list.tsx for the same rationale
-// at the UI layer. Keeping the action surfaces split also matches the
-// api.grove.md endpoint split (`POST /tasks/{id}/review`).
+// surface has its own action vocabulary (apply / refine / dismiss) that
+// doesn't map cleanly onto tasks.ts' run/defer/dismiss — see
+// needs-review-list.tsx for the same rationale at the UI layer. Keeping
+// the action surfaces split also matches the api.grove.md endpoint split
+// (`POST /tasks/{id}/review`).
 //
 // Cache invalidation: every review action mutates a task's state, which
 // changes which bucket it appears in (reviewTasks → clearedTasks for
-// confirm-durable; dismissedTasks for dismiss; etc.). We invalidate the
-// per-vault backlog tag the same way tasks.ts does, so the next render
-// re-fetches.
+// apply; dismissedTasks for dismiss; spawns a pending row for refine).
+// We invalidate the per-vault backlog tag the same way tasks.ts does,
+// so the next render re-fetches.
 //
-// Error contract (D-12): we propagate whatever grove-api.v2.reviewTask
-// throws. In mock mode the only error shape is "task <id> not found"; in
-// live mode AuthError / ApiError / ValidationError will surface here.
-// The caller (ReviewItem wrapper or backlog page) decides whether to
-// surface a Toast.
+// Error contract (D-12): we propagate whatever grove-api.v2 throws. In
+// mock mode the only error shape is "task <id> not found"; in live mode
+// AuthError / ApiError / ValidationError will surface here. The caller
+// (ReviewItem wrapper or backlog page) decides whether to surface a Toast.
 
 import { updateTag } from "next/cache";
 import {
-  reviewTask as apiReviewTask,
   applyTask as apiApplyTask,
   refineTask as apiRefineTask,
   dismissReviewTask as apiDismissReviewTask,
@@ -36,32 +34,12 @@ function backlogTag(vaultSlug: string): string {
   return `vault:${vaultSlug}/backlog`;
 }
 
-/**
- * Legacy review action (PR #71). Kept untouched so the current UI keeps
- * working until W-INBOX-2/3 migrate it onto the V2 actions below. The
- * grove server (S-INBOX-10) accepts both shapes side-by-side via its
- * compat layer — deleting this action would break the dashboard the
- * moment this PR lands.
- */
-export async function reviewTask(
-  taskId: string,
-  action:
-    | { kind: "confirm-durable" }
-    | { kind: "refine"; refinement: string }
-    | { kind: "dismiss" }
-    | { kind: "mark-stale" },
-  vaultSlug: string,
-): Promise<void> {
-  await apiReviewTask(vaultSlug, taskId, action);
-  updateTag(backlogTag(vaultSlug));
-}
-
-// ─── Inbox v2 review actions (W-INBOX-1) ──────────────────────────────
+// ─── Inbox v2 review actions ──────────────────────────────────────────
 //
-// New per-type actions matching the V2 wire shape S-INBOX-10 added on
-// the grove server. UI will dispatch by `option.id` (not by a fixed
-// verb) once W-INBOX-2 ships. Until then these are dead-callable but
-// have no UI caller — the tests below are what keeps them honest.
+// Per-type actions matching the V2 wire shape S-INBOX-10 added on the
+// grove server. UI dispatches by `option.id` (not by a fixed verb).
+// The legacy verb-union action was retired in C-INBOX-1 once
+// M-INBOX-1 mass-dismissed the last legacy review-state rows on prod.
 
 /**
  * V2 apply: confirm or switch the chosen option on a decision-backed

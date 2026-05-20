@@ -27,10 +27,11 @@ import {
 // semantic seam is for pending-state surfaces (BacklogList), not the
 // review queue.
 //
-// W-INBOX-2: rows are dynamic. Decision-backed tasks render one button
-// per `task.options[]` plus refine + dismiss. Legacy tasks (no options)
-// fall back to the original four-verb set (confirm / refine / dismiss /
-// mark-stale) so nothing in the live inbox breaks during rollout.
+// Every review-state task now ships with `task.options` (S-INBOX-9
+// bridge guarantees this on the server). Rows render one button per
+// option plus refine + dismiss. The legacy four-verb fallback row
+// (confirm / refine / dismiss / mark-stale) was retired in C-INBOX-1
+// after M-INBOX-1 dismissed the last legacy queue on prod.
 //
 // Layout (SPEC §6, PLAN W2-LIST-1):
 //
@@ -48,10 +49,6 @@ import {
 const MAX_VISIBLE = 5;
 const MAX_OPTION_SHORTCUTS = 9;
 
-function hasDynamicOptions(task: Task): boolean {
-  return Array.isArray(task.options) && task.options.length > 0;
-}
-
 export interface NeedsReviewListProps {
   reviewTasks: Task[];
   skillsBySlug: Record<string, Skill>;
@@ -62,16 +59,8 @@ export interface NeedsReviewListProps {
    * client shell.
    */
   onApplyOption: (taskId: string, optionId: string) => void;
-  /**
-   * Confirm-durable on a legacy review task (no `task.options`).
-   * Kept distinct from `onApplyOption` so the migration is
-   * grep-traceable when api.grove.md backfills options onto all tasks
-   * and the legacy path can be deleted.
-   */
-  onConfirmDurable: (taskId: string) => void;
   onRefine: (taskId: string) => void;
   onDismiss: (taskId: string) => void;
-  onMarkStale: (taskId: string) => void;
   /**
    * Destination for the "see all N" link when totalCount exceeds the
    * visible window. Optional — when omitted the link falls back to "#"
@@ -84,10 +73,8 @@ export function NeedsReviewList({
   reviewTasks,
   skillsBySlug,
   onApplyOption,
-  onConfirmDurable,
   onRefine,
   onDismiss,
-  onMarkStale,
   seeAllHref,
 }: NeedsReviewListProps): JSX.Element | null {
   // Hooks must run before any early-return for empty state.
@@ -107,9 +94,6 @@ export function NeedsReviewList({
   const focusedTask =
     safeFocusedIndex >= 0 ? visible[safeFocusedIndex] ?? null : null;
   const focusedTaskId = focusedTask?.id ?? null;
-  const focusedTaskHasOptions = focusedTask
-    ? hasDynamicOptions(focusedTask)
-    : false;
 
   const fireForFocused = useCallback(
     (fn: (taskId: string) => void) => {
@@ -150,9 +134,7 @@ export function NeedsReviewList({
         key,
         description: `needs-review · apply option ${i + 1}`,
         when: () =>
-          hasFocus() &&
-          focusedTaskHasOptions &&
-          (focusedTask?.options?.length ?? 0) > i,
+          hasFocus() && (focusedTask?.options?.length ?? 0) > i,
         handler: () => fireOptionForFocused(i),
       });
     }
@@ -188,45 +170,21 @@ export function NeedsReviewList({
         when: hasFocus,
         handler: () => fireForFocused(onRefine),
       },
-      // Decision-backed dismiss key is `d` (mirrors the spec); legacy
-      // tasks keep `x` for backwards-compatibility with existing
-      // muscle memory + tests.
       {
         key: "d",
         description: "needs-review · dismiss",
-        when: () => hasFocus() && focusedTaskHasOptions,
+        when: hasFocus,
         handler: () => fireForFocused(onDismiss),
-      },
-      {
-        key: "c",
-        description: "needs-review · confirm durable (legacy)",
-        when: () => hasFocus() && !focusedTaskHasOptions,
-        handler: () => fireForFocused(onConfirmDurable),
-      },
-      {
-        key: "x",
-        description: "needs-review · dismiss (legacy)",
-        when: () => hasFocus() && !focusedTaskHasOptions,
-        handler: () => fireForFocused(onDismiss),
-      },
-      {
-        key: "s",
-        description: "needs-review · mark stale (legacy)",
-        when: () => hasFocus() && !focusedTaskHasOptions,
-        handler: () => fireForFocused(onMarkStale),
       },
     ];
   }, [
     visibleCount,
     safeFocusedIndex,
     focusedTask,
-    focusedTaskHasOptions,
     fireForFocused,
     fireOptionForFocused,
-    onConfirmDurable,
     onRefine,
     onDismiss,
-    onMarkStale,
   ]);
 
   useKeyboardShortcuts(bindings);
@@ -259,10 +217,8 @@ export function NeedsReviewList({
               focused={isFocused}
               onSelect={() => setFocusedIndex(idx)}
               onApplyOption={(optionId) => onApplyOption(task.id, optionId)}
-              onConfirm={() => onConfirmDurable(task.id)}
               onRefine={() => onRefine(task.id)}
               onDismiss={() => onDismiss(task.id)}
-              onMarkStale={() => onMarkStale(task.id)}
             />
           );
         })}
@@ -288,10 +244,8 @@ interface ReviewRowProps {
   focused: boolean;
   onSelect: () => void;
   onApplyOption: (optionId: string) => void;
-  onConfirm: () => void;
   onRefine: () => void;
   onDismiss: () => void;
-  onMarkStale: () => void;
 }
 
 function ReviewRow({
@@ -300,10 +254,8 @@ function ReviewRow({
   focused,
   onSelect,
   onApplyOption,
-  onConfirm,
   onRefine,
   onDismiss,
-  onMarkStale,
 }: ReviewRowProps): JSX.Element {
   // Focused state mirrors TaskCard's convention: a moss left-border
   // that doesn't reflow neighbors. The row container is a plain <div>
@@ -331,7 +283,22 @@ function ReviewRow({
     }
   };
 
-  const dynamic = hasDynamicOptions(task);
+  // Every review task has `options` post-C-INBOX-1; assert in dev so a
+  // schema regression surfaces loudly. In prod we render zero buttons
+  // (the row still shows skill + title + reason) rather than crashing
+  // the dashboard if a stray legacy task slips through.
+  const options = task.options;
+  if (!options || options.length === 0) {
+    if (process.env.NODE_ENV !== "production") {
+      throw new Error(
+        `NeedsReviewList: review task ${task.id} has no options. Every review task must have task.options populated server-side (S-INBOX-9 bridge).`,
+      );
+    }
+    // eslint-disable-next-line no-console
+    console.warn(
+      `NeedsReviewList: review task ${task.id} has no options; rendering header-only row`,
+    );
+  }
 
   return (
     <li>
@@ -343,7 +310,7 @@ function ReviewRow({
         className={rowClasses}
         data-task-id={task.id}
         data-focused={focused ? "true" : "false"}
-        data-row-mode={dynamic ? "dynamic" : "legacy"}
+        data-row-mode="dynamic"
         aria-pressed={focused}
       >
         <div className="flex items-baseline gap-2 flex-wrap">
@@ -379,22 +346,13 @@ function ReviewRow({
           </p>
         ) : null}
 
-        {focused ? (
-          dynamic ? (
-            <DynamicActionFooter
-              options={task.options ?? []}
-              onApplyOption={onApplyOption}
-              onRefine={onRefine}
-              onDismiss={onDismiss}
-            />
-          ) : (
-            <LegacyActionFooter
-              onConfirm={onConfirm}
-              onRefine={onRefine}
-              onDismiss={onDismiss}
-              onMarkStale={onMarkStale}
-            />
-          )
+        {focused && options && options.length > 0 ? (
+          <DynamicActionFooter
+            options={options}
+            onApplyOption={onApplyOption}
+            onRefine={onRefine}
+            onDismiss={onDismiss}
+          />
         ) : null}
       </div>
     </li>
@@ -467,35 +425,6 @@ function DynamicActionFooter({
   );
 }
 
-interface LegacyActionFooterProps {
-  onConfirm: () => void;
-  onRefine: () => void;
-  onDismiss: () => void;
-  onMarkStale: () => void;
-}
-
-function LegacyActionFooter({
-  onConfirm,
-  onRefine,
-  onDismiss,
-  onMarkStale,
-}: LegacyActionFooterProps): JSX.Element {
-  // Legacy fallback for review tasks the grove server hasn't backfilled
-  // with `options` yet. Same row footer the codebase shipped pre-
-  // W-INBOX-2 so nothing in the live inbox breaks during rollout.
-  return (
-    <div
-      className="mt-3 flex items-center justify-end gap-4 font-sans text-label"
-      data-testid="review-actions-legacy"
-    >
-      <RowAction onClick={onConfirm} label="confirm" shortcut="c" />
-      <RowAction onClick={onRefine} label="refine" shortcut="r" />
-      <RowAction onClick={onDismiss} label="dismiss" shortcut="x" />
-      <RowAction onClick={onMarkStale} label="stale" shortcut="s" />
-    </div>
-  );
-}
-
 interface OptionButtonProps {
   option: ReviewOption;
   shortcut: string | null;
@@ -558,34 +487,5 @@ function SkillChip({ slug, name }: SkillChipProps): JSX.Element {
     >
       {name}
     </Link>
-  );
-}
-
-interface RowActionProps {
-  onClick: () => void;
-  label: string;
-  shortcut: string;
-}
-
-function RowAction({ onClick, label, shortcut }: RowActionProps): JSX.Element {
-  // Legacy footer button: a plain text link with a shortcut chip,
-  // not the full `<Button>` primitive. Kept inline because the legacy
-  // fallback is on a deletion path — once api.grove.md backfills
-  // options onto every review task, the LegacyActionFooter (and this
-  // helper) come out wholesale. Introducing a primitive here would
-  // be lipstick on the soon-deleted.
-  const handleClick = (e: ReactMouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    onClick();
-  };
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="inline-flex items-center gap-1.5 text-ink/60 hover:text-ink transition-colors"
-    >
-      <ShortcutChip keys={shortcut} />
-      <span>{label}</span>
-    </button>
   );
 }

@@ -168,7 +168,7 @@ describe("TaskDetail (W3-TASK-1)", () => {
     expect(primary.textContent?.toLowerCase()).toContain("run");
   });
 
-  it("review task shows a Confirm primary action", () => {
+  it("review task shows no primary action (driven from the review queue post-C-INBOX-1)", () => {
     render(
       <TaskDetail
         task={REVIEWED_TASK}
@@ -176,9 +176,9 @@ describe("TaskDetail (W3-TASK-1)", () => {
         backHref="/@jm/personal"
       />,
     );
-    const primary = screen.getByTestId("task-primary-action");
-    expect(primary.getAttribute("data-action")).toBe("confirm");
-    expect(primary.textContent?.toLowerCase()).toContain("confirm");
+    expect(screen.queryByTestId("task-primary-action")).toBeNull();
+    // Back link still present.
+    expect(screen.getByTestId("task-back")).toBeTruthy();
   });
 
   it("failed task shows a Retry primary action and surfaces errorMessage", () => {

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { ReviewItem } from "./review-item";
@@ -17,6 +17,11 @@ vi.mock("next/link", () => ({
   }: { href: string; children: React.ReactNode } & Record<string, unknown>) =>
     React.createElement("a", { href, ...rest }, children),
 }));
+
+const SURFACE_OPTIONS: ReviewOption[] = [
+  { id: "opt-1", label: "confirm durable", source: "schema" },
+  { id: "opt-2", label: "mark stale", source: "schema" },
+];
 
 const SURFACE_TASK: Task = {
   id: "task-surface-1",
@@ -44,7 +49,14 @@ const SURFACE_TASK: Task = {
   },
   needsReviewReason: "perishable claim aged past 14-day threshold",
   sourceNotes: ["Resources/People/yulie-kwon-kim.md"],
+  itemType: "enrichment",
+  options: SURFACE_OPTIONS,
 };
+
+const NOTE_CHANGE_OPTIONS: ReviewOption[] = [
+  { id: "opt-1", label: "apply repair", source: "schema" },
+  { id: "opt-2", label: "skip", source: "schema" },
+];
 
 const NOTE_CHANGE_TASK: Task = {
   id: "task-note-change-1",
@@ -70,6 +82,8 @@ const NOTE_CHANGE_TASK: Task = {
     },
   },
   needsReviewReason: "broken wikilink, safe to repair",
+  itemType: "enrichment",
+  options: NOTE_CHANGE_OPTIONS,
 };
 
 const PERISHABLE_SKILL = {
@@ -87,10 +101,8 @@ const VAULT_HEALTH_SKILL = {
 function makeHandlers() {
   return {
     onApplyOption: vi.fn(),
-    onConfirmDurable: vi.fn(),
     onRefine: vi.fn(),
     onDismiss: vi.fn(),
-    onMarkStale: vi.fn(),
   };
 }
 
@@ -123,37 +135,6 @@ const CLEANUP_SKILL = {
   slug: "concept-graph-cleanup",
   name: "Concept Graph Cleanup",
 };
-
-// happy-dom in this project doesn't ship localStorage out of the box
-// (it's gated behind a CLI flag we don't pass). Define a minimal
-// in-memory Storage shim on window so the production code path —
-// `window.localStorage.getItem` / `setItem` — exercises real semantics.
-// Reset between tests so the first-write ack flag doesn't bleed.
-beforeEach(() => {
-  if (typeof window === "undefined") return;
-  const store = new Map<string, string>();
-  const shim: Storage = {
-    get length() {
-      return store.size;
-    },
-    clear: () => {
-      store.clear();
-    },
-    getItem: (key: string) => (store.has(key) ? (store.get(key) as string) : null),
-    key: (index: number) => Array.from(store.keys())[index] ?? null,
-    removeItem: (key: string) => {
-      store.delete(key);
-    },
-    setItem: (key: string, value: string) => {
-      store.set(key, String(value));
-    },
-  };
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    writable: true,
-    value: shim,
-  });
-});
 
 afterEach(() => {
   cleanup();
@@ -202,7 +183,7 @@ describe("ReviewItem — surface artifact", () => {
     expect(screen.getByRole("button", { name: "perishable" })).toBeTruthy();
   });
 
-  it("renders all four action buttons with shortcut chips", () => {
+  it("renders the dynamic action footer (no legacy four-button row)", () => {
     const { container } = render(
       <ReviewItem
         task={SURFACE_TASK}
@@ -212,16 +193,12 @@ describe("ReviewItem — surface artifact", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /confirm/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /refine/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /dismiss/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /stale/i })).toBeTruthy();
-
-    const chipTexts = Array.from(container.querySelectorAll("kbd")).map(
-      (c) => c.textContent,
-    );
-    // c/r/x/s footer chips (the provenance badge has no kbd).
-    expect(chipTexts).toEqual(["c", "r", "x", "s"]);
+    expect(
+      container.querySelector("[data-testid='review-actions-dynamic']"),
+    ).toBeTruthy();
+    expect(
+      container.querySelector("[data-testid='review-actions-legacy']"),
+    ).toBeNull();
   });
 });
 
@@ -267,7 +244,7 @@ describe("ReviewItem — refine modal", () => {
     // No modal until refine is clicked
     expect(screen.queryByTestId("refine-modal")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /refine/i }));
+    fireEvent.click(screen.getByTestId("review-ghost-refine"));
 
     const modal = screen.getByTestId("refine-modal");
     expect(modal).toBeTruthy();
@@ -286,7 +263,7 @@ describe("ReviewItem — refine modal", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /refine/i }));
+    fireEvent.click(screen.getByTestId("review-ghost-refine"));
     const textarea = screen.getByTestId("refine-textarea") as HTMLTextAreaElement;
     fireEvent.change(textarea, {
       target: { value: "  rephrase as durable; drop the hedge  " },
@@ -313,7 +290,7 @@ describe("ReviewItem — refine modal", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /refine/i }));
+    fireEvent.click(screen.getByTestId("review-ghost-refine"));
     expect(screen.getByTestId("refine-modal")).toBeTruthy();
 
     fireEvent.click(screen.getByTestId("refine-cancel"));
@@ -332,7 +309,7 @@ describe("ReviewItem — refine modal", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /refine/i }));
+    fireEvent.click(screen.getByTestId("review-ghost-refine"));
     fireEvent.click(screen.getByTestId("refine-submit"));
 
     expect(handlers.onRefine).not.toHaveBeenCalled();
@@ -341,173 +318,7 @@ describe("ReviewItem — refine modal", () => {
   });
 });
 
-describe("ReviewItem — confirm-durable on surface artifact", () => {
-  it("fires onConfirmDurable immediately (no first-write modal for surface)", () => {
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={SURFACE_TASK}
-        skill={PERISHABLE_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
-
-    expect(handlers.onConfirmDurable).toHaveBeenCalledTimes(1);
-    expect(screen.queryByTestId("first-write-modal")).toBeNull();
-  });
-});
-
-describe("ReviewItem — first-write confirmation for write artifacts", () => {
-  it("first confirm on a note-change artifact opens the first-write modal", () => {
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={NOTE_CHANGE_TASK}
-        skill={VAULT_HEALTH_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
-
-    // Modal shown; underlying confirm NOT fired yet
-    expect(screen.getByTestId("first-write-modal")).toBeTruthy();
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
-  });
-
-  it("clicking continue in the first-write modal fires onConfirmDurable and persists the flag", () => {
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={NOTE_CHANGE_TASK}
-        skill={VAULT_HEALTH_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
-    fireEvent.click(screen.getByTestId("first-write-confirm"));
-
-    expect(handlers.onConfirmDurable).toHaveBeenCalledTimes(1);
-    // Modal closed
-    expect(screen.queryByTestId("first-write-modal")).toBeNull();
-    // Flag persisted
-    expect(
-      window.localStorage.getItem(
-        "grove.first-write-ack.main.skill-vault-health",
-      ),
-    ).toBe("1");
-  });
-
-  it("clicking cancel in the first-write modal does NOT fire onConfirmDurable and does NOT set the flag", () => {
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={NOTE_CHANGE_TASK}
-        skill={VAULT_HEALTH_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
-    fireEvent.click(screen.getByTestId("first-write-cancel"));
-
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
-    expect(screen.queryByTestId("first-write-modal")).toBeNull();
-    expect(
-      window.localStorage.getItem(
-        "grove.first-write-ack.main.skill-vault-health",
-      ),
-    ).toBeNull();
-  });
-
-  it("once the flag is set, subsequent confirms skip the modal and fire onConfirmDurable directly", () => {
-    // Pre-set the ack flag for (main, skill-vault-health).
-    window.localStorage.setItem(
-      "grove.first-write-ack.main.skill-vault-health",
-      "1",
-    );
-
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={NOTE_CHANGE_TASK}
-        skill={VAULT_HEALTH_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
-
-    expect(handlers.onConfirmDurable).toHaveBeenCalledTimes(1);
-    expect(screen.queryByTestId("first-write-modal")).toBeNull();
-  });
-
-  it("the flag is scoped per (vault, skill): a different vault still prompts", () => {
-    // Ack only for "main" — the user opens the same skill in "personal".
-    window.localStorage.setItem(
-      "grove.first-write-ack.main.skill-vault-health",
-      "1",
-    );
-
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={NOTE_CHANGE_TASK}
-        skill={VAULT_HEALTH_SKILL}
-        vaultSlug="personal"
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
-
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
-    expect(screen.getByTestId("first-write-modal")).toBeTruthy();
-  });
-
-  it("the flag is scoped per (vault, skill): a different skill in the same vault still prompts", () => {
-    // Ack vault-health in main — now a *different* write skill confirms.
-    window.localStorage.setItem(
-      "grove.first-write-ack.main.skill-vault-health",
-      "1",
-    );
-
-    const OTHER_TASK: Task = {
-      ...NOTE_CHANGE_TASK,
-      skillId: "skill-concept-graph-cleanup",
-    };
-    const OTHER_SKILL = {
-      id: "skill-concept-graph-cleanup",
-      slug: "concept-graph-cleanup",
-      name: "Concept Graph Cleanup",
-    };
-
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={OTHER_TASK}
-        skill={OTHER_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /confirm/i }));
-
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
-    expect(screen.getByTestId("first-write-modal")).toBeTruthy();
-  });
-});
-
-describe("ReviewItem — W-INBOX-2 dynamic options", () => {
+describe("ReviewItem — dynamic options (post-C-INBOX-1 default)", () => {
   it("renders N option buttons + refine + dismiss for a decision-backed task", () => {
     const { container } = render(
       <ReviewItem
@@ -560,10 +371,9 @@ describe("ReviewItem — W-INBOX-2 dynamic options", () => {
 
     expect(handlers.onApplyOption).toHaveBeenCalledTimes(1);
     expect(handlers.onApplyOption).toHaveBeenCalledWith("opt-2");
-    expect(handlers.onConfirmDurable).not.toHaveBeenCalled();
   });
 
-  it("clicking the dismiss ghost button fires onDismiss directly (no first-write modal)", () => {
+  it("clicking the dismiss ghost button fires onDismiss directly", () => {
     const handlers = makeHandlers();
     const { container } = render(
       <ReviewItem
@@ -581,7 +391,6 @@ describe("ReviewItem — W-INBOX-2 dynamic options", () => {
     );
 
     expect(handlers.onDismiss).toHaveBeenCalledTimes(1);
-    expect(screen.queryByTestId("first-write-modal")).toBeNull();
   });
 
   it("clicking the refine ghost button opens the modal; submitting fires onRefine with trimmed text", () => {
@@ -615,35 +424,5 @@ describe("ReviewItem — W-INBOX-2 dynamic options", () => {
       "actually merge into Anna Kim",
     );
     expect(screen.queryByTestId("refine-modal")).toBeNull();
-  });
-});
-
-describe("ReviewItem — dismiss and mark-stale", () => {
-  it("clicking dismiss fires onDismiss", () => {
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={SURFACE_TASK}
-        skill={PERISHABLE_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-    fireEvent.click(screen.getByRole("button", { name: /dismiss/i }));
-    expect(handlers.onDismiss).toHaveBeenCalledTimes(1);
-  });
-
-  it("clicking stale fires onMarkStale", () => {
-    const handlers = makeHandlers();
-    render(
-      <ReviewItem
-        task={SURFACE_TASK}
-        skill={PERISHABLE_SKILL}
-        vaultSlug="main"
-        {...handlers}
-      />,
-    );
-    fireEvent.click(screen.getByRole("button", { name: /stale/i }));
-    expect(handlers.onMarkStale).toHaveBeenCalledTimes(1);
   });
 });

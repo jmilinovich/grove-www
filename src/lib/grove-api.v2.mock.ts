@@ -111,7 +111,7 @@ const MOCK_SKILLS: Skill[] = [
     domain: "knowledge",
     author: "builtin",
     description:
-      "Perishable claims aged past 14 days. Triggers mark-stale or confirm-durable in ritual review.",
+      "Perishable claims aged past 14 days. Surfaces them for ritual review with apply / refine / dismiss options.",
     sampleTasks: [
       "perishable AI-authored claims older than two weeks",
       "synthesis older than a month still marked perishable",
@@ -603,31 +603,11 @@ export async function dismissTask(_vault: string, taskId: string): Promise<void>
   task.state = "dismissed";
 }
 
-export async function reviewTask(
-  _vault: string,
-  taskId: string,
-  action:
-    | { kind: "confirm-durable" }
-    | { kind: "refine"; refinement: string }
-    | { kind: "dismiss" }
-    | { kind: "mark-stale" }
-): Promise<void> {
-  const task = mockStore.tasks.find((t) => t.id === taskId);
-  if (!task) throw new Error(`task ${taskId} not found in mock store`);
-  if (action.kind === "dismiss") {
-    task.state = "dismissed";
-    return;
-  }
-  task.state = "done";
-}
-
-// ─── V2 review actions (Inbox v2 — W-INBOX-1) ────────────────────────────
+// ─── V2 review actions (Inbox v2) ────────────────────────────────────────
 //
-// These mirror the new server endpoint shape (POST /v1/tasks/<id>/review
-// with `{kind: "apply" | "refine" | "dismiss", ...}`) added in S-INBOX-10.
-// They live alongside the legacy `reviewTask` above; W-INBOX-2/3 will
-// migrate the UI to call these in place of the legacy verbs. Until then,
-// the legacy reviewTask stays as-is.
+// Mirror the server endpoint shape (POST /v1/tasks/<id>/review with
+// `{kind: "apply" | "refine" | "dismiss", ...}`) added in S-INBOX-10.
+// The legacy verb-union action was retired in C-INBOX-1.
 
 export async function applyTask(
   _vault: string,

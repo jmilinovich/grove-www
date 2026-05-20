@@ -29,9 +29,8 @@ export const fetchTask = impl.fetchTask;
 export const runTask = impl.runTask;
 export const deferTask = impl.deferTask;
 export const dismissTask = impl.dismissTask;
-export const reviewTask = impl.reviewTask;
-// Inbox v2 (W-INBOX-1): new V2 review actions wired alongside the
-// legacy `reviewTask`. UI migration to these lands in W-INBOX-2/3.
+// Inbox v2 review actions. The legacy verb-union action was retired in
+// C-INBOX-1 after M-INBOX-1 mass-dismissed the prod legacy queue.
 export const applyTask = impl.applyTask;
 export const refineTask = impl.refineTask;
 export const dismissReviewTask = impl.dismissReviewTask;

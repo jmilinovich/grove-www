@@ -55,74 +55,10 @@ describe("assertV2Available — v2 prod guard", () => {
   });
 });
 
-describe("reviewTask (live impl) — wire body shape", () => {
-  // The api.grove.md endpoint expects `{action, refinement?}` (flat).
-  // The client signature is the discriminated `{kind, ...}` shape so
-  // the same call works in mock + live. These tests pin the translation
-  // — a regression would silently 400 every review action.
-
-  beforeEach(() => {
-    vi.resetModules();
-    vi.stubEnv("GROVE_API_MODE", "live");
-    vi.stubEnv("GROVE_API_URL", "https://api.example.test");
-    vi.doMock("next/headers", () => ({
-      cookies: async () => ({ get: () => undefined }),
-    }));
-    // getApiKey decrypts a `__Host-`-prefixed cookie with a key we
-    // don't have in tests. Mock the boundary so the live impl gets a
-    // non-null api key and proceeds to the fetch.
-    vi.doMock("@/lib/auth", () => ({
-      getApiKey: () => "test-api-key",
-    }));
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
-    vi.doUnmock("next/headers");
-    vi.doUnmock("@/lib/auth");
-    vi.restoreAllMocks();
-  });
-
-  async function captureBody(
-    action: Parameters<typeof import("./grove-api.v2.live").reviewTask>[2],
-  ): Promise<unknown> {
-    const fetchSpy = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue(new Response("", { status: 200 }));
-    const { reviewTask } = await import("./grove-api.v2.live");
-    await reviewTask("personal", "task-1", action);
-    const call = fetchSpy.mock.calls[0];
-    const init = call?.[1] as RequestInit | undefined;
-    const raw = (init?.body ?? "") as string;
-    return raw ? JSON.parse(raw) : null;
-  }
-
-  it("translates {kind:'confirm-durable'} -> {action:'confirm-durable'}", async () => {
-    const body = await captureBody({ kind: "confirm-durable" });
-    expect(body).toEqual({ action: "confirm-durable" });
-  });
-
-  it("translates {kind:'dismiss'} -> {action:'dismiss'}", async () => {
-    const body = await captureBody({ kind: "dismiss" });
-    expect(body).toEqual({ action: "dismiss" });
-  });
-
-  it("translates {kind:'mark-stale'} -> {action:'mark-stale'}", async () => {
-    const body = await captureBody({ kind: "mark-stale" });
-    expect(body).toEqual({ action: "mark-stale" });
-  });
-
-  it("translates {kind:'refine', refinement} -> {action:'refine', refinement}", async () => {
-    const body = await captureBody({ kind: "refine", refinement: "tighter" });
-    expect(body).toEqual({ action: "refine", refinement: "tighter" });
-  });
-});
-
 describe("Inbox v2 review actions (live impl) — wire body shape", () => {
-  // S-INBOX-10 added a per-type review dispatch to the same
-  // `/v1/tasks/<id>/review` endpoint with a new `{kind, ...}` body.
-  // These tests pin the live impl's translation — a regression would
-  // silently 400 every V2 review.
+  // The `/v1/tasks/<id>/review` endpoint dispatches on the `kind` field
+  // of the request body. These tests pin the live impl's translation —
+  // a regression would silently 400 every V2 review.
 
   beforeEach(() => {
     vi.resetModules();
