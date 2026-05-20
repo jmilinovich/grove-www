@@ -10,7 +10,12 @@ import {
   readFirstWriteAck,
   writeFirstWriteAck,
 } from "@/components/task/first-write-ack";
-import { reviewTask } from "@/app/(resident)/[atHandle]/[vaultSlug]/_actions/review";
+import {
+  reviewTask,
+  applyReviewTask,
+  refineReviewTask,
+  dismissReviewTask,
+} from "@/app/(resident)/[atHandle]/[vaultSlug]/_actions/review";
 
 interface ReviewAllClientProps {
   reviewTasks: Task[];
@@ -61,10 +66,12 @@ export function ReviewAllClient({
 
   const fireRefine = useCallback(
     (taskId: string, refinement: string) => {
-      void reviewTask(taskId, { kind: "refine", refinement }, vaultSlug).catch(
+      // W-INBOX-2: refine now spawns a free-instruction task via the
+      // V2 endpoint instead of riding the legacy review-action verb.
+      void refineReviewTask(taskId, refinement, vaultSlug).catch(
         (err: unknown) => {
           // eslint-disable-next-line no-console
-          console.error("reviewTask(refine) failed", err);
+          console.error("refineReviewTask failed", err);
         },
       );
     },
@@ -73,10 +80,20 @@ export function ReviewAllClient({
 
   const fireDismiss = useCallback(
     (taskId: string) => {
-      void reviewTask(taskId, { kind: "dismiss" }, vaultSlug).catch(
+      void dismissReviewTask(taskId, vaultSlug).catch((err: unknown) => {
+        // eslint-disable-next-line no-console
+        console.error("dismissReviewTask failed", err);
+      });
+    },
+    [vaultSlug],
+  );
+
+  const fireApplyOption = useCallback(
+    (taskId: string, optionId: string) => {
+      void applyReviewTask(taskId, optionId, vaultSlug).catch(
         (err: unknown) => {
           // eslint-disable-next-line no-console
-          console.error("reviewTask(dismiss) failed", err);
+          console.error("applyReviewTask failed", err);
         },
       );
     },
@@ -85,6 +102,8 @@ export function ReviewAllClient({
 
   const fireMarkStale = useCallback(
     (taskId: string) => {
+      // Legacy-only action — decision-backed tasks don't surface
+      // "mark stale" since `options` carries every meaningful choice.
       void reviewTask(taskId, { kind: "mark-stale" }, vaultSlug).catch(
         (err: unknown) => {
           // eslint-disable-next-line no-console
@@ -179,6 +198,7 @@ export function ReviewAllClient({
               }
             }
             vaultSlug={vaultSlug}
+            onApplyOption={(optionId) => fireApplyOption(task.id, optionId)}
             onConfirmDurable={() => handleConfirmDurable(task.id)}
             onRefine={(refinement) => {
               // ReviewItem's own RefineModal still fires its onRefine

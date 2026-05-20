@@ -21,7 +21,12 @@ import {
   deferTask,
   dismissTask,
 } from "./_actions/tasks";
-import { reviewTask } from "./_actions/review";
+import {
+  reviewTask,
+  applyReviewTask,
+  refineReviewTask,
+  dismissReviewTask,
+} from "./_actions/review";
 
 // Client-island boundary for the v2 vault homepage (W1-ROUTE-1 + W2-PAGE-1).
 //
@@ -156,12 +161,33 @@ export function BacklogIsland({
   };
 
   // ─── Review-domain handlers ─────────────────────────────────────
+  // W-INBOX-2: decision-backed tasks (with `task.options`) flow
+  // through `applyReviewTask(taskId, optionId)`; refine routes to
+  // `refineReviewTask(taskId, refinement)`; dismiss routes to
+  // `dismissReviewTask(taskId)`. Legacy review tasks (no `options`)
+  // still hit the v1 `reviewTask` action with the old verb-shape so
+  // nothing in the live inbox breaks during rollout — the grove
+  // server (S-INBOX-10) accepts both shapes side-by-side via its
+  // compat layer.
+
   const fireConfirmDurable = useCallback(
     (taskId: string) => {
       void reviewTask(taskId, { kind: "confirm-durable" }, vaultSlug).catch(
         (err: unknown) => {
           // eslint-disable-next-line no-console
           console.error("reviewTask(confirm-durable) failed", err);
+        },
+      );
+    },
+    [vaultSlug],
+  );
+
+  const handleApplyOption = useCallback(
+    (taskId: string, optionId: string) => {
+      void applyReviewTask(taskId, optionId, vaultSlug).catch(
+        (err: unknown) => {
+          // eslint-disable-next-line no-console
+          console.error("applyReviewTask failed", err);
         },
       );
     },
@@ -193,10 +219,10 @@ export function BacklogIsland({
     (refinement: string) => {
       const taskId = refineForTaskId;
       if (!taskId) return;
-      void reviewTask(taskId, { kind: "refine", refinement }, vaultSlug).catch(
+      void refineReviewTask(taskId, refinement, vaultSlug).catch(
         (err: unknown) => {
           // eslint-disable-next-line no-console
-          console.error("reviewTask(refine) failed", err);
+          console.error("refineReviewTask failed", err);
         },
       );
       setRefineForTaskId(null);
@@ -206,12 +232,10 @@ export function BacklogIsland({
 
   const handleReviewDismiss = useCallback(
     (taskId: string) => {
-      void reviewTask(taskId, { kind: "dismiss" }, vaultSlug).catch(
-        (err: unknown) => {
-          // eslint-disable-next-line no-console
-          console.error("reviewTask(dismiss) failed", err);
-        },
-      );
+      void dismissReviewTask(taskId, vaultSlug).catch((err: unknown) => {
+        // eslint-disable-next-line no-console
+        console.error("dismissReviewTask failed", err);
+      });
     },
     [vaultSlug],
   );
@@ -259,6 +283,7 @@ export function BacklogIsland({
         reviewTasks={data.reviewTasks}
         skillsBySlug={skillsBySlug}
         seeAllHref={seeAllReviewHref}
+        onApplyOption={handleApplyOption}
         onConfirmDurable={handleConfirmDurable}
         onRefine={handleRefine}
         onDismiss={handleReviewDismiss}
