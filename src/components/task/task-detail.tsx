@@ -27,9 +27,16 @@ interface TaskDetailProps {
   task: Task;
   vaultSlug: string;
   backHref: string;
+  /**
+   * Human-readable skill name for the first-write confirmation modal.
+   * When the caller has loaded the skill registry, pass the resolved
+   * name. Optional — TaskDetailClient falls back to `task.skillId` when
+   * absent so the modal still names a source.
+   */
+  skillName?: string;
 }
 
-export function TaskDetail({ task, vaultSlug, backHref }: TaskDetailProps): JSX.Element {
+export function TaskDetail({ task, vaultSlug, backHref, skillName }: TaskDetailProps): JSX.Element {
   const provenance = task.result?.provenance ?? null;
   const sourceNotes = task.sourceNotes ?? [];
 
@@ -172,6 +179,7 @@ export function TaskDetail({ task, vaultSlug, backHref }: TaskDetailProps): JSX.
         vaultSlug={vaultSlug}
         backHref={backHref}
         relatedCount={sourceNotes.length}
+        skillName={skillName}
       />
     </article>
   );

@@ -48,6 +48,12 @@ export interface NeedsReviewListProps {
   onRefine: (taskId: string) => void;
   onDismiss: (taskId: string) => void;
   onMarkStale: (taskId: string) => void;
+  /**
+   * Destination for the "see all N" link when totalCount exceeds the
+   * visible window. Optional — when omitted the link falls back to "#"
+   * for tests/storybook that don't have routing context.
+   */
+  seeAllHref?: string;
 }
 
 export function NeedsReviewList({
@@ -57,6 +63,7 @@ export function NeedsReviewList({
   onRefine,
   onDismiss,
   onMarkStale,
+  seeAllHref,
 }: NeedsReviewListProps): JSX.Element | null {
   // Hooks must run before any early-return for empty state.
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
@@ -193,7 +200,7 @@ export function NeedsReviewList({
         {hasMore ? (
           <li className="pt-1">
             <a
-              href="#"
+              href={seeAllHref ?? "#"}
               className="font-sans text-label text-ink/60 hover:text-ink transition-colors"
             >
               see all {totalCount} ▸

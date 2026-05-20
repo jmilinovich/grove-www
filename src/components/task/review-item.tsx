@@ -2,17 +2,19 @@
 
 import {
   useCallback,
-  useEffect,
-  useId,
-  useRef,
   useState,
   type JSX,
-  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import type { Task, TaskArtifactType } from "@/lib/grove-api.v2.types";
-import { Button } from "@/components/primitives/button";
+import type { Task } from "@/lib/grove-api.v2.types";
 import { ProvenanceBadge } from "@/components/primitives/provenance-badge";
 import { ShortcutChip } from "@/components/primitives/shortcut-chip";
+import { RefineModal } from "./refine-modal";
+import { FirstWriteModal } from "./first-write-modal";
+import {
+  WRITE_ARTIFACT_TYPES,
+  readFirstWriteAck,
+  writeFirstWriteAck,
+} from "./first-write-ack";
 
 // W3-REVIEW-1 — ReviewItem.
 //
@@ -33,46 +35,11 @@ import { ShortcutChip } from "@/components/primitives/shortcut-chip";
 // `s` mark-stale. Same as NeedsReviewList — see needs-review-list.tsx
 // for the rationale on why the review surface doesn't map onto the
 // run/defer/dismiss vocabulary of TaskCard.
-
-// Artifact types that write to the vault (vs surface-only output that
-// doesn't touch any note). confirm-durable on a write artifact is what
-// actually applies the diff / creates the note / wires the wikilink, so
-// these need the one-time per-skill heads-up modal.
-const WRITE_ARTIFACT_TYPES: ReadonlySet<TaskArtifactType> = new Set([
-  "note-change",
-  "note-create",
-  "note-link",
-  "concept-merge",
-]);
-
-function firstWriteFlagKey(vaultSlug: string, skillId: string): string {
-  // Namespaced per (vault, skill). Stored as the literal string "1" once
-  // the user has confirmed the first write for that skill in that vault.
-  return `grove.first-write-ack.${vaultSlug}.${skillId}`;
-}
-
-function readFirstWriteAck(vaultSlug: string, skillId: string): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return (
-      window.localStorage.getItem(firstWriteFlagKey(vaultSlug, skillId)) === "1"
-    );
-  } catch {
-    // Private-mode Safari throws on localStorage access; treat as "not
-    // acknowledged" so we err on the side of showing the heads-up modal.
-    return false;
-  }
-}
-
-function writeFirstWriteAck(vaultSlug: string, skillId: string): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(firstWriteFlagKey(vaultSlug, skillId), "1");
-  } catch {
-    // Same — silently ignore. Worst case the user sees the modal again
-    // on the next confirm, which is benign.
-  }
-}
+//
+// The RefineModal, FirstWriteModal, and first-write ack helpers are
+// extracted to sibling files so BacklogIsland and TaskDetailClient can
+// share the same gate behavior — see refine-modal.tsx,
+// first-write-modal.tsx, first-write-ack.ts.
 
 export interface ReviewItemProps {
   task: Task;
@@ -346,173 +313,5 @@ function FooterAction({
       <ShortcutChip keys={shortcut} />
       <span>{label}</span>
     </button>
-  );
-}
-
-// ─── Refine modal ──────────────────────────────────────────────────────
-
-interface RefineModalProps {
-  onSubmit: (refinement: string) => void;
-  onCancel: () => void;
-}
-
-function RefineModal({ onSubmit, onCancel }: RefineModalProps): JSX.Element {
-  const [text, setText] = useState("");
-  const headingId = useId();
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  // Focus the textarea on mount so the user can start typing immediately.
-  useEffect(() => {
-    textareaRef.current?.focus();
-  }, []);
-
-  // Esc → cancel. Bound to the modal dialog element so it doesn't
-  // collide with the parent surface's keymap.
-  const onDialogKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onCancel();
-    }
-  };
-
-  const handleSubmit = () => {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      // Don't submit an empty refinement; this mirrors how the API will
-      // reject an empty `refinement` field. Re-focus to nudge.
-      textareaRef.current?.focus();
-      return;
-    }
-    onSubmit(trimmed);
-  };
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={headingId}
-      className="fixed inset-0 z-20 flex items-center justify-center bg-ink/40 p-4"
-      onKeyDown={onDialogKeyDown}
-      data-testid="refine-modal"
-    >
-      <div className="w-full max-w-md bg-surface border border-surface-border rounded-md p-6">
-        <h3
-          id={headingId}
-          className="font-serif font-medium text-subhead text-ink"
-        >
-          refine this artifact
-        </h3>
-        <p className="mt-2 font-sans text-detail text-ink/60">
-          what should the skill do differently next time?
-        </p>
-        <textarea
-          ref={textareaRef}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="mt-4 w-full min-h-32 bg-cream border border-surface-border rounded-md p-3 font-sans text-base text-ink resize-y focus:outline-none focus:border-ink"
-          placeholder="e.g. rephrase as durable; drop the hedge"
-          data-testid="refine-textarea"
-        />
-        <div className="mt-4 flex items-center justify-end gap-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onCancel}
-            data-testid="refine-cancel"
-          >
-            cancel
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSubmit}
-            data-testid="refine-submit"
-          >
-            submit
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── First-write confirmation modal ────────────────────────────────────
-
-interface FirstWriteModalProps {
-  skillName: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-function FirstWriteModal({
-  skillName,
-  onConfirm,
-  onCancel,
-}: FirstWriteModalProps): JSX.Element {
-  const headingId = useId();
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  // Focus the confirm button on mount so Enter accepts. We query the
-  // button by data-testid from the dialog root because the shared
-  // `<Button>` primitive doesn't forward refs (it uses
-  // ComponentPropsWithoutRef<"button">). Querying after mount is the
-  // sanctioned escape hatch here.
-  useEffect(() => {
-    const confirmButton = dialogRef.current?.querySelector<HTMLButtonElement>(
-      '[data-testid="first-write-confirm"]',
-    );
-    confirmButton?.focus();
-  }, []);
-
-  const onDialogKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onCancel();
-    }
-  };
-
-  return (
-    <div
-      ref={dialogRef}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={headingId}
-      className="fixed inset-0 z-20 flex items-center justify-center bg-ink/40 p-4"
-      onKeyDown={onDialogKeyDown}
-      data-testid="first-write-modal"
-    >
-      <div className="w-full max-w-md bg-surface border border-surface-border rounded-md p-6">
-        <h3
-          id={headingId}
-          className="font-serif font-medium text-subhead text-ink"
-        >
-          first write for {skillName}
-        </h3>
-        <p className="mt-3 font-sans text-base text-ink">
-          this skill will write to your vault. continue?
-        </p>
-        <p className="mt-2 font-sans text-detail text-ink/60">
-          you won&apos;t see this prompt again for this skill.
-        </p>
-        <div className="mt-4 flex items-center justify-end gap-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onCancel}
-            data-testid="first-write-cancel"
-          >
-            cancel
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onConfirm}
-            data-testid="first-write-confirm"
-          >
-            continue
-          </Button>
-        </div>
-      </div>
-    </div>
   );
 }
