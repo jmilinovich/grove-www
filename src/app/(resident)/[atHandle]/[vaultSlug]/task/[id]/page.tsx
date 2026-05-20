@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import * as groveApi from "@/lib/grove-api.v2";
-import type { Task } from "@/lib/grove-api.v2.types";
+import type { Task, Skill } from "@/lib/grove-api.v2.types";
 import { TaskDetail } from "@/components/task/task-detail";
 
 interface PageProps {
@@ -39,12 +39,30 @@ export default async function TaskDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // Best-effort skill lookup so the first-write modal copy reads
+  // "first write for Concept Graph Cleanup" instead of the raw skill id.
+  // Failure is benign — TaskDetailClient falls back to `task.skillId`.
+  let skillName: string | undefined;
+  try {
+    const skills: Skill[] = await groveApi.fetchSkills(vaultSlug);
+    skillName = skills.find(
+      (s) => s.id === task.skillId || s.slug === task.skillId,
+    )?.name;
+  } catch {
+    skillName = undefined;
+  }
+
   const backHref = `/@${atHandle}/${vaultSlug}`;
 
   return (
     <main className="min-h-screen bg-cream text-ink">
       <div className="max-w-3xl mx-auto px-6 py-12">
-        <TaskDetail task={task} vaultSlug={vaultSlug} backHref={backHref} />
+        <TaskDetail
+          task={task}
+          vaultSlug={vaultSlug}
+          backHref={backHref}
+          skillName={skillName}
+        />
       </div>
     </main>
   );

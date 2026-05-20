@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useBacklogPolling } from "@/lib/use-backlog-polling";
 import {
   useKeyboardShortcuts,
@@ -8,12 +8,20 @@ import {
 } from "@/lib/use-keyboard-shortcuts";
 import { NeedsReviewList } from "@/components/backlog/needs-review-list";
 import { BacklogList } from "@/components/backlog/backlog-list";
-import type { BacklogPayload, Skill } from "@/lib/grove-api.v2.types";
+import type { BacklogPayload, Skill, Task } from "@/lib/grove-api.v2.types";
+import { RefineModal } from "@/components/task/refine-modal";
+import { FirstWriteModal } from "@/components/task/first-write-modal";
+import {
+  WRITE_ARTIFACT_TYPES,
+  readFirstWriteAck,
+  writeFirstWriteAck,
+} from "@/components/task/first-write-ack";
 import {
   runTask,
   deferTask,
   dismissTask,
 } from "./_actions/tasks";
+import { reviewTask } from "./_actions/review";
 
 // Client-island boundary for the v2 vault homepage (W1-ROUTE-1 + W2-PAGE-1).
 //
@@ -29,15 +37,6 @@ import {
 //    binds the truly global keys — `⌘/` (cheatsheet) and `Esc`
 //    (modal-dismiss tree). Both are placeholders in W2; the cheatsheet
 //    sheet itself ships in W3-SHORT-1.
-//
-// The shell also exports a `<BacklogIsland />` client component that
-// owns the action-handler wrappers around the Server Actions. The page
-// passes raw data to the island; the island wires onRun/onDefer/onDismiss
-// to `runTask`/`deferTask`/`dismissTask` with the vaultSlug closed over,
-// and renders <NeedsReviewList /> and <BacklogList /> as a single
-// client-rendered subtree. Review-domain actions (confirm-durable,
-// refine, mark-stale) are W3-REVIEW-1; in W2 they log a stub so the
-// keymap binds and the UI is exercisable end-to-end.
 
 interface ClientShellProps {
   children: ReactNode;
@@ -66,9 +65,11 @@ export default function ClientShell({ children }: ClientShellProps) {
         description: "Dismiss open modal / overlay",
         handler: () => {
           // No-op stub. The real modal-dismiss tree (cheatsheet sheet,
-          // refine modal, etc.) lands alongside W3-SHORT-1 + W3-REVIEW-1.
+          // refine modal, etc.) lands alongside W3-SHORT-1.
           // Lists already own their own Esc semantics where they need
           // them (e.g. CapacityStrip collapses its panel on Esc).
+          // The refine/first-write modals on this page bind Esc to
+          // their own dialog root, so they handle their own dismiss.
         },
       },
     ],
@@ -82,35 +83,55 @@ export default function ClientShell({ children }: ClientShellProps) {
 
 // ─── BacklogIsland ────────────────────────────────────────────────────
 //
-// Bridge from the server-rendered page to the two client lists. Lives
-// here (in `_client-shell.tsx`) so the W2-PAGE-1 lane stays a one-file
-// edit — both the global shortcuts and the action wrappers are
-// page-level client concerns, and giving them their own file would
-// double the import surface for very little structural gain. If
-// W3-REVIEW-1 grows the review-side handlers materially, this island
-// is the natural extraction point.
+// Bridge from the server-rendered page to the two client lists. Owns:
+//  - Task-domain action wrappers (run / defer / dismiss) that call into
+//    `_actions/tasks.ts` Server Actions with the vaultSlug closed over.
+//  - Review-domain action wrappers (confirm-durable / refine / dismiss /
+//    mark-stale) that call into `_actions/review.ts`. The refine modal
+//    and the first-write confirmation modal live at this layer so the
+//    compact NeedsReviewList rows don't have to host their own dialogs.
 
 export interface BacklogIslandProps {
   data: BacklogPayload;
   vaultSlug: string;
+  seeAllReviewHref: string;
 }
 
-export function BacklogIsland({ data, vaultSlug }: BacklogIslandProps) {
+export function BacklogIsland({
+  data,
+  vaultSlug,
+  seeAllReviewHref,
+}: BacklogIslandProps) {
   const skillsBySlug = useMemo<Record<string, Skill>>(() => {
     return Object.fromEntries(data.skills.map((s) => [s.slug, s]));
   }, [data.skills]);
 
-  // Task-domain handlers. Each wrapper closes over `vaultSlug` and
-  // fires the Server Action without awaiting — the list APIs are
-  // synchronous-looking (onRun(id): void). On error we just log; a
-  // proper <Toast /> + useOptimistic revert is W2-ACTIONS. For now
-  // any error is visible in the console and the next 15s poll will
-  // reconcile UI state from the server.
-  //
-  // `deferTask` takes a `until` ISO timestamp. The lists don't yet
-  // have a picker (W2-PAGE-1 is composition-only), so we hard-code a
-  // 2-weeks-out value matching the W2 PR description. W3-FAIL-1 / the
-  // proper defer UI replaces this with a real selector.
+  // Index by both id and slug — `Task.skillId` is the skill's id in the
+  // mock fixtures, but live api.grove.md may emit either. Indexing by
+  // both lets us look up safely from a review-action callback regardless
+  // of which surface the upstream task came from.
+  const skillsByKey = useMemo<Record<string, Skill>>(() => {
+    const out: Record<string, Skill> = {};
+    for (const s of data.skills) {
+      out[s.id] = s;
+      out[s.slug] = s;
+    }
+    return out;
+  }, [data.skills]);
+
+  const reviewTasksById = useMemo<Record<string, Task>>(() => {
+    return Object.fromEntries(data.reviewTasks.map((t) => [t.id, t]));
+  }, [data.reviewTasks]);
+
+  // ─── Modal state ────────────────────────────────────────────────
+  // `refineForTaskId` holds the id of the review task the refine modal
+  // is collecting input for; null means closed. Same for first-write.
+  const [refineForTaskId, setRefineForTaskId] = useState<string | null>(null);
+  const [firstWriteForTaskId, setFirstWriteForTaskId] = useState<string | null>(
+    null,
+  );
+
+  // ─── Task-domain handlers ───────────────────────────────────────
   const handleRun = (taskId: string) => {
     void runTask(taskId, vaultSlug).catch((err: unknown) => {
       // eslint-disable-next-line no-console
@@ -129,40 +150,115 @@ export function BacklogIsland({ data, vaultSlug }: BacklogIslandProps) {
       console.error("dismissTask failed", err);
     });
   };
-  // `onOpen` is the navigate-to-detail handler. W3-TASK-1 owns the
-  // task detail route; until then we log so the keymap binding (Enter
-  // in BacklogList) doesn't silently drop on the floor.
   const handleOpen = (taskId: string) => {
     // eslint-disable-next-line no-console
     console.log("open task", taskId, "— wires up in W3-TASK-1");
   };
 
-  // Review-domain handlers — W3-REVIEW-1 will replace these stubs with
-  // calls into `_actions/review.ts`. They log here so the
-  // `c / r / x / s` keymap binds cleanly and the review surface is
-  // visually exercisable end-to-end in W2.
-  const handleConfirmDurable = (taskId: string) => {
-    // eslint-disable-next-line no-console
-    console.log("confirm-durable", taskId, "— wires up in W3-REVIEW-1");
-  };
-  const handleRefine = (taskId: string) => {
-    // eslint-disable-next-line no-console
-    console.log("refine", taskId, "— wires up in W3-REVIEW-1");
-  };
-  const handleReviewDismiss = (taskId: string) => {
-    // eslint-disable-next-line no-console
-    console.log("review-dismiss", taskId, "— wires up in W3-REVIEW-1");
-  };
-  const handleMarkStale = (taskId: string) => {
-    // eslint-disable-next-line no-console
-    console.log("mark-stale", taskId, "— wires up in W3-REVIEW-1");
-  };
+  // ─── Review-domain handlers ─────────────────────────────────────
+  const fireConfirmDurable = useCallback(
+    (taskId: string) => {
+      void reviewTask(taskId, { kind: "confirm-durable" }, vaultSlug).catch(
+        (err: unknown) => {
+          // eslint-disable-next-line no-console
+          console.error("reviewTask(confirm-durable) failed", err);
+        },
+      );
+    },
+    [vaultSlug],
+  );
+
+  const handleConfirmDurable = useCallback(
+    (taskId: string) => {
+      const task = reviewTasksById[taskId];
+      const skill = task ? skillsByKey[task.skillId] : undefined;
+      const skillKey = skill?.id ?? task?.skillId;
+      const isWrite =
+        task?.result != null &&
+        WRITE_ARTIFACT_TYPES.has(task.result.artifact.type);
+      if (isWrite && skillKey && !readFirstWriteAck(vaultSlug, skillKey)) {
+        setFirstWriteForTaskId(taskId);
+        return;
+      }
+      fireConfirmDurable(taskId);
+    },
+    [reviewTasksById, skillsByKey, vaultSlug, fireConfirmDurable],
+  );
+
+  const handleRefine = useCallback((taskId: string) => {
+    setRefineForTaskId(taskId);
+  }, []);
+
+  const handleRefineSubmit = useCallback(
+    (refinement: string) => {
+      const taskId = refineForTaskId;
+      if (!taskId) return;
+      void reviewTask(taskId, { kind: "refine", refinement }, vaultSlug).catch(
+        (err: unknown) => {
+          // eslint-disable-next-line no-console
+          console.error("reviewTask(refine) failed", err);
+        },
+      );
+      setRefineForTaskId(null);
+    },
+    [refineForTaskId, vaultSlug],
+  );
+
+  const handleReviewDismiss = useCallback(
+    (taskId: string) => {
+      void reviewTask(taskId, { kind: "dismiss" }, vaultSlug).catch(
+        (err: unknown) => {
+          // eslint-disable-next-line no-console
+          console.error("reviewTask(dismiss) failed", err);
+        },
+      );
+    },
+    [vaultSlug],
+  );
+
+  const handleMarkStale = useCallback(
+    (taskId: string) => {
+      void reviewTask(taskId, { kind: "mark-stale" }, vaultSlug).catch(
+        (err: unknown) => {
+          // eslint-disable-next-line no-console
+          console.error("reviewTask(mark-stale) failed", err);
+        },
+      );
+    },
+    [vaultSlug],
+  );
+
+  const handleFirstWriteConfirm = useCallback(() => {
+    const taskId = firstWriteForTaskId;
+    if (!taskId) return;
+    const task = reviewTasksById[taskId];
+    const skill = task ? skillsByKey[task.skillId] : undefined;
+    const skillKey = skill?.id ?? task?.skillId;
+    if (skillKey) writeFirstWriteAck(vaultSlug, skillKey);
+    fireConfirmDurable(taskId);
+    setFirstWriteForTaskId(null);
+  }, [
+    firstWriteForTaskId,
+    reviewTasksById,
+    skillsByKey,
+    vaultSlug,
+    fireConfirmDurable,
+  ]);
+
+  const firstWriteSkillName = useMemo(() => {
+    const task = firstWriteForTaskId
+      ? reviewTasksById[firstWriteForTaskId]
+      : null;
+    const skill = task ? skillsByKey[task.skillId] : undefined;
+    return skill?.name ?? task?.skillId ?? "this skill";
+  }, [firstWriteForTaskId, reviewTasksById, skillsByKey]);
 
   return (
     <>
       <NeedsReviewList
         reviewTasks={data.reviewTasks}
         skillsBySlug={skillsBySlug}
+        seeAllHref={seeAllReviewHref}
         onConfirmDurable={handleConfirmDurable}
         onRefine={handleRefine}
         onDismiss={handleReviewDismiss}
@@ -177,6 +273,19 @@ export function BacklogIsland({ data, vaultSlug }: BacklogIslandProps) {
         onDismiss={handleDismiss}
         onOpen={handleOpen}
       />
+      {refineForTaskId ? (
+        <RefineModal
+          onSubmit={handleRefineSubmit}
+          onCancel={() => setRefineForTaskId(null)}
+        />
+      ) : null}
+      {firstWriteForTaskId ? (
+        <FirstWriteModal
+          skillName={firstWriteSkillName}
+          onConfirm={handleFirstWriteConfirm}
+          onCancel={() => setFirstWriteForTaskId(null)}
+        />
+      ) : null}
     </>
   );
 }

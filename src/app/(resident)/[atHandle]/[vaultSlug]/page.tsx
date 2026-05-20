@@ -40,15 +40,20 @@ interface PageProps {
  */
 export default async function VaultHomepage({ params }: PageProps) {
   await assertV2Authed();
-  const { vaultSlug } = await params;
+  const { atHandle, vaultSlug } = await params;
   const data = await fetchBacklog(vaultSlug);
+  const seeAllReviewHref = `/${atHandle}/${vaultSlug}/review`;
 
   return (
     <ClientShell>
       <main className="min-h-screen bg-cream text-ink">
         <CapacityStrip throughput={data.throughput} planTier={data.planTier} />
         <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col gap-12">
-          <BacklogIsland data={data} vaultSlug={vaultSlug} />
+          <BacklogIsland
+            data={data}
+            vaultSlug={vaultSlug}
+            seeAllReviewHref={seeAllReviewHref}
+          />
         </div>
       </main>
     </ClientShell>
