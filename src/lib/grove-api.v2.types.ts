@@ -43,6 +43,37 @@ export interface TaskResult {
   provenance: GroveProvenance;
 }
 
+/**
+ * Suggestion class for a review-state Task in the Inbox v2 surface.
+ *
+ * See ~/src/grove/docs/inbox-v2-spec.md §"The three suggestion classes":
+ * - `disambiguation` — same surface form maps to N candidates; user picks one
+ * - `link`           — surface form has a confident target; user confirms or skips
+ * - `enrichment`     — proposed content expansion for an under-written note
+ *
+ * Hydrated server-side from the linked `decisions` row (S-INBOX-9 bridge).
+ * Legacy review tasks with no backing decision leave `itemType` undefined;
+ * the UI handles undefined as "use legacy verb set" until W-INBOX-2 ships.
+ */
+export type SuggestionType = "disambiguation" | "link" | "enrichment";
+
+/**
+ * One choice the user can pick on a review-state Task. Server-assigned ids
+ * (`opt-1`, `opt-2`, …) are stable for the life of the decision row so the
+ * client can echo `option_id` back in the apply call without inventing one.
+ *
+ * `source` distinguishes schema-defined options (the always-present choices
+ * for that suggestion class, e.g. "do not link") from LLM-proposed ones
+ * (the ranked candidates). Future UI may render them differently; v1 treats
+ * them uniformly.
+ */
+export interface ReviewOption {
+  id: string;
+  label: string;
+  description?: string;
+  source: "schema" | "llm";
+}
+
 export interface Task {
   id: string;
   skillId: string;
@@ -58,6 +89,11 @@ export interface Task {
   needsReviewReason?: string;
   sourceNotes?: string[];
   errorMessage?: string;
+  // Inbox v2 (W-INBOX-1): present on review-state tasks backed by a
+  // Decision row; absent on legacy review tasks. UI must tolerate
+  // undefined and fall back to the legacy verb set until W-INBOX-2.
+  itemType?: SuggestionType;
+  options?: ReviewOption[];
 }
 
 export interface Skill {

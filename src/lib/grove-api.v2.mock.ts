@@ -232,6 +232,74 @@ function buildInitialTasks(): Task[] {
       needsReviewReason: "AI flagged near-duplicate people notes",
     },
 
+    // Inbox v2 review tasks — one per SuggestionType (W-INBOX-1).
+    // These exercise the dynamic-options UI that W-INBOX-2 will render.
+    // Names are fictional placeholders; safe to ship in mock-mode previews.
+    {
+      id: "task-004",
+      skillId: "skill-concept-graph-cleanup",
+      title: "Disambiguate Anna in Journal/2026-05-19.md",
+      description:
+        "\"Anna\" appears in today's journal with no link. Two People notes match — pick one or leave unlinked.",
+      state: "review",
+      scheduledFor: null,
+      startedAt: "2026-05-19T18:00:00Z",
+      completedAt: "2026-05-19T18:00:12Z",
+      estimatedMinutes: 1,
+      actualMinutes: 1,
+      result: null,
+      needsReviewReason: "ambiguous reference; LLM cannot pick without context",
+      sourceNotes: ["Journal/2026-05-19.md"],
+      itemType: "disambiguation",
+      options: [
+        { id: "opt-1", label: "link to Anna Chen", source: "schema" },
+        { id: "opt-2", label: "link to Anna Kim", source: "schema" },
+        { id: "opt-3", label: "do not link", source: "schema" },
+      ],
+    },
+    {
+      id: "task-005",
+      skillId: "skill-concept-graph-cleanup",
+      title: "Link suggestion: parametric design in Journal/2026-05-20.md",
+      description:
+        "Surface form \"parametric design\" has a confident match. Confirm the link or skip.",
+      state: "review",
+      scheduledFor: null,
+      startedAt: "2026-05-20T09:00:00Z",
+      completedAt: "2026-05-20T09:00:05Z",
+      estimatedMinutes: 1,
+      actualMinutes: 1,
+      result: null,
+      needsReviewReason: "confident link candidate; awaiting confirmation",
+      sourceNotes: ["Journal/2026-05-20.md"],
+      itemType: "link",
+      options: [
+        { id: "opt-1", label: "link to parametric design", source: "schema" },
+        { id: "opt-2", label: "do not link", source: "schema" },
+      ],
+    },
+    {
+      id: "task-006",
+      skillId: "skill-concept-graph-cleanup",
+      title: "Enrich: taste graph",
+      description:
+        "Concept note has 2 sentences. Drafted a 4-paragraph expansion from 11 journal mentions.",
+      state: "review",
+      scheduledFor: null,
+      startedAt: "2026-05-20T10:30:00Z",
+      completedAt: "2026-05-20T10:30:42Z",
+      estimatedMinutes: 2,
+      actualMinutes: 2,
+      result: null,
+      needsReviewReason: "write-class artifact; needs review before applying",
+      sourceNotes: ["Resources/Concepts/taste graph.md"],
+      itemType: "enrichment",
+      options: [
+        { id: "opt-1", label: "apply enrichment", source: "schema" },
+        { id: "opt-2", label: "dismiss", source: "schema" },
+      ],
+    },
+
     // Pending (12)
     {
       id: "task-101",
@@ -414,8 +482,42 @@ function buildInitialTasks(): Task[] {
 
 // ─── In-memory store (module singleton; restart resets) ───────────────────
 
-const mockStore = {
+/**
+ * Lightweight stand-in for the server-side `decisions` table (S-INBOX-9).
+ * Mock-mode keeps just enough to round-trip the V2 review actions:
+ *   - `applyTask` updates a decision's `status` to "confirmed"
+ *   - `dismissReviewTask` records a suppression entry
+ *
+ * Real grove server tracks far more (chosen_option_id, payload, lifecycle)
+ * — mirroring it 1:1 here would duplicate server logic with no payoff.
+ * If a future skill needs richer mock decisions, extend in place.
+ */
+interface MockDecision {
+  taskId: string;
+  status: "provisional" | "confirmed" | "compensated";
+  primaryEntity: string;
+}
+
+interface MockSuppression {
+  suggestionType: "disambiguation" | "link" | "enrichment";
+  primaryEntity: string;
+  until: string;
+}
+
+const mockStore: {
+  tasks: Task[];
+  decisions: MockDecision[];
+  suppressions: MockSuppression[];
+} = {
   tasks: buildInitialTasks(),
+  // Seed one decision per V2 review task so applyTask/dismissReviewTask
+  // have something to mutate during tests.
+  decisions: [
+    { taskId: "task-004", status: "provisional", primaryEntity: "Anna" },
+    { taskId: "task-005", status: "provisional", primaryEntity: "parametric design" },
+    { taskId: "task-006", status: "provisional", primaryEntity: "taste graph" },
+  ],
+  suppressions: [],
 };
 
 // ─── Throughput math (derived from task state) ────────────────────────────
@@ -519,6 +621,95 @@ export async function reviewTask(
   task.state = "done";
 }
 
+// ─── V2 review actions (Inbox v2 — W-INBOX-1) ────────────────────────────
+//
+// These mirror the new server endpoint shape (POST /v1/tasks/<id>/review
+// with `{kind: "apply" | "refine" | "dismiss", ...}`) added in S-INBOX-10.
+// They live alongside the legacy `reviewTask` above; W-INBOX-2/3 will
+// migrate the UI to call these in place of the legacy verbs. Until then,
+// the legacy reviewTask stays as-is.
+
+export async function applyTask(
+  _vault: string,
+  taskId: string,
+  _optionId: string,
+): Promise<void> {
+  const task = mockStore.tasks.find((t) => t.id === taskId);
+  if (!task) throw new Error(`task ${taskId} not found in mock store`);
+  task.state = "done";
+  task.completedAt = new Date().toISOString();
+  // Mirror server-side: if a decision row exists, mark it confirmed.
+  // (The real server also compensates+re-runs when option_id differs
+  // from the chosen one; the mock doesn't track chosen_option_id, so
+  // we treat every apply as a confirmation. The Server Action test
+  // covers wire shape; richer compensation logic is server-side.)
+  const decision = mockStore.decisions.find((d) => d.taskId === taskId);
+  if (decision) {
+    decision.status = "confirmed";
+  }
+}
+
+export async function refineTask(
+  _vault: string,
+  taskId: string,
+  refinement: string,
+): Promise<void> {
+  const task = mockStore.tasks.find((t) => t.id === taskId);
+  if (!task) throw new Error(`task ${taskId} not found in mock store`);
+  task.state = "done";
+  task.completedAt = new Date().toISOString();
+  // Spawn a refine-handler task carrying the free-text directive.
+  // Server-side this lands as a real autonomous task; mock just inserts
+  // a pending row so the UI sees the new item appear in the backlog.
+  const spawned: Task = {
+    id: `task-refine-${taskId}-${mockStore.tasks.length}`,
+    skillId: "refine-handler",
+    title: `refine: ${task.title}`,
+    description: refinement,
+    state: "pending",
+    scheduledFor: null,
+    startedAt: null,
+    completedAt: null,
+    estimatedMinutes: 3,
+    actualMinutes: null,
+    result: null,
+  };
+  mockStore.tasks.push(spawned);
+  const decision = mockStore.decisions.find((d) => d.taskId === taskId);
+  if (decision) {
+    decision.status = "compensated";
+  }
+}
+
+/**
+ * V2 dismiss for review-state tasks. Named `dismissReviewTask` to
+ * disambiguate from the existing `dismissTask` above, which targets
+ * pending-state tasks via `/v1/tasks/<id>/dismiss`. The two endpoints
+ * are intentionally separate on the server: pending-dismiss kills a
+ * scheduled run; review-dismiss closes a suggestion AND writes a
+ * suppression row.
+ */
+export async function dismissReviewTask(
+  _vault: string,
+  taskId: string,
+): Promise<void> {
+  const task = mockStore.tasks.find((t) => t.id === taskId);
+  if (!task) throw new Error(`task ${taskId} not found in mock store`);
+  task.state = "dismissed";
+  const decision = mockStore.decisions.find((d) => d.taskId === taskId);
+  if (decision) {
+    // 14-day suppression — matches spec default; per-skill tuning is
+    // server-side, not mocked here.
+    const until = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+    const suggestionType = task.itemType ?? "link";
+    mockStore.suppressions.push({
+      suggestionType,
+      primaryEntity: decision.primaryEntity,
+      until,
+    });
+  }
+}
+
 export async function fetchSkills(_vault: string): Promise<Skill[]> {
   return MOCK_SKILLS;
 }
@@ -550,4 +741,28 @@ export async function disableSkill(_vault: string, slug: string): Promise<void> 
 // Test-only: reset the in-memory store. Not part of the public surface.
 export function __resetMockStore(): void {
   mockStore.tasks = buildInitialTasks();
+  mockStore.decisions = [
+    { taskId: "task-004", status: "provisional", primaryEntity: "Anna" },
+    { taskId: "task-005", status: "provisional", primaryEntity: "parametric design" },
+    { taskId: "task-006", status: "provisional", primaryEntity: "taste graph" },
+  ];
+  mockStore.suppressions = [];
+}
+
+// Test-only inspectors for the V2 review mutations (W-INBOX-1). Asserts
+// in unit tests can read these without poking module internals.
+export function __getMockStore(): {
+  tasks: Task[];
+  decisions: ReadonlyArray<{
+    taskId: string;
+    status: "provisional" | "confirmed" | "compensated";
+    primaryEntity: string;
+  }>;
+  suppressions: ReadonlyArray<{
+    suggestionType: "disambiguation" | "link" | "enrichment";
+    primaryEntity: string;
+    until: string;
+  }>;
+} {
+  return mockStore;
 }
