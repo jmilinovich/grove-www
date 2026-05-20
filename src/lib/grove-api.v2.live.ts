@@ -163,6 +163,67 @@ export async function reviewTask(
   );
 }
 
+// ─── V2 review actions (Inbox v2 — W-INBOX-1) ────────────────────────────
+//
+// These POST to the same `/v1/tasks/<id>/review` endpoint as the legacy
+// `reviewTask` above, but use the V2 wire shape S-INBOX-10 added:
+//   apply:   {kind: "apply", option_id}
+//   refine:  {kind: "refine", refinement}
+//   dismiss: {kind: "dismiss"}
+//
+// The endpoint dispatches on `kind` (not on the legacy `action` verb).
+// Both shapes coexist server-side until W-INBOX-2/3 migrate the UI off
+// the legacy verbs; until then `reviewTask` (legacy) stays untouched.
+
+export async function applyTask(
+  vault: string,
+  taskId: string,
+  optionId: string,
+): Promise<void> {
+  await call<unknown>(
+    vault,
+    "POST",
+    `/v1/tasks/${encodeURIComponent(taskId)}/review`,
+    { kind: "apply", option_id: optionId },
+  );
+}
+
+export async function refineTask(
+  vault: string,
+  taskId: string,
+  refinement: string,
+): Promise<void> {
+  await call<unknown>(
+    vault,
+    "POST",
+    `/v1/tasks/${encodeURIComponent(taskId)}/review`,
+    { kind: "refine", refinement },
+  );
+}
+
+/**
+ * V2 dismiss for review-state tasks. Name differs from the
+ * pending-task `dismissTask` above because the two hit different
+ * endpoints (`/dismiss` vs `/review`) with different semantics:
+ *
+ *   dismissTask         → cancels a scheduled run (pending-state task)
+ *   dismissReviewTask   → closes a suggestion + writes a suppression row
+ *                          (review-state task)
+ *
+ * Collapsing them would erase that distinction at the wire layer.
+ */
+export async function dismissReviewTask(
+  vault: string,
+  taskId: string,
+): Promise<void> {
+  await call<unknown>(
+    vault,
+    "POST",
+    `/v1/tasks/${encodeURIComponent(taskId)}/review`,
+    { kind: "dismiss" },
+  );
+}
+
 export async function configureSkill(
   vault: string,
   slug: string,
