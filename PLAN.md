@@ -5,6 +5,9 @@
 **Status:** Week 0 — Backend Contract Gate
 **Last updated:** 2026-05-13 (post-panel-review)
 
+**Active cross-repo feature plans:**
+- **Inbox v2** — design + work items at `~/src/grove/docs/inbox-v2-{spec,plan}.md`. UI items prefixed `W-INBOX-*` (4 items: types, dynamic-options list, refine=spawn, see-all parity).
+
 ---
 
 ## Reading order for a cold-start agent
